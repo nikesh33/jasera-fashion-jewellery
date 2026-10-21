@@ -16,21 +16,26 @@
   letter-spacing: 0.03em;
   position: relative;
   z-index: 901;
+  width: 100%;
 }
 
 .announcement-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   width: 100%;
   padding: 0 var(--space-6, 24px);
   box-sizing: border-box;
 }
 
-.announcement-main-row {
+/* Desktop View (Single Row) */
+.announcement-desktop-view {
   display: flex;
   align-items: center;
-  min-width: 0;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.announcement-promo {
+  display: flex;
+  align-items: center;
 }
 
 .announcement-text {
@@ -40,7 +45,7 @@
   color: #FFFFFF;
 }
 
-.announcement-secondary-row {
+.announcement-right-group {
   display: flex;
   align-items: center;
   gap: var(--space-4, 16px);
@@ -89,122 +94,95 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* On Desktop: Hide mobile dismiss, show desktop dismiss */
-.mobile-dismiss-btn {
-  display: none !important;
+/* Mobile Ticker View (Hidden by default on Desktop) */
+.announcement-mobile-ticker {
+  display: none;
 }
 
-.desktop-dismiss-btn {
-  display: inline-flex !important;
-}
-
-/* Announcement Responsive: 2 Clean Rows on Mobile & Small Screens (<= 768px) */
+/* Announcement Responsive (<= 768px): Single-Line Auto-Rotating Slider / Ticker */
 @media (max-width: 768px) {
   .announcement-bar {
-    padding: 6px 0 5px;
+    padding: 7px 0;
   }
 
   .announcement-content {
-    display: flex;
-    flex-direction: column;
     padding: 0 12px;
-    gap: 4px;
-    box-sizing: border-box;
   }
 
-  /* Row 1: Promo message on left, cross button on right */
-  .announcement-main-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .announcement-text {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 0.76rem;
-    font-weight: 500;
-    line-height: 1.25;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 6px;
-    color: #FFFFFF;
-  }
-
-  /* Show mobile dismiss button (✕) on far right of Row 1 */
-  .mobile-dismiss-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: #FFFFFF;
-    padding: 2px 4px;
-    margin-left: auto;
-  }
-
-  /* Hide desktop dismiss button */
-  .desktop-dismiss-btn {
+  /* Hide Desktop View completely on mobile */
+  .announcement-desktop-view {
     display: none !important;
   }
 
-  /* Row 2: Secondary links centered below Row 1 */
-  .announcement-secondary-row {
-    display: flex;
+  /* Show Mobile Single-Line Ticker */
+  .announcement-mobile-ticker {
+    display: flex !important;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     width: 100%;
-    min-width: 0;
-    padding-top: 3px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    gap: 0;
-  }
-
-  .announcement-links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 20px;
     gap: 8px;
-    width: 100%;
-    flex-wrap: wrap;
+    box-sizing: border-box;
   }
 
-  .announcement-links a {
-    font-size: 0.72rem;
-    color: var(--color-antique-gold-light, #f1dab0);
-    padding: 1px 3px;
+  .announcement-ticker-track {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #FFFFFF;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.02em;
+    animation: tickerSlideIn 0.35s ease-out;
   }
 
-  .announcement-divider {
-    color: rgba(255, 255, 255, 0.35);
-    font-size: 0.65rem;
+  .ticker-link {
+    color: var(--color-antique-gold-light, #f1dab0);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .ticker-link:hover,
+  .ticker-link:active {
+    color: #FFFFFF;
+    text-decoration: underline;
+  }
+
+  .ticker-icon {
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .mobile-ticker-dismiss {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 3px 5px;
+    color: rgba(255, 255, 255, 0.9);
   }
 }
 
-@media (max-width: 480px) {
-  .announcement-bar {
-    padding: 5px 0 4px;
+@keyframes tickerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
-
-  .announcement-content {
-    padding: 0 8px;
-    gap: 3px;
-  }
-
-  .announcement-text {
-    font-size: 0.72rem;
-  }
-
-  .announcement-links {
-    gap: 6px;
-  }
-
-  .announcement-links a {
-    font-size: 0.68rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -73,13 +73,31 @@ export function Header() {
   };
 
   const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(() => {
-    return sessionStorage.getItem("suvarna_dismiss_announcement") === "true";
+    return (
+      sessionStorage.getItem("jasera_dismiss_announcement") === "true" ||
+      sessionStorage.getItem("suvarna_dismiss_announcement") === "true"
+    );
   });
 
   const handleDismissAnnouncement = () => {
     setIsAnnouncementDismissed(true);
-    sessionStorage.setItem("suvarna_dismiss_announcement", "true");
+    sessionStorage.setItem("jasera_dismiss_announcement", "true");
   };
+
+  // Rotating Announcement Slides for Mobile Single-Line Ticker
+  const announcementSlides = [
+    { id: 1, text: "Free Shipping on orders above ₹999", link: null },
+    { id: 2, text: "Track Order", link: "/track-order" },
+    { id: 3, text: "Need Help? Chat with us", link: "/contact" },
+  ];
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % announcementSlides.length);
+    }, 3500);
+    return () => clearInterval(slideInterval);
+  }, [announcementSlides.length]);
 
   return (
     <header className="site-header">
@@ -89,73 +107,103 @@ export function Header() {
           className={`announcement-bar ${isAdminRoute ? "admin-announcement" : ""}`}
         >
           <div className="announcement-content">
-            {isAdminRoute ? (
-              <>
-                <div className="announcement-main-row">
-                  <span className="announcement-text">
-                    JASERA - Management Portal
-                  </span>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn mobile-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-                <div className="announcement-secondary-row">
-                  <div className="announcement-links">
-                    <Link to="/" target="_blank" rel="noopener noreferrer">
+            {/* Desktop View: Clean single row */}
+            <div className="announcement-desktop-view">
+              {isAdminRoute ? (
+                <>
+                  <div className="announcement-promo">
+                    <span className="announcement-text">
+                      JASERA - Management Portal
+                    </span>
+                  </div>
+                  <div className="announcement-right-group">
+                    <div className="announcement-links">
+                      <Link to="/" target="_blank" rel="noopener noreferrer">
+                        View Customer Storefront ↗
+                      </Link>
+                    </div>
+                    <button
+                      type="button"
+                      className="announcement-dismiss-btn"
+                      onClick={handleDismissAnnouncement}
+                      aria-label="Dismiss announcement"
+                      title="Dismiss"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="announcement-promo">
+                    <span className="announcement-text">
+                      Free Shipping on orders above ₹999
+                    </span>
+                  </div>
+                  <div className="announcement-right-group">
+                    <div className="announcement-links">
+                      <Link to="/track-order">Track Order</Link>
+                      <span className="announcement-divider">|</span>
+                      <Link to="/contact">Need Help? Chat with us</Link>
+                    </div>
+                    <button
+                      type="button"
+                      className="announcement-dismiss-btn"
+                      onClick={handleDismissAnnouncement}
+                      aria-label="Dismiss announcement"
+                      title="Dismiss"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Ticker View: Exactly ONE single line auto-sliding ticker */}
+            <div className="announcement-mobile-ticker">
+              <div className="announcement-ticker-track" key={currentSlide}>
+                {isAdminRoute ? (
+                  currentSlide % 2 === 0 ? (
+                    <span className="ticker-item">JASERA - Management Portal</span>
+                  ) : (
+                    <Link
+                      to="/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ticker-item ticker-link"
+                    >
                       View Customer Storefront ↗
                     </Link>
-                  </div>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn desktop-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="announcement-main-row">
-                  <span className="announcement-text">
-                    Free Shipping on orders above ₹999
-                  </span>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn mobile-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-                <div className="announcement-secondary-row">
-                  <div className="announcement-links">
-                    <Link to="/track-order">Track Order</Link>
-                    <span className="announcement-divider">|</span>
-                    <Link to="/contact">Need Help? Chat with us</Link>
-                  </div>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn desktop-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              </>
-            )}
+                  )
+                ) : (
+                  <>
+                    {announcementSlides[currentSlide].link ? (
+                      <Link
+                        to={announcementSlides[currentSlide].link}
+                        className="ticker-item ticker-link"
+                      >
+                        {announcementSlides[currentSlide].text}
+                        <ArrowUpRight size={12} className="ticker-icon" />
+                      </Link>
+                    ) : (
+                      <span className="ticker-item">
+                        {announcementSlides[currentSlide].text}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className="announcement-dismiss-btn mobile-ticker-dismiss"
+                onClick={handleDismissAnnouncement}
+                aria-label="Dismiss announcement"
+                title="Dismiss"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
         </div>
       )}
