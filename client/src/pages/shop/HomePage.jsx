@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, ShieldCheck, HeartHandshake, Star, PackageCheck, Zap } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, HeartHandshake, Star, PackageCheck, Zap, Check } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ProductCard } from '../../components/shop/ProductCard';
 import { api } from '../../lib/api';
@@ -48,10 +48,10 @@ export function HomePage() {
 
             {/* Quality Feature Chips matching the Statement Bracelet poster */}
             <div className="hero-feature-chips">
-              <span className="hero-chip">✨ Elegant Design</span>
-              <span className="hero-chip">🌿 Lightweight & Comfortable</span>
-              <span className="hero-chip">💎 Premium Quality Beads</span>
-              <span className="hero-chip">🎁 Perfect for Every Occasion</span>
+              <span className="hero-chip">Elegant Design</span>
+              <span className="hero-chip">Lightweight & Comfortable</span>
+              <span className="hero-chip">Premium Quality Beads</span>
+              <span className="hero-chip">Perfect for Every Occasion</span>
             </div>
 
             <div className="hero-actions">
@@ -204,15 +204,15 @@ export function HomePage() {
             </p>
             <div className="heritage-points">
               <div className="point-item">
-                <span className="point-bullet">✓</span>
+                <span className="point-bullet"><Check size={14} /></span>
                 <span>Lightweight oxidised silver jhumkas with comfortable ear hooks</span>
               </div>
               <div className="point-item">
-                <span className="point-bullet">✓</span>
+                <span className="point-bullet"><Check size={14} /></span>
                 <span>Anti-tarnish, water-resistant daily wear stainless steel & brass</span>
               </div>
               <div className="point-item">
-                <span className="point-bullet">✓</span>
+                <span className="point-bullet"><Check size={14} /></span>
                 <span>Pocket-friendly luxury designed for aesthetic Instagram unboxings</span>
               </div>
             </div>
