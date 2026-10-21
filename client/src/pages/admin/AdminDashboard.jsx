@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   TrendingUp,
   Package,
@@ -24,13 +24,13 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Menu,
-} from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Pagination } from '../../components/ui/Pagination';
-import { formatPrice } from '../../lib/utils';
-import { useAuthStore } from '../../stores/authStore';
-import { api } from '../../lib/api';
-import './AdminDashboard.css';
+} from "lucide-react";
+import { Button } from "../../components/ui/Button";
+import { Pagination } from "../../components/ui/Pagination";
+import { formatPrice } from "../../lib/utils";
+import { useAuthStore } from "../../stores/authStore";
+import { api } from "../../lib/api";
+import "./AdminDashboard.css";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -38,33 +38,33 @@ export function AdminDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL-synced Tab State ('overview' | 'categories' | 'products' | 'orders')
-  const activeTab = searchParams.get('tab') || 'overview';
+  const activeTab = searchParams.get("tab") || "overview";
   const setActiveTab = (tab) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      next.set('tab', tab);
+      next.set("tab", tab);
       return next;
     });
   };
 
   // Product Search & Filter State
-  const [productSearch, setProductSearch] = useState('');
-  const [productCategoryFilter, setProductCategoryFilter] = useState('all');
-  const [productStockFilter, setProductStockFilter] = useState('all'); // 'all', 'in_stock', 'low_stock', 'out_of_stock'
-  const [productStatusFilter, setProductStatusFilter] = useState('all');
+  const [productSearch, setProductSearch] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
+  const [productStockFilter, setProductStockFilter] = useState("all"); // 'all', 'in_stock', 'low_stock', 'out_of_stock'
+  const [productStatusFilter, setProductStatusFilter] = useState("all");
   const [productPage, setProductPage] = useState(1);
   const [productPageSize, setProductPageSize] = useState(10);
 
   // Category Search & Filter State
-  const [categorySearch, setCategorySearch] = useState('');
-  const [categoryStatusFilter, setCategoryStatusFilter] = useState('all');
+  const [categorySearch, setCategorySearch] = useState("");
+  const [categoryStatusFilter, setCategoryStatusFilter] = useState("all");
   const [categoryPage, setCategoryPage] = useState(1);
   const [categoryPageSize, setCategoryPageSize] = useState(10);
 
   // Order Search & Filter State
-  const [orderSearch, setOrderSearch] = useState('');
-  const [orderStatusFilter, setOrderStatusFilter] = useState('all');
-  const [orderPaymentFilter, setOrderPaymentFilter] = useState('all');
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState("all");
   const [orderPage, setOrderPage] = useState(1);
   const [orderPageSize, setOrderPageSize] = useState(10);
 
@@ -88,27 +88,27 @@ export function AdminDashboard() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryForm, setCategoryForm] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    image_url: '',
-    status: 'active',
+    name: "",
+    slug: "",
+    description: "",
+    image_url: "",
+    status: "active",
   });
 
   // Product Modal / Form
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
-    name: '',
-    category_id: '',
-    selling_price: '',
-    mrp: '',
-    material: 'Oxidised Silver',
-    occasion: 'Daily & Festive',
+    name: "",
+    category_id: "",
+    selling_price: "",
+    mrp: "",
+    material: "Oxidised Silver",
+    occasion: "Daily & Festive",
     stock: 20,
-    image_url: '',
-    short_description: '',
-    status: 'active',
+    image_url: "",
+    short_description: "",
+    status: "active",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,24 +118,27 @@ export function AdminDashboard() {
     setIsLoading(true);
     try {
       const [statsRes, catRes, prodRes, ordRes] = await Promise.all([
-        api.get('/admin/stats').catch(() => null),
-        api.get('/categories/admin').catch(() => api.get('/categories')),
-        api.get('/products?limit=150').catch(() => null),
-        api.get('/admin/orders').catch(() => null),
+        api.get("/admin/stats").catch(() => null),
+        api.get("/categories/admin").catch(() => api.get("/categories")),
+        api.get("/products?limit=150").catch(() => null),
+        api.get("/admin/orders").catch(() => null),
       ]);
 
       if (statsRes?.data?.stats) setStats(statsRes.data.stats);
       if (catRes?.data?.categories) {
         setCategories(catRes.data.categories);
         if (!productForm.category_id && catRes.data.categories.length > 0) {
-          setProductForm((prev) => ({ ...prev, category_id: catRes.data.categories[0].id }));
+          setProductForm((prev) => ({
+            ...prev,
+            category_id: catRes.data.categories[0].id,
+          }));
         }
       }
       if (prodRes?.data?.products) setProducts(prodRes.data.products);
       if (ordRes?.data?.orders) setOrders(ordRes.data.orders);
     } catch (err) {
-      console.error('Failed to load admin data:', err);
-      setErrorMessage('Failed to load database records.');
+      console.error("Failed to load admin data:", err);
+      setErrorMessage("Failed to load database records.");
     } finally {
       setIsLoading(false);
     }
@@ -159,7 +162,7 @@ export function AdminDashboard() {
 
   const handleSignOut = () => {
     logout();
-    navigate('/admin/login');
+    navigate("/admin/login");
   };
 
   // ---------------- CATEGORY CRUD ----------------
@@ -167,11 +170,11 @@ export function AdminDashboard() {
   const handleOpenAddCategory = () => {
     setEditingCategory(null);
     setCategoryForm({
-      name: '',
-      slug: '',
-      description: '',
-      image_url: '',
-      status: 'active',
+      name: "",
+      slug: "",
+      description: "",
+      image_url: "",
+      status: "active",
     });
     setShowCategoryModal(true);
   };
@@ -179,11 +182,11 @@ export function AdminDashboard() {
   const handleOpenEditCategory = (cat) => {
     setEditingCategory(cat);
     setCategoryForm({
-      name: cat.name || '',
-      slug: cat.slug || '',
-      description: cat.description || '',
-      image_url: cat.image_url || '',
-      status: cat.status || 'active',
+      name: cat.name || "",
+      slug: cat.slug || "",
+      description: cat.description || "",
+      image_url: cat.image_url || "",
+      status: cat.status || "active",
     });
     setShowCategoryModal(true);
   };
@@ -191,26 +194,36 @@ export function AdminDashboard() {
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!categoryForm.name.trim()) {
-      notifyError('Please enter a category name');
+      notifyError("Please enter a category name");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const cleanSlug = categoryForm.slug.trim() || categoryForm.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+      const cleanSlug =
+        categoryForm.slug.trim() ||
+        categoryForm.name
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/[^\w-]+/g, "");
       const payload = {
         name: categoryForm.name.trim(),
         slug: cleanSlug,
-        description: categoryForm.description.trim() || 'Aesthetic handcrafted jewellery collection',
-        image_url: categoryForm.image_url.trim() || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80',
-        status: categoryForm.status || 'active',
+        description:
+          categoryForm.description.trim() ||
+          "Aesthetic handcrafted jewellery collection",
+        image_url:
+          categoryForm.image_url.trim() ||
+          "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80",
+        status: categoryForm.status || "active",
       };
 
       if (editingCategory) {
         await api.put(`/categories/admin/${editingCategory.id}`, payload);
         notifySuccess(`Category "${categoryForm.name}" updated successfully!`);
       } else {
-        await api.post('/categories/admin', payload);
+        await api.post("/categories/admin", payload);
         notifySuccess(`Category "${categoryForm.name}" created in database!`);
       }
 
@@ -218,20 +231,23 @@ export function AdminDashboard() {
       setEditingCategory(null);
       await loadDashboardData();
     } catch (err) {
-      notifyError(err.message || 'Failed to save category');
+      notifyError(err.message || "Failed to save category");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteCategory = async (catId, catName) => {
-    if (!window.confirm(`Are you sure you want to delete category "${catName}"?`)) return;
+    if (
+      !window.confirm(`Are you sure you want to delete category "${catName}"?`)
+    )
+      return;
     try {
       await api.delete(`/categories/admin/${catId}`);
       notifySuccess(`Category "${catName}" deleted from database.`);
       await loadDashboardData();
     } catch (err) {
-      notifyError(err.message || 'Failed to delete category');
+      notifyError(err.message || "Failed to delete category");
     }
   };
 
@@ -240,16 +256,16 @@ export function AdminDashboard() {
   const handleOpenAddProduct = () => {
     setEditingProduct(null);
     setProductForm({
-      name: '',
-      category_id: categories[0]?.id || '',
-      selling_price: '',
-      mrp: '',
-      material: 'Oxidised Silver',
-      occasion: 'Daily & Festive',
+      name: "",
+      category_id: categories[0]?.id || "",
+      selling_price: "",
+      mrp: "",
+      material: "Oxidised Silver",
+      occasion: "Daily & Festive",
       stock: 20,
-      image_url: '',
-      short_description: '',
-      status: 'active',
+      image_url: "",
+      short_description: "",
+      status: "active",
     });
     setShowProductModal(true);
   };
@@ -257,36 +273,42 @@ export function AdminDashboard() {
   const handleOpenEditProduct = (prod) => {
     setEditingProduct(prod);
     setProductForm({
-      name: prod.name || '',
-      category_id: prod.category_id || categories[0]?.id || '',
-      selling_price: prod.selling_price || '',
-      mrp: prod.mrp || '',
-      material: prod.material || 'Oxidised Silver',
-      occasion: prod.occasion || 'Daily & Festive',
+      name: prod.name || "",
+      category_id: prod.category_id || categories[0]?.id || "",
+      selling_price: prod.selling_price || "",
+      mrp: prod.mrp || "",
+      material: prod.material || "Oxidised Silver",
+      occasion: prod.occasion || "Daily & Festive",
       stock: prod.stock !== undefined ? prod.stock : 20,
-      image_url: prod.primary_image || '',
-      short_description: prod.short_description || '',
-      status: prod.status || 'active',
+      image_url: prod.primary_image || "",
+      short_description: prod.short_description || "",
+      status: prod.status || "active",
     });
     setShowProductModal(true);
   };
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
-    if (!productForm.name.trim() || !productForm.selling_price || !productForm.category_id) {
-      notifyError('Please fill in product name, category, and selling price.');
+    if (
+      !productForm.name.trim() ||
+      !productForm.selling_price ||
+      !productForm.category_id
+    ) {
+      notifyError("Please fill in product name, category, and selling price.");
       return;
     }
 
     const price = Number(productForm.selling_price);
     if (isNaN(price) || price <= 0) {
-      notifyError('Selling price must be greater than 0.');
+      notifyError("Selling price must be greater than 0.");
       return;
     }
 
-    const stockUnits = Number(productForm.stock !== undefined ? productForm.stock : 0);
+    const stockUnits = Number(
+      productForm.stock !== undefined ? productForm.stock : 0,
+    );
     if (isNaN(stockUnits) || stockUnits < 0) {
-      notifyError('Stock units cannot be negative.');
+      notifyError("Stock units cannot be negative.");
       return;
     }
 
@@ -296,20 +318,28 @@ export function AdminDashboard() {
         name: productForm.name.trim(),
         category_id: productForm.category_id,
         selling_price: price,
-        mrp: Number(productForm.mrp && Number(productForm.mrp) > price ? productForm.mrp : price * 1.5),
+        mrp: Number(
+          productForm.mrp && Number(productForm.mrp) > price
+            ? productForm.mrp
+            : price * 1.5,
+        ),
         material: productForm.material,
         occasion: productForm.occasion,
         stock: stockUnits,
-        image_url: productForm.image_url.trim() || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80',
-        short_description: productForm.short_description.trim() || `Handcrafted ${productForm.material} jewellery piece.`,
-        status: productForm.status || 'active',
+        image_url:
+          productForm.image_url.trim() ||
+          "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80",
+        short_description:
+          productForm.short_description.trim() ||
+          `Handcrafted ${productForm.material} jewellery piece.`,
+        status: productForm.status || "active",
       };
 
       if (editingProduct) {
         await api.put(`/products/admin/${editingProduct.id}`, payload);
         notifySuccess(`Product "${productForm.name}" updated in inventory!`);
       } else {
-        await api.post('/products/admin', payload);
+        await api.post("/products/admin", payload);
         notifySuccess(`Product "${productForm.name}" added to inventory!`);
       }
 
@@ -317,20 +347,27 @@ export function AdminDashboard() {
       setEditingProduct(null);
       await loadDashboardData();
     } catch (err) {
-      notifyError(err.message || 'Failed to save product');
+      notifyError(err.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteProduct = async (prodId, prodName) => {
-    if (!window.confirm(`Are you sure you want to remove or archive "${prodName}"?`)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to remove or archive "${prodName}"?`,
+      )
+    )
+      return;
     try {
       const res = await api.delete(`/products/admin/${prodId}`);
-      notifySuccess(res?.message || `Product "${prodName}" removed from catalogue.`);
+      notifySuccess(
+        res?.message || `Product "${prodName}" removed from catalogue.`,
+      );
       await loadDashboardData();
     } catch (err) {
-      notifyError(err.message || 'Failed to delete product');
+      notifyError(err.message || "Failed to delete product");
     }
   };
 
@@ -338,42 +375,56 @@ export function AdminDashboard() {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      const res = await api.patch(`/admin/orders/${orderId}/status`, { status: newStatus });
-      setOrders(orders.map((o) => (o.id === orderId ? { ...o, fulfilment_status: newStatus } : o)));
-      notifySuccess(res?.message || `Order status updated to "${newStatus}" in MySQL.`);
+      const res = await api.patch(`/admin/orders/${orderId}/status`, {
+        status: newStatus,
+      });
+      setOrders(
+        orders.map((o) =>
+          o.id === orderId ? { ...o, fulfilment_status: newStatus } : o,
+        ),
+      );
+      notifySuccess(
+        res?.message || `Order status updated to "${newStatus}" in MySQL.`,
+      );
       await loadDashboardData();
     } catch (err) {
-      notifyError(err.message || 'Failed to update order status');
+      notifyError(err.message || "Failed to update order status");
     }
   };
 
   // Quick Action listeners (from mobile sidebar or URL param)
   useEffect(() => {
-    const action = searchParams.get('action');
-    if (action === 'add-category') {
+    const action = searchParams.get("action");
+    if (action === "add-category") {
       handleOpenAddCategory();
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('action');
-        return next;
-      }, { replace: true });
-    } else if (action === 'add-product') {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("action");
+          return next;
+        },
+        { replace: true },
+      );
+    } else if (action === "add-product") {
       handleOpenAddProduct();
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('action');
-        return next;
-      }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("action");
+          return next;
+        },
+        { replace: true },
+      );
     }
   }, [searchParams]);
 
   useEffect(() => {
     const handleCustomAction = (e) => {
-      if (e.detail === 'add-category') handleOpenAddCategory();
-      if (e.detail === 'add-product') handleOpenAddProduct();
+      if (e.detail === "add-category") handleOpenAddCategory();
+      if (e.detail === "add-product") handleOpenAddProduct();
     };
-    window.addEventListener('admin-action', handleCustomAction);
-    return () => window.removeEventListener('admin-action', handleCustomAction);
+    window.addEventListener("admin-action", handleCustomAction);
+    return () => window.removeEventListener("admin-action", handleCustomAction);
   }, [categories]);
 
   // Filtered Products
@@ -383,20 +434,25 @@ export function AdminDashboard() {
       const matchName = prod.name?.toLowerCase().includes(q);
       const matchMaterial = prod.material?.toLowerCase().includes(q);
       const matchId = String(prod.id).includes(q);
-      const matchCategory = (prod.category_name || prod.category_slug || '').toLowerCase().includes(q);
-      if (!matchName && !matchMaterial && !matchId && !matchCategory) return false;
+      const matchCategory = (prod.category_name || prod.category_slug || "")
+        .toLowerCase()
+        .includes(q);
+      if (!matchName && !matchMaterial && !matchId && !matchCategory)
+        return false;
     }
-    if (productCategoryFilter !== 'all') {
-      if (String(prod.category_id) !== String(productCategoryFilter)) return false;
+    if (productCategoryFilter !== "all") {
+      if (String(prod.category_id) !== String(productCategoryFilter))
+        return false;
     }
-    if (productStockFilter !== 'all') {
+    if (productStockFilter !== "all") {
       const stock = prod.stock !== undefined ? Number(prod.stock) : 20;
-      if (productStockFilter === 'in_stock' && stock <= 5) return false;
-      if (productStockFilter === 'low_stock' && (stock <= 0 || stock > 5)) return false;
-      if (productStockFilter === 'out_of_stock' && stock > 0) return false;
+      if (productStockFilter === "in_stock" && stock <= 5) return false;
+      if (productStockFilter === "low_stock" && (stock <= 0 || stock > 5))
+        return false;
+      if (productStockFilter === "out_of_stock" && stock > 0) return false;
     }
-    if (productStatusFilter !== 'all') {
-      if ((prod.status || 'active') !== productStatusFilter) return false;
+    if (productStatusFilter !== "all") {
+      if ((prod.status || "active") !== productStatusFilter) return false;
     }
     return true;
   });
@@ -410,8 +466,8 @@ export function AdminDashboard() {
       const matchDesc = cat.description?.toLowerCase().includes(q);
       if (!matchName && !matchSlug && !matchDesc) return false;
     }
-    if (categoryStatusFilter !== 'all') {
-      if ((cat.status || 'active') !== categoryStatusFilter) return false;
+    if (categoryStatusFilter !== "all") {
+      if ((cat.status || "active") !== categoryStatusFilter) return false;
     }
     return true;
   });
@@ -421,16 +477,30 @@ export function AdminDashboard() {
     if (orderSearch.trim()) {
       const q = orderSearch.toLowerCase().trim();
       const matchNum = ord.order_number?.toLowerCase().includes(q);
-      const matchCust = (ord.shipping_address?.fullName || ord.shipping_address?.full_name || ord.customer_name || '').toLowerCase().includes(q);
-      const matchPhone = (ord.shipping_address?.phone || ord.guest_phone || '').toLowerCase().includes(q);
-      const matchEmail = (ord.shipping_address?.email || ord.guest_email || '').toLowerCase().includes(q);
-      const matchCity = (ord.shipping_address?.city || '').toLowerCase().includes(q);
-      if (!matchNum && !matchCust && !matchPhone && !matchEmail && !matchCity) return false;
+      const matchCust = (
+        ord.shipping_address?.fullName ||
+        ord.shipping_address?.full_name ||
+        ord.customer_name ||
+        ""
+      )
+        .toLowerCase()
+        .includes(q);
+      const matchPhone = (ord.shipping_address?.phone || ord.guest_phone || "")
+        .toLowerCase()
+        .includes(q);
+      const matchEmail = (ord.shipping_address?.email || ord.guest_email || "")
+        .toLowerCase()
+        .includes(q);
+      const matchCity = (ord.shipping_address?.city || "")
+        .toLowerCase()
+        .includes(q);
+      if (!matchNum && !matchCust && !matchPhone && !matchEmail && !matchCity)
+        return false;
     }
-    if (orderStatusFilter !== 'all') {
+    if (orderStatusFilter !== "all") {
       if (ord.fulfilment_status !== orderStatusFilter) return false;
     }
-    if (orderPaymentFilter !== 'all') {
+    if (orderPaymentFilter !== "all") {
       if (ord.payment_status !== orderPaymentFilter) return false;
     }
     return true;
@@ -443,7 +513,12 @@ export function AdminDashboard() {
 
   useEffect(() => {
     setProductPage(1);
-  }, [productSearch, productCategoryFilter, productStockFilter, productStatusFilter]);
+  }, [
+    productSearch,
+    productCategoryFilter,
+    productStockFilter,
+    productStatusFilter,
+  ]);
 
   useEffect(() => {
     setOrderPage(1);
@@ -452,22 +527,21 @@ export function AdminDashboard() {
   // Paginated Slices
   const paginatedCategories = filteredCategories.slice(
     (categoryPage - 1) * categoryPageSize,
-    categoryPage * categoryPageSize
+    categoryPage * categoryPageSize,
   );
 
   const paginatedProducts = filteredProducts.slice(
     (productPage - 1) * productPageSize,
-    productPage * productPageSize
+    productPage * productPageSize,
   );
 
   const paginatedOrders = filteredOrders.slice(
     (orderPage - 1) * orderPageSize,
-    orderPage * orderPageSize
+    orderPage * orderPageSize,
   );
 
   return (
     <div className="admin-page">
-
       {/* Notifications */}
       {statusMessage && (
         <div className="admin-alert admin-alert-success">
@@ -482,44 +556,55 @@ export function AdminDashboard() {
         </div>
       )}
 
-
       {/* Admin Tabs (Desktop) */}
       <div className="admin-tabs">
         <button
-          className={`admin-tab-btn ${activeTab === 'overview' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('overview')}
+          className={`admin-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("overview")}
         >
-          <TrendingUp size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-          Overview & Stats
+          <TrendingUp
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Overview
         </button>
 
         <button
-          className={`admin-tab-btn ${activeTab === 'categories' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('categories')}
+          className={`admin-tab-btn ${activeTab === "categories" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("categories")}
         >
-          <Layers size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+          <Layers
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
           Categories ({categories.length})
         </button>
 
         <button
-          className={`admin-tab-btn ${activeTab === 'products' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('products')}
+          className={`admin-tab-btn ${activeTab === "products" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("products")}
         >
-          <Package size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-          Products & Stock ({products.length})
+          <Package
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Catalogue ({products.length})
         </button>
 
         <button
-          className={`admin-tab-btn ${activeTab === 'orders' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('orders')}
+          className={`admin-tab-btn ${activeTab === "orders" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("orders")}
         >
-          <ShoppingBag size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-          Customer Orders ({orders.length})
+          <ShoppingBag
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Orders ({orders.length})
         </button>
       </div>
 
       {/* TAB 1: OVERVIEW */}
-      {activeTab === 'overview' && (
+      {activeTab === "overview" && (
         <div className="admin-tab-content">
           <div className="admin-kpi-grid">
             <div className="kpi-card">
@@ -527,8 +612,12 @@ export function AdminDashboard() {
                 <span className="kpi-label">Paid Net Revenue</span>
                 <TrendingUp size={20} className="kpi-icon" />
               </div>
-              <strong className="kpi-val">{formatPrice(stats.totalRevenue)}</strong>
-              <span className="kpi-change positive">From verified captured payments</span>
+              <strong className="kpi-val">
+                {formatPrice(stats.totalRevenue)}
+              </strong>
+              <span className="kpi-change positive">
+                From verified captured payments
+              </span>
             </div>
 
             <div className="kpi-card">
@@ -536,8 +625,13 @@ export function AdminDashboard() {
                 <span className="kpi-label">Pending COD Revenue</span>
                 <ShoppingBag size={20} className="kpi-icon" />
               </div>
-              <strong className="kpi-val">{formatPrice(stats.pendingCodRevenue)}</strong>
-              <span className="kpi-change" style={{ color: 'var(--color-warning)' }}>
+              <strong className="kpi-val">
+                {formatPrice(stats.pendingCodRevenue)}
+              </strong>
+              <span
+                className="kpi-change"
+                style={{ color: "var(--color-warning)" }}
+              >
                 Cash to be collected upon delivery
               </span>
             </div>
@@ -548,7 +642,9 @@ export function AdminDashboard() {
                 <ShoppingBag size={20} className="kpi-icon" />
               </div>
               <strong className="kpi-val">{stats.totalOrders}</strong>
-              <span className="kpi-change positive">All-time customer orders</span>
+              <span className="kpi-change positive">
+                All-time customer orders
+              </span>
             </div>
 
             <div className="kpi-card">
@@ -557,7 +653,9 @@ export function AdminDashboard() {
                 <Package size={20} className="kpi-icon" />
               </div>
               <strong className="kpi-val">{stats.totalProducts}</strong>
-              <span className="kpi-change positive">Items currently for sale</span>
+              <span className="kpi-change positive">
+                Items currently for sale
+              </span>
             </div>
 
             <div className="kpi-card">
@@ -572,13 +670,31 @@ export function AdminDashboard() {
             <div className="kpi-card">
               <div className="kpi-header">
                 <span className="kpi-label">Low Stock Items</span>
-                <AlertTriangle size={20} className="kpi-icon" style={{ color: stats.lowStockCount > 0 ? '#B3261E' : '#2E7D5B' }} />
+                <AlertTriangle
+                  size={20}
+                  className="kpi-icon"
+                  style={{
+                    color: stats.lowStockCount > 0 ? "#B3261E" : "#2E7D5B",
+                  }}
+                />
               </div>
-              <strong className="kpi-val" style={{ color: stats.lowStockCount > 0 ? '#B3261E' : 'inherit' }}>
+              <strong
+                className="kpi-val"
+                style={{
+                  color: stats.lowStockCount > 0 ? "#B3261E" : "inherit",
+                }}
+              >
                 {stats.lowStockCount}
               </strong>
-              <span className="kpi-change" style={{ color: stats.lowStockCount > 0 ? '#B3261E' : '#2E7D5B' }}>
-                {stats.lowStockCount > 0 ? 'Items with <= 5 units left' : 'All stock levels healthy'}
+              <span
+                className="kpi-change"
+                style={{
+                  color: stats.lowStockCount > 0 ? "#B3261E" : "#2E7D5B",
+                }}
+              >
+                {stats.lowStockCount > 0
+                  ? "Items with <= 5 units left"
+                  : "All stock levels healthy"}
               </span>
             </div>
           </div>
@@ -587,13 +703,21 @@ export function AdminDashboard() {
           <div className="admin-quick-actions">
             <h3>Store Operations</h3>
             <div className="quick-btn-group">
-              <Button variant="primary" icon={Plus} onClick={handleOpenAddCategory}>
+              <Button
+                variant="primary"
+                icon={Plus}
+                onClick={handleOpenAddCategory}
+              >
                 Add Category
               </Button>
               <Button variant="gold" icon={Plus} onClick={handleOpenAddProduct}>
                 Add Product
               </Button>
-              <Button variant="outline" icon={ShoppingBag} onClick={() => setActiveTab('orders')}>
+              <Button
+                variant="outline"
+                icon={ShoppingBag}
+                onClick={() => setActiveTab("orders")}
+              >
                 View Customer Orders ({orders.length})
               </Button>
             </div>
@@ -602,17 +726,19 @@ export function AdminDashboard() {
       )}
 
       {/* TAB 2: CATEGORIES */}
-      {activeTab === 'categories' && (
+      {activeTab === "categories" && (
         <div className="admin-tab-content">
           <div className="admin-table-card">
             <div className="table-card-header">
               <div>
-                <h3>Store Categories</h3>
-                <small className="text-muted">
-                  Categories here automatically populate navigation, homepage showcase, and storefront filters.
-                </small>
+                <h3>Categories</h3>
               </div>
-              <Button variant="primary" size="sm" icon={Plus} onClick={handleOpenAddCategory}>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Plus}
+                onClick={handleOpenAddCategory}
+              >
                 Add Category
               </Button>
             </div>
@@ -620,7 +746,11 @@ export function AdminDashboard() {
             {/* Category Form Modal */}
             {showCategoryModal && (
               <form onSubmit={handleSaveCategory} className="admin-inline-form">
-                <h4>{editingCategory ? `Edit Category: ${editingCategory.name}` : 'Create New Category'}</h4>
+                <h4>
+                  {editingCategory
+                    ? `Edit Category: ${editingCategory.name}`
+                    : "Create New Category"}
+                </h4>
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Category Name *</label>
@@ -629,7 +759,12 @@ export function AdminDashboard() {
                       required
                       placeholder="e.g. Silver Jhumkas, Statement Rings, Chokers"
                       value={categoryForm.name}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          name: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="form-group">
@@ -638,7 +773,12 @@ export function AdminDashboard() {
                       type="text"
                       placeholder="e.g. silver-jhumkas (auto-generated if empty)"
                       value={categoryForm.slug}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value })}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          slug: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="form-group">
@@ -647,32 +787,56 @@ export function AdminDashboard() {
                       type="url"
                       placeholder="https://images.unsplash.com/..."
                       value={categoryForm.image_url}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, image_url: e.target.value })}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          image_url: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="form-group">
                     <label>Status</label>
                     <select
                       value={categoryForm.status}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, status: e.target.value })}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          status: e.target.value,
+                        })
+                      }
                     >
                       <option value="active">Active (Visible on store)</option>
                       <option value="inactive">Inactive (Hidden)</option>
                     </select>
                   </div>
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <div className="form-group" style={{ gridColumn: "span 2" }}>
                     <label>Short Description</label>
                     <input
                       type="text"
                       placeholder="Brief description for customer shop heading"
                       value={categoryForm.description}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          description: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
                 <div className="form-actions">
-                  <Button type="submit" variant="primary" size="sm" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Save Category'}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting
+                      ? "Saving..."
+                      : editingCategory
+                        ? "Update Category"
+                        : "Save Category"}
                   </Button>
                   <Button
                     type="button"
@@ -710,13 +874,13 @@ export function AdminDashboard() {
                 <option value="active">Active (Visible)</option>
                 <option value="inactive">Inactive (Hidden)</option>
               </select>
-              {(categorySearch || categoryStatusFilter !== 'all') && (
+              {(categorySearch || categoryStatusFilter !== "all") && (
                 <button
                   type="button"
                   className="admin-filter-reset"
                   onClick={() => {
-                    setCategorySearch('');
-                    setCategoryStatusFilter('all');
+                    setCategorySearch("");
+                    setCategoryStatusFilter("all");
                   }}
                 >
                   <RotateCcw size={13} />
@@ -743,10 +907,13 @@ export function AdminDashboard() {
                 <tbody>
                   {filteredCategories.length === 0 ? (
                     <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', padding: '30px' }}>
+                      <td
+                        colSpan="6"
+                        style={{ textAlign: "center", padding: "30px" }}
+                      >
                         {categories.length === 0
                           ? 'No categories found. Click "Add Category" above to create one.'
-                          : 'No categories match the active filter criteria.'}
+                          : "No categories match the active filter criteria."}
                       </td>
                     </tr>
                   ) : (
@@ -755,7 +922,10 @@ export function AdminDashboard() {
                         <td>
                           <div className="prod-cell">
                             <img
-                              src={cat.image_url || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=300'}
+                              src={
+                                cat.image_url ||
+                                "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=300"
+                              }
                               alt={cat.name}
                               className="prod-thumb"
                             />
@@ -763,17 +933,23 @@ export function AdminDashboard() {
                           </div>
                         </td>
                         <td className="font-mono text-muted">{cat.slug}</td>
-                        <td style={{ maxWidth: '280px' }}>{cat.description || '—'}</td>
-                        <td>
-                          <span className="badge-count">{cat.item_count || 0} Products</span>
+                        <td style={{ maxWidth: "280px" }}>
+                          {cat.description || "—"}
                         </td>
                         <td>
-                          <span className={`status-pill status-${cat.status === 'active' ? 'delivered' : 'cancelled'}`}>
-                            {cat.status || 'active'}
+                          <span className="badge-count">
+                            {cat.item_count || 0} Products
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '6px' }}>
+                          <span
+                            className={`status-pill status-${cat.status === "active" ? "delivered" : "cancelled"}`}
+                          >
+                            {cat.status || "active"}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: "6px" }}>
                             <button
                               type="button"
                               className="btn-edit"
@@ -786,7 +962,9 @@ export function AdminDashboard() {
                               type="button"
                               className="btn-delete"
                               title="Delete Category"
-                              onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                              onClick={() =>
+                                handleDeleteCategory(cat.id, cat.name)
+                              }
                             >
                               <Trash2 size={15} /> Delete
                             </button>
@@ -812,17 +990,19 @@ export function AdminDashboard() {
       )}
 
       {/* TAB 3: PRODUCTS */}
-      {activeTab === 'products' && (
+      {activeTab === "products" && (
         <div className="admin-tab-content">
           <div className="admin-table-card">
             <div className="table-card-header">
               <div>
-                <h3>Jewellery Catalogue & Stock</h3>
-                <small className="text-muted">
-                  Manage product titles, prices, stock levels, and product availability.
-                </small>
+                <h3>Catalogue</h3>
               </div>
-              <Button variant="primary" size="sm" icon={Plus} onClick={handleOpenAddProduct}>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Plus}
+                onClick={handleOpenAddProduct}
+              >
                 Add Product
               </Button>
             </div>
@@ -830,7 +1010,11 @@ export function AdminDashboard() {
             {/* Product Form Modal */}
             {showProductModal && (
               <form onSubmit={handleSaveProduct} className="admin-inline-form">
-                <h4>{editingProduct ? `Edit Product: ${editingProduct.name}` : 'Add New Product'}</h4>
+                <h4>
+                  {editingProduct
+                    ? `Edit Product: ${editingProduct.name}`
+                    : "Add New Product"}
+                </h4>
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Product Name *</label>
@@ -839,7 +1023,9 @@ export function AdminDashboard() {
                       required
                       placeholder="e.g. Peacock Chandbali Jhumkas"
                       value={productForm.name}
-                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({ ...productForm, name: e.target.value })
+                      }
                     />
                   </div>
 
@@ -848,7 +1034,12 @@ export function AdminDashboard() {
                     <select
                       required
                       value={productForm.category_id}
-                      onChange={(e) => setProductForm({ ...productForm, category_id: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          category_id: e.target.value,
+                        })
+                      }
                     >
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -866,7 +1057,12 @@ export function AdminDashboard() {
                       min="1"
                       placeholder="e.g. 599"
                       value={productForm.selling_price}
-                      onChange={(e) => setProductForm({ ...productForm, selling_price: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          selling_price: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
@@ -876,7 +1072,9 @@ export function AdminDashboard() {
                       type="number"
                       placeholder="e.g. 999"
                       value={productForm.mrp}
-                      onChange={(e) => setProductForm({ ...productForm, mrp: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({ ...productForm, mrp: e.target.value })
+                      }
                     />
                   </div>
 
@@ -887,7 +1085,12 @@ export function AdminDashboard() {
                       required
                       min="0"
                       value={productForm.stock}
-                      onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          stock: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
@@ -897,7 +1100,12 @@ export function AdminDashboard() {
                       type="text"
                       placeholder="e.g. Oxidised German Silver, Stainless Steel"
                       value={productForm.material}
-                      onChange={(e) => setProductForm({ ...productForm, material: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          material: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
@@ -905,7 +1113,12 @@ export function AdminDashboard() {
                     <label>Status</label>
                     <select
                       value={productForm.status}
-                      onChange={(e) => setProductForm({ ...productForm, status: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          status: e.target.value,
+                        })
+                      }
                     >
                       <option value="active">Active (Visible on shop)</option>
                       <option value="draft">Draft (Hidden)</option>
@@ -919,34 +1132,58 @@ export function AdminDashboard() {
                       type="text"
                       placeholder="e.g. Daily Wear, College, Festive"
                       value={productForm.occasion}
-                      onChange={(e) => setProductForm({ ...productForm, occasion: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          occasion: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <div className="form-group" style={{ gridColumn: "span 2" }}>
                     <label>Product Photo Image URL</label>
                     <input
                       type="url"
                       placeholder="https://images.unsplash.com/..."
                       value={productForm.image_url}
-                      onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          image_url: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <div className="form-group" style={{ gridColumn: "span 2" }}>
                     <label>Short Description</label>
                     <input
                       type="text"
                       placeholder="e.g. Lightweight oxidised silver jhumkas with hanging bells."
                       value={productForm.short_description}
-                      onChange={(e) => setProductForm({ ...productForm, short_description: e.target.value })}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          short_description: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
 
                 <div className="form-actions">
-                  <Button type="submit" variant="primary" size="sm" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : editingProduct ? 'Update Product' : 'Save Product'}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting
+                      ? "Saving..."
+                      : editingProduct
+                        ? "Update Product"
+                        : "Save Product"}
                   </Button>
                   <Button
                     type="button"
@@ -980,7 +1217,9 @@ export function AdminDashboard() {
                 value={productCategoryFilter}
                 onChange={(e) => setProductCategoryFilter(e.target.value)}
               >
-                <option value="all">All Categories ({categories.length})</option>
+                <option value="all">
+                  All Categories ({categories.length})
+                </option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -1007,15 +1246,18 @@ export function AdminDashboard() {
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
               </select>
-              {(productSearch || productCategoryFilter !== 'all' || productStockFilter !== 'all' || productStatusFilter !== 'all') && (
+              {(productSearch ||
+                productCategoryFilter !== "all" ||
+                productStockFilter !== "all" ||
+                productStatusFilter !== "all") && (
                 <button
                   type="button"
                   className="admin-filter-reset"
                   onClick={() => {
-                    setProductSearch('');
-                    setProductCategoryFilter('all');
-                    setProductStockFilter('all');
-                    setProductStatusFilter('all');
+                    setProductSearch("");
+                    setProductCategoryFilter("all");
+                    setProductStockFilter("all");
+                    setProductStatusFilter("all");
                   }}
                 >
                   <RotateCcw size={13} />
@@ -1043,10 +1285,13 @@ export function AdminDashboard() {
                 <tbody>
                   {filteredProducts.length === 0 ? (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '30px' }}>
+                      <td
+                        colSpan="7"
+                        style={{ textAlign: "center", padding: "30px" }}
+                      >
                         {products.length === 0
                           ? 'No products found. Click "Add Product" above to create one.'
-                          : 'No products match the active search or filter criteria.'}
+                          : "No products match the active search or filter criteria."}
                       </td>
                     </tr>
                   ) : (
@@ -1055,37 +1300,49 @@ export function AdminDashboard() {
                         <td>
                           <div className="prod-cell">
                             <img
-                              src={prod.primary_image || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=300'}
+                              src={
+                                prod.primary_image ||
+                                "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=300"
+                              }
                               alt={prod.name}
                               className="prod-thumb"
                             />
                             <div>
                               <strong>{prod.name}</strong>
-                              <small className="text-muted font-mono">ID: {prod.id} • {prod.material}</small>
+                              <small className="text-muted font-mono">
+                                ID: {prod.id} • {prod.material}
+                              </small>
                             </div>
                           </div>
                         </td>
                         <td>{prod.category_name || prod.category_slug}</td>
-                        <td className="text-maroon font-semibold">{formatPrice(prod.selling_price)}</td>
+                        <td className="text-maroon font-semibold">
+                          {formatPrice(prod.selling_price)}
+                        </td>
                         <td className="text-muted">{formatPrice(prod.mrp)}</td>
                         <td>
                           <span
                             className="stock-pill"
                             style={{
-                              backgroundColor: (prod.stock || 0) <= 5 ? '#FDEDED' : '#E8F5EE',
-                              color: (prod.stock || 0) <= 5 ? '#B3261E' : '#2E7D5B',
+                              backgroundColor:
+                                (prod.stock || 0) <= 5 ? "#FDEDED" : "#E8F5EE",
+                              color:
+                                (prod.stock || 0) <= 5 ? "#B3261E" : "#2E7D5B",
                             }}
                           >
-                            {prod.stock !== undefined ? prod.stock : 20} in stock
+                            {prod.stock !== undefined ? prod.stock : 20} in
+                            stock
                           </span>
                         </td>
                         <td>
-                          <span className={`status-pill status-${prod.status === 'active' ? 'delivered' : 'cancelled'}`}>
-                            {prod.status || 'active'}
+                          <span
+                            className={`status-pill status-${prod.status === "active" ? "delivered" : "cancelled"}`}
+                          >
+                            {prod.status || "active"}
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '6px' }}>
+                          <div style={{ display: "flex", gap: "6px" }}>
                             <button
                               type="button"
                               className="btn-edit"
@@ -1098,7 +1355,9 @@ export function AdminDashboard() {
                               type="button"
                               className="btn-delete"
                               title="Delete or Archive product"
-                              onClick={() => handleDeleteProduct(prod.id, prod.name)}
+                              onClick={() =>
+                                handleDeleteProduct(prod.id, prod.name)
+                              }
                             >
                               <Trash2 size={15} /> Delete
                             </button>
@@ -1124,13 +1383,12 @@ export function AdminDashboard() {
       )}
 
       {/* TAB 4: ORDERS */}
-      {activeTab === 'orders' && (
+      {activeTab === "orders" && (
         <div className="admin-tab-content">
           <div className="admin-table-card">
             <div className="table-card-header">
               <div>
-                <h3>Customer Orders ({orders.length})</h3>
-                <small className="text-muted">Live customer order records with fulfillment management.</small>
+                <h3> Orders ({orders.length})</h3>
               </div>
             </div>
 
@@ -1171,14 +1429,16 @@ export function AdminDashboard() {
                 <option value="pending">pending</option>
                 <option value="failed">failed</option>
               </select>
-              {(orderSearch || orderStatusFilter !== 'all' || orderPaymentFilter !== 'all') && (
+              {(orderSearch ||
+                orderStatusFilter !== "all" ||
+                orderPaymentFilter !== "all") && (
                 <button
                   type="button"
                   className="admin-filter-reset"
                   onClick={() => {
-                    setOrderSearch('');
-                    setOrderStatusFilter('all');
-                    setOrderPaymentFilter('all');
+                    setOrderSearch("");
+                    setOrderStatusFilter("all");
+                    setOrderPaymentFilter("all");
                   }}
                 >
                   <RotateCcw size={13} />
@@ -1191,13 +1451,26 @@ export function AdminDashboard() {
             </div>
 
             {filteredOrders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '50px 20px', color: '#6F6A60' }}>
-                <ShoppingBag size={48} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-                <h4>{orders.length === 0 ? 'No Orders Placed Yet' : 'No Matching Orders'}</h4>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "50px 20px",
+                  color: "#6F6A60",
+                }}
+              >
+                <ShoppingBag
+                  size={48}
+                  style={{ margin: "0 auto 12px", opacity: 0.4 }}
+                />
+                <h4>
+                  {orders.length === 0
+                    ? "No Orders Placed Yet"
+                    : "No Matching Orders"}
+                </h4>
                 <p>
                   {orders.length === 0
-                    ? 'When customers checkout on the store, their orders will appear here for dispatch.'
-                    : 'No customer orders match the current search or status filter.'}
+                    ? "When customers checkout on the store, their orders will appear here for dispatch."
+                    : "No customer orders match the current search or status filter."}
                 </p>
               </div>
             ) : (
@@ -1207,12 +1480,20 @@ export function AdminDashboard() {
                     <div key={ord.id} className="admin-order-card">
                       <div className="order-card-top">
                         <div>
-                          <span className="order-num font-mono">{ord.order_number}</span>
+                          <span className="order-num font-mono">
+                            {ord.order_number}
+                          </span>
                           <div className="order-date">
-                            <Clock size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                            {new Date(ord.placed_at).toLocaleString('en-IN', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short',
+                            <Clock
+                              size={13}
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "4px",
+                              }}
+                            />
+                            {new Date(ord.placed_at).toLocaleString("en-IN", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
                             })}
                           </div>
                         </div>
@@ -1222,14 +1503,26 @@ export function AdminDashboard() {
                           <select
                             className="admin-status-select"
                             value={ord.fulfilment_status}
-                            onChange={(e) => handleUpdateStatus(ord.id, e.target.value)}
+                            onChange={(e) =>
+                              handleUpdateStatus(ord.id, e.target.value)
+                            }
                           >
                             <option value="placed">placed (Received)</option>
-                            <option value="confirmed">confirmed (Accepted)</option>
-                            <option value="packed">packed (Ready to dispatch)</option>
-                            <option value="shipped">shipped (Handed to courier)</option>
-                            <option value="out_for_delivery">out_for_delivery</option>
-                            <option value="delivered">delivered (Completed)</option>
+                            <option value="confirmed">
+                              confirmed (Accepted)
+                            </option>
+                            <option value="packed">
+                              packed (Ready to dispatch)
+                            </option>
+                            <option value="shipped">
+                              shipped (Handed to courier)
+                            </option>
+                            <option value="out_for_delivery">
+                              out_for_delivery
+                            </option>
+                            <option value="delivered">
+                              delivered (Completed)
+                            </option>
                             <option value="cancelled">cancelled</option>
                           </select>
                         </div>
@@ -1238,54 +1531,94 @@ export function AdminDashboard() {
                       <div className="order-details-grid">
                         {/* Customer Info */}
                         <div className="order-box">
-                          <h5>Customer & Shipping Details</h5>
+                          <h5>Shipping Details</h5>
                           <p className="cust-name">
-                            <strong>{ord.shipping_address?.fullName || ord.shipping_address?.full_name || ord.customer_name || 'Customer'}</strong>
+                            <strong>
+                              {ord.shipping_address?.fullName ||
+                                ord.shipping_address?.full_name ||
+                                ord.customer_name ||
+                                "Customer"}
+                            </strong>
                           </p>
                           <p className="cust-contact">
-                            <Phone size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                            {ord.shipping_address?.phone || ord.guest_phone || 'No phone'}
+                            <Phone
+                              size={13}
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "4px",
+                              }}
+                            />
+                            {ord.shipping_address?.phone ||
+                              ord.guest_phone ||
+                              "No phone"}
                           </p>
                           <p className="cust-contact">
-                            <Mail size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                            {ord.shipping_address?.email || ord.guest_email || 'No email'}
+                            <Mail
+                              size={13}
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "4px",
+                              }}
+                            />
+                            {ord.shipping_address?.email ||
+                              ord.guest_email ||
+                              "No email"}
                           </p>
                           <p className="cust-address">
-                            <MapPin size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                            {ord.shipping_address ? (
-                              `${ord.shipping_address.addressLine1 || ord.shipping_address.address_line1 || ''}, ${ord.shipping_address.city || ''}, ${ord.shipping_address.state || ''} - ${ord.shipping_address.pincode || ''}`
-                            ) : (
-                              'Address on file'
-                            )}
+                            <MapPin
+                              size={13}
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "4px",
+                              }}
+                            />
+                            {ord.shipping_address
+                              ? `${ord.shipping_address.addressLine1 || ord.shipping_address.address_line1 || ""}, ${ord.shipping_address.city || ""}, ${ord.shipping_address.state || ""} - ${ord.shipping_address.pincode || ""}`
+                              : "Address on file"}
                           </p>
                         </div>
 
                         {/* Courier Tracking */}
                         <div className="order-box">
-                          <h5>Payment & Courier</h5>
+                          <h5>Payment</h5>
                           <p>
-                            <strong>Payment Method:</strong> {ord.payment_method?.toUpperCase()}
+                            <strong>Payment Method:</strong>{" "}
+                            {ord.payment_method?.toUpperCase()}
                           </p>
                           <p>
-                            <strong>Payment Status:</strong>{' '}
+                            <strong>Payment Status:</strong>{" "}
                             <span
                               style={{
                                 fontWeight: 600,
-                                color: ord.payment_status === 'paid' ? 'var(--color-success)' : ord.payment_status === 'pending_cod' ? '#B85C00' : '#B3261E',
+                                color:
+                                  ord.payment_status === "paid"
+                                    ? "var(--color-success)"
+                                    : ord.payment_status === "pending_cod"
+                                      ? "#B85C00"
+                                      : "#B3261E",
                               }}
                             >
                               {ord.payment_status}
                             </span>
                           </p>
                           <p>
-                            <Truck size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                            <strong>Courier:</strong> {ord.carrier || 'BlueDart Express'}
+                            <Truck
+                              size={14}
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "4px",
+                              }}
+                            />
+                            <strong>Courier:</strong>{" "}
+                            {ord.carrier || "BlueDart Express"}
                           </p>
                           <p>
-                            <strong>Tracking ID:</strong>{' '}
-                            <span className="font-mono">{ord.tracking_number}</span>
+                            <strong>Tracking ID:</strong>{" "}
+                            <span className="font-mono">
+                              {ord.tracking_number}
+                            </span>
                           </p>
-                          <div style={{ marginTop: '10px' }}>
+                          <div style={{ marginTop: "10px" }}>
                             <span className="order-grand-total">
                               Total: {formatPrice(ord.total)}
                             </span>
@@ -1300,14 +1633,18 @@ export function AdminDashboard() {
                               ord.items.map((item, idx) => (
                                 <div key={idx} className="ordered-item-row">
                                   <img
-                                    src={item.product_image || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=150'}
+                                    src={
+                                      item.product_image ||
+                                      "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=150"
+                                    }
                                     alt={item.product_name}
                                     className="item-mini-thumb"
                                   />
                                   <div className="item-meta">
                                     <strong>{item.product_name}</strong>
                                     <small className="text-muted">
-                                      Qty: {item.quantity} × {formatPrice(item.unit_price)}
+                                      Qty: {item.quantity} ×{" "}
+                                      {formatPrice(item.unit_price)}
                                     </small>
                                   </div>
                                   <span className="item-line-total font-semibold">
@@ -1316,7 +1653,9 @@ export function AdminDashboard() {
                                 </div>
                               ))
                             ) : (
-                              <small className="text-muted">No items breakdown recorded.</small>
+                              <small className="text-muted">
+                                No items breakdown recorded.
+                              </small>
                             )}
                           </div>
                         </div>

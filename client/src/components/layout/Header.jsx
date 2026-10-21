@@ -31,22 +31,35 @@ export function Header() {
   const { openSearch } = useUIStore();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
   const userMenuRef = useRef(null);
+  const navDropdownRef = useRef(null);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Close user menu on outside click
+  // Close user menu and nav dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
+      if (
+        navDropdownRef.current &&
+        !navDropdownRef.current.contains(event.target)
+      ) {
+        setIsNavDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setIsNavDropdownOpen(false);
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
 
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
@@ -99,6 +112,23 @@ export function Header() {
     return () => clearInterval(slideInterval);
   }, [announcementSlides.length]);
 
+  // Build unified navigation items: 'All', dynamic categories from DB, and 'About'
+  const allNavItems = [
+    { label: "All", path: "/shop" },
+    ...categories.map((cat) => ({
+      label: cat.name,
+      path: `/shop?category=${cat.slug}`,
+      id: cat.id,
+    })),
+    { label: "About", path: "/about" },
+  ];
+
+  // Responsive rule: If more than 3 items, show first 3 directly and rest in 'More ▾' dropdown
+  const visibleNavItems =
+    allNavItems.length > 3 ? allNavItems.slice(0, 3) : allNavItems;
+  const dropdownNavItems =
+    allNavItems.length > 3 ? allNavItems.slice(3) : [];
+
   return (
     <header className="site-header">
       {/* 1. Announcement Bar */}
@@ -113,7 +143,7 @@ export function Header() {
                 <>
                   <div className="announcement-promo">
                     <span className="announcement-text">
-                      JASERA - Management Portal
+                      JASSERA - Management Portal
                     </span>
                   </div>
                   <div className="announcement-right-group">
@@ -165,7 +195,7 @@ export function Header() {
               <div className="announcement-ticker-track" key={currentSlide}>
                 {isAdminRoute ? (
                   currentSlide % 2 === 0 ? (
-                    <span className="ticker-item">JASERA - Management Portal</span>
+                    <span className="ticker-item">JASSERA - Management Portal</span>
                   ) : (
                     <Link
                       to="/"
@@ -211,24 +241,94 @@ export function Header() {
       {/* 2. Main Navigation Bar */}
       <div className="header-main">
         <div className="header-main-container">
-          {/* Mobile Menu Button */}
-          <button
-            className="mobile-menu-toggle"
-            onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            {isMobileNavOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Left Group: Mobile Menu Button + Official Brand Logo */}
+          <div className="header-left-group">
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileNavOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
 
-          {/* Brand Logo */}
-          <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
-            <span className="brand-logo-title">JASERA</span>
-            <span className="brand-logo-subtitle">
-              {isAdminRoute ? "MANAGEMENT" : "AESTHETIC JEWELLERY"}
-            </span>
-          </Link>
+            {/* Brand Logo with Official Emblem Image */}
+            <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
+              <img
+                src="/images/jassera-logo.jpg"
+                alt="Jassera Jewellery & Accessories"
+                className="brand-logo-img"
+              />
+              <div className="brand-logo-text-wrap">
+                <span className="brand-logo-title">JASSERA</span>
+                <span className="brand-logo-subtitle">
+                  {isAdminRoute ? "MANAGEMENT" : "JEWELLERY & ACCESSORIES"}
+                </span>
+              </div>
+            </Link>
+          </div>
 
-          {/* Action Icons */}
+          {/* Center Group: Desktop Navigation inside Navbar with 3-item limit + Dropdown */}
+          {!isAdminRoute && (
+            <nav className="navbar-center-nav">
+              <ul className="navbar-nav-list">
+                {visibleNavItems.map((item) => (
+                  <li key={item.path} className="navbar-nav-item">
+                    <Link to={item.path} className="navbar-nav-link">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+
+                {dropdownNavItems.length > 0 && (
+                  <li
+                    className={`navbar-nav-item navbar-dropdown-wrapper ${
+                      isNavDropdownOpen ? "open" : ""
+                    }`}
+                    ref={navDropdownRef}
+                    onMouseEnter={() => setIsNavDropdownOpen(true)}
+                    onMouseLeave={() => setIsNavDropdownOpen(false)}
+                  >
+                    <button
+                      type="button"
+                      className={`navbar-nav-link navbar-dropdown-trigger ${
+                        isNavDropdownOpen ? "active" : ""
+                      }`}
+                      onClick={() => setIsNavDropdownOpen((prev) => !prev)}
+                      aria-expanded={isNavDropdownOpen}
+                      aria-label="More categories"
+                    >
+                      <span>More</span>
+                      <ChevronDown
+                        size={14}
+                        className={`navbar-dropdown-chevron ${
+                          isNavDropdownOpen ? "open" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <div
+                      className={`navbar-dropdown-menu ${
+                        isNavDropdownOpen ? "show" : ""
+                      }`}
+                      onClick={() => setIsNavDropdownOpen(false)}
+                    >
+                      {dropdownNavItems.map((item) => (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          className="navbar-dropdown-link"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </nav>
+          )}
+
+          {/* Right Group: Action Icons */}
           <div className="header-actions">
             {isAdminRoute ? (
               <>
@@ -403,34 +503,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* 3. Category Navigation Bar (Customers only - Hidden on Admin routes) */}
-      {!isAdminRoute && (
-        <nav className="desktop-nav">
-          <div className="container">
-            <ul className="nav-list">
-              <li className="nav-item">
-                <Link to="/shop" className="nav-link">
-                  All
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id} className="nav-item">
-                  <Link to={`/shop?category=${cat.slug}`} className="nav-link">
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-              <li className="nav-item">
-                <Link to="/about" className="nav-link">
-                  About
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      )}
-
-      {/* 4. Mobile Drawer Navigation */}
+      {/* 3. Mobile Drawer Navigation */}
       {isMobileNavOpen && (
         <div
           className="mobile-nav-overlay"
@@ -441,9 +514,16 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mobile-nav-header">
-              <span className="brand-logo-title" style={{ fontSize: "1.3rem" }}>
-                {isAdminRoute ? "JASERA ADMIN" : "JASERA"}
-              </span>
+              <div className="mobile-logo-wrap">
+                <img
+                  src="/images/jassera-logo.jpg"
+                  alt="Jassera"
+                  className="mobile-logo-img"
+                />
+                <span className="brand-logo-title" style={{ fontSize: "1.2rem" }}>
+                  {isAdminRoute ? "JASSERA ADMIN" : "JASSERA"}
+                </span>
+              </div>
               <button
                 className="close-mobile-nav"
                 onClick={() => setIsMobileNavOpen(false)}

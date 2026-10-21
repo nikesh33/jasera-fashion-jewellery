@@ -403,14 +403,14 @@ export function CheckoutPage() {
 
                   <div className="form-grid-2">
                     <Input
-                      label="Full Recipient Name"
+                      label="Recipient Name"
                       required
                       value={address.fullName}
                       onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
                       placeholder="e.g. Priya Sharma"
                     />
                     <Input
-                      label="Phone / Mobile Number (for Courier Tracking)"
+                      label="Mobile Number"
                       type="tel"
                       required
                       value={address.phone}
@@ -421,7 +421,7 @@ export function CheckoutPage() {
 
                   <div className="form-grid-2">
                     <Input
-                      label="Email Address (for Order Updates & Tracking)"
+                      label="Email"
                       type="email"
                       required
                       value={address.email}
@@ -429,7 +429,7 @@ export function CheckoutPage() {
                       placeholder="yourname@example.com"
                     />
                     <Input
-                      label="6-Digit Pincode"
+                      label="Pincode"
                       required
                       maxLength={6}
                       value={address.pincode}
@@ -439,7 +439,7 @@ export function CheckoutPage() {
                   </div>
 
                   <Input
-                    label="Flat / House No. / Building / Street"
+                    label="House / Flat No"
                     required
                     value={address.addressLine1}
                     onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
@@ -447,7 +447,7 @@ export function CheckoutPage() {
                   />
 
                   <Input
-                    label="Area / Locality / Sector (Optional)"
+                    label="Area / Locality"
                     value={address.addressLine2}
                     onChange={(e) => setAddress({ ...address, addressLine2: e.target.value })}
                     placeholder="Bandra West"
@@ -455,7 +455,7 @@ export function CheckoutPage() {
 
                   <div className="form-grid-3">
                     <Input
-                      label="Landmark (Optional)"
+                      label="Landmark"
                       value={address.landmark}
                       onChange={(e) => setAddress({ ...address, landmark: e.target.value })}
                       placeholder="Near Metro Station"
@@ -617,7 +617,7 @@ export function CheckoutPage() {
           {step === 3 && (
             <div className="checkout-card">
               <h2 className="step-title">
-                <CheckCircle2 size={22} className="step-ic" /> Review & Confirm Order
+                <CheckCircle2 size={22} className="step-ic" /> Confirm Order
               </h2>
 
 

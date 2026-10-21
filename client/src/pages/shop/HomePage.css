@@ -7,24 +7,27 @@
 /* 1. Hero Section */
 .hero-section {
   position: relative;
-  min-height: 85vh;
+  min-height: 82vh;
   display: flex;
   align-items: center;
-  background: url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=85') center/cover no-repeat;
+  background: radial-gradient(circle at 75% 30%, rgba(92, 26, 43, 0.45) 0%, rgba(20, 14, 16, 0.98) 70%), #140e10;
   color: #FFFFFF;
+  padding: var(--space-12) 0;
+  overflow: hidden;
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(31, 31, 31, 0.88) 0%, rgba(31, 31, 31, 0.65) 50%, rgba(92, 26, 43, 0.4) 100%);
+.hero-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10, 40px);
+  width: 100%;
 }
 
 .hero-content {
-  position: relative;
+  flex: 1 1 55%;
+  max-width: 620px;
   z-index: 2;
-  max-width: 750px;
-  padding: var(--space-16) 0;
 }
 
 .hero-eyebrow {
@@ -33,28 +36,47 @@
   gap: var(--space-2);
   color: var(--color-antique-gold-light);
   font-size: var(--text-caption);
-  letter-spacing: 0.25em;
+  letter-spacing: 0.22em;
   font-weight: 600;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
   text-transform: uppercase;
 }
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: var(--text-display-1);
-  line-height: 1.1;
+  font-size: clamp(2.2rem, 3.8vw, 3.4rem);
+  line-height: 1.15;
   color: var(--color-ivory);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .hero-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.7;
+  font-size: 1.05rem;
+  line-height: 1.65;
   color: var(--grey-300);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
   font-weight: 300;
+}
+
+/* Feature Chips */
+.hero-feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--space-6);
+}
+
+.hero-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(223, 185, 114, 0.25);
+  color: var(--color-antique-gold-light);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-full, 9999px);
+  backdrop-filter: blur(8px);
 }
 
 .hero-actions {
@@ -72,6 +94,90 @@
 .hero-secondary-btn:hover {
   background-color: rgba(255, 255, 255, 0.1) !important;
   border-color: #FFFFFF !important;
+}
+
+/* Hero Visual Showcase */
+.hero-visual-col {
+  flex: 1 1 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.hero-visual-card {
+  position: relative;
+  max-width: 440px;
+  width: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(223, 185, 114, 0.18);
+  border: 2px solid rgba(223, 185, 114, 0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-visual-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 0 0 45px rgba(223, 185, 114, 0.25);
+}
+
+.hero-model-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 3/4;
+}
+
+.hero-floating-glass-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: rgba(20, 14, 16, 0.82);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(223, 185, 114, 0.3);
+  padding: 10px 16px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.glass-badge-tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--color-antique-gold-light);
+  text-transform: uppercase;
+}
+
+.glass-badge-subtitle {
+  font-size: 0.8rem;
+  color: #FFFFFF;
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .hero-container {
+    flex-direction: column-reverse;
+    text-align: center;
+    gap: var(--space-8);
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero-feature-chips,
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-visual-card {
+    max-width: 380px;
+  }
 }
 
 /* 2. Value Strip */

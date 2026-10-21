@@ -5,9 +5,9 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-4);
-  padding: var(--space-4) 0 0;
+  padding: 10px;
   margin-top: var(--space-4);
-  border-top: 1px solid var(--grey-200);
+  /* border-top: 1px solid var(--grey-200); */
 }
 
 .pagination-info {
@@ -40,7 +40,7 @@
   font-size: 0.82rem;
   border: 1px solid var(--grey-300);
   border-radius: var(--radius-sm);
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: var(--grey-800);
   cursor: pointer;
   outline: none;
@@ -66,7 +66,7 @@
   font-weight: 500;
   border: 1px solid var(--grey-300);
   border-radius: var(--radius-sm);
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: var(--grey-700);
   cursor: pointer;
   transition: all var(--duration-fast);
@@ -98,7 +98,7 @@
   font-weight: 500;
   border: 1px solid var(--grey-300);
   border-radius: var(--radius-sm);
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   color: var(--grey-700);
   display: inline-flex;
   align-items: center;
@@ -116,7 +116,7 @@
 .pagination-page-btn.is-active {
   background-color: var(--color-maroon);
   border-color: var(--color-maroon);
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 600;
 }
 

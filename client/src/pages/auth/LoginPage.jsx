@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { useAuthStore } from '../../stores/authStore';
-import './Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { useAuthStore } from "../../stores/authStore";
+import "./Auth.css";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isLoading } = useAuthStore();
 
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
 
   const from = location.state?.from?.pathname;
@@ -30,10 +30,10 @@ export function LoginPage() {
       if (from) {
         navigate(from, { replace: true });
       } else {
-        navigate('/account', { replace: true });
+        navigate("/account", { replace: true });
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Invalid email/phone or password');
+      setErrorMsg(err.message || "Invalid email/phone or password");
     }
   };
 
@@ -45,14 +45,20 @@ export function LoginPage() {
       </Link>
 
       <div className="auth-card">
-        <span className="auth-eyebrow">CUSTOMER ACCOUNT</span>
+        {/* <span className="auth-eyebrow">CUSTOMER ACCOUNT</span> */}
         <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">
-          Sign in to your account to view your orders and saved wishlist.
-        </p>
 
         {errorMsg && (
-          <div style={{ backgroundColor: '#FCEAE9', color: '#B3261E', padding: '10px 14px', borderRadius: '4px', marginBottom: '16px', fontSize: '0.85rem' }}>
+          <div
+            style={{
+              backgroundColor: "#FCEAE9",
+              color: "#B3261E",
+              padding: "10px 14px",
+              borderRadius: "4px",
+              marginBottom: "16px",
+              fontSize: "0.85rem",
+            }}
+          >
             {errorMsg}
           </div>
         )}

@@ -34,34 +34,59 @@ export function HomePage() {
     <div className="home-page">
       {/* 1. Hero Section */}
       <section className="hero-section">
-        <div className="hero-overlay" />
-        <div className="container hero-content">
-          <span className="hero-eyebrow">
-            <Sparkles size={16} /> AESTHETIC JEWELLERY
-          </span>
-          <h1 className="hero-title">
-            Trendy Handcrafted Jewellery For Every Aesthetic
-          </h1>
-          <p className="hero-subtitle">
-            From viral Instagram jhumkas & oxidised silver to anti-tarnish waterproof daily wear jewellery crafted to turn heads.
-          </p>
-          <div className="hero-actions">
-            <Button
-              variant="gold"
-              size="lg"
-              icon={ArrowRight}
-              onClick={() => navigate('/shop')}
-            >
-              Shop Trending Drops
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="hero-secondary-btn"
-              onClick={() => navigate('/shop?category=jhumkas')}
-            >
-              Explore Best Selling Jhumkas
-            </Button>
+        <div className="container hero-container">
+          <div className="hero-content">
+            <span className="hero-eyebrow">
+              <Sparkles size={16} /> AESTHETIC JEWELLERY • SIGNATURE DROPS
+            </span>
+            <h1 className="hero-title">
+              Trendy Handcrafted Jewellery For Every Aesthetic
+            </h1>
+            <p className="hero-subtitle">
+              From viral Instagram statement bracelets & jhumkas to anti-tarnish waterproof daily wear jewellery crafted to turn heads.
+            </p>
+
+            {/* Quality Feature Chips matching the Statement Bracelet poster */}
+            <div className="hero-feature-chips">
+              <span className="hero-chip">✨ Elegant Design</span>
+              <span className="hero-chip">🌿 Lightweight & Comfortable</span>
+              <span className="hero-chip">💎 Premium Quality Beads</span>
+              <span className="hero-chip">🎁 Perfect for Every Occasion</span>
+            </div>
+
+            <div className="hero-actions">
+              <Button
+                variant="gold"
+                size="lg"
+                icon={ArrowRight}
+                onClick={() => navigate('/shop')}
+              >
+                Shop Trending Drops
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="hero-secondary-btn"
+                onClick={() => navigate('/shop')}
+              >
+                Explore Statement Pieces
+              </Button>
+            </div>
+          </div>
+
+          {/* Model Visual Showcase Card */}
+          <div className="hero-visual-col">
+            <div className="hero-visual-card">
+              <img
+                src="/images/jassera-hero-banner.jpg"
+                alt="Jassera Statement Bracelet - Traditional Charm with a Modern Touch"
+                className="hero-model-img"
+              />
+              <div className="hero-floating-glass-badge">
+                <span className="glass-badge-tag">STATEMENT BRACELET</span>
+                <span className="glass-badge-subtitle">Traditional Charm with a Modern Touch</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -143,7 +168,7 @@ export function HomePage() {
               <h2 className="section-title">Trending On Instagram</h2>
             </div>
             <Link to="/shop" className="view-all-link">
-              View Entire Collection <ArrowRight size={16} />
+              View Collections <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -160,13 +185,14 @@ export function HomePage() {
         <div className="container heritage-story-grid">
           <div className="heritage-image-wrapper">
             <img
-              src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80"
-              alt="Handcrafted boutique jewellery"
+              src="/images/jassera-logo.jpg"
+              alt="Jassera Jewellery & Accessories Emblem"
               className="heritage-main-img"
+              style={{ objectFit: 'contain', padding: '16px', background: '#FFFFFF', borderRadius: '24px' }}
             />
             <div className="heritage-floating-badge">
               <span className="badge-years">100%</span>
-              <span className="badge-caption">Handcrafted With Love</span>
+              <span className="badge-caption">Little details, big moments</span>
             </div>
           </div>
 
@@ -174,7 +200,7 @@ export function HomePage() {
             <span className="section-eyebrow">HANDCRAFTED WITH CARE</span>
             <h2 className="heritage-title">The Art of Statement Jewellery</h2>
             <p className="heritage-desc">
-              At Jasera, we believe beautiful jewellery shouldn't cost a fortune. Every jhumka, statement earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
+              At Jassera, we believe beautiful jewellery shouldn't cost a fortune. Every statement bracelet, jhumka, earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
             </p>
             <div className="heritage-points">
               <div className="point-item">
@@ -221,8 +247,8 @@ export function HomePage() {
                 “The Peacock Chandbali Jhumkas are so lightweight and gorgeous! Got so many compliments during college ethnic day. Definitely ordering more!”
               </p>
               <div className="testimonial-author">
-                <strong>Shruti Sharma</strong>
-                <span>Pune • Verified Buyer</span>
+                <strong>Aarchana Sharma</strong>
+                <span>Mumbai • Verified Buyer</span>
               </div>
             </div>
 

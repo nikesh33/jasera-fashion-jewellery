@@ -264,7 +264,7 @@ export function AccountPage() {
               ) : (
                 <form onSubmit={handleSaveAddress} className="profile-form">
                   <Input
-                    label="Full Recipient Name"
+                    label="Recipient Name"
                     required
                     value={addressForm.fullName}
                     onChange={(e) => setAddressForm({ ...addressForm, fullName: e.target.value })}

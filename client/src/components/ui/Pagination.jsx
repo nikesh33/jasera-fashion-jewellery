@@ -1,6 +1,6 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import './Pagination.css';
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import "./Pagination.css";
 
 export function Pagination({
   currentPage = 1,
@@ -24,11 +24,26 @@ export function Pagination({
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
+        pages.push(1, 2, 3, 4, "...", totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
       } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages,
+        );
       }
     }
     return pages;
@@ -38,7 +53,7 @@ export function Pagination({
     <div className="pagination-container">
       {/* Entries summary */}
       <div className="pagination-info">
-        Showing <strong>{startItem}</strong> to <strong>{endItem}</strong> of <strong>{totalItems}</strong> entries
+        {/* Showing <strong>{startItem}</strong> to <strong>{endItem}</strong> of <strong>{totalItems}</strong> entries */}
       </div>
 
       {/* Controls */}
@@ -78,7 +93,7 @@ export function Pagination({
 
           <div className="pagination-pages">
             {getPageNumbers().map((p, idx) =>
-              p === '...' ? (
+              p === "..." ? (
                 <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
                   &hellip;
                 </span>
@@ -86,13 +101,13 @@ export function Pagination({
                 <button
                   key={p}
                   type="button"
-                  className={`pagination-page-btn ${p === currentPage ? 'is-active' : ''}`}
+                  className={`pagination-page-btn ${p === currentPage ? "is-active" : ""}`}
                   onClick={() => onPageChange(p)}
-                  aria-current={p === currentPage ? 'page' : undefined}
+                  aria-current={p === currentPage ? "page" : undefined}
                 >
                   {p}
                 </button>
-              )
+              ),
             )}
           </div>
 
