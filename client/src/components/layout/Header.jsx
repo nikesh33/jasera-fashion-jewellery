@@ -32,6 +32,7 @@ export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
+  const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
   const [categories, setCategories] = useState([]);
   const userMenuRef = useRef(null);
   const navDropdownRef = useRef(null);
