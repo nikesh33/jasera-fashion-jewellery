@@ -248,6 +248,44 @@ export async function createOrder(req, res) {
       [insertedOrderId, userId]
     );
 
+    // Auto-save delivery address into MySQL addresses table for logged-in user
+    if (userId && (req.body.saveAddressForFuture || req.body.save_address !== false)) {
+      try {
+        const [matchingAddr] = await conn.query(
+          `SELECT id FROM addresses WHERE user_id = ? AND pincode = ? AND address_line1 = ? LIMIT 1`,
+          [userId, address.pincode, address.addressLine1]
+        );
+        if (matchingAddr.length === 0) {
+          const [cntRows] = await conn.query(
+            `SELECT COUNT(*) as count FROM addresses WHERE user_id = ?`,
+            [userId]
+          );
+          const isFirst = (cntRows[0]?.count || 0) === 0;
+          await conn.query(
+            `INSERT INTO addresses (
+              user_id, full_name, phone, pincode,
+              address_line1, address_line2, landmark,
+              city, state, address_type, is_default
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'home', ?)`,
+            [
+              userId,
+              address.fullName,
+              address.phone,
+              address.pincode,
+              address.addressLine1,
+              address.addressLine2 || null,
+              address.landmark || null,
+              address.city,
+              address.state,
+              isFirst ? 1 : 0,
+            ]
+          );
+        }
+      } catch (addrErr) {
+        console.error('Non-critical: Failed to auto-save address to addresses table:', addrErr);
+      }
+    }
+
     // 7. Check Razorpay payment integration
     let razorpayOrderData = null;
     const rzp = getRazorpayInstance();

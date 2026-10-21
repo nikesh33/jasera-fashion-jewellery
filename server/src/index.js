@@ -8,6 +8,7 @@ import productsRoutes from './routes/products.routes.js';
 import categoriesRoutes from './routes/categories.routes.js';
 import ordersRoutes from './routes/orders.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import addressesRoutes from './routes/addresses.routes.js';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/addresses', addressesRoutes);
 
 // Error handling
 app.use(errorHandler);

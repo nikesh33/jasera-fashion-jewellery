@@ -33,54 +33,22 @@ export function CheckoutPage() {
   // Sandbox modal state
   const [sandboxOrder, setSandboxOrder] = useState(null);
 
-  // Step 1: Address Details (Auto-prefilled from saved address or user account)
-  const [address, setAddress] = useState(() => {
-    try {
-      const stored = localStorage.getItem('suvarna_saved_address');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.fullName && parsed?.addressLine1) {
-          return {
-            fullName: parsed.fullName || '',
-            phone: parsed.phone || '',
-            email: parsed.email || user?.email || '',
-            pincode: parsed.pincode || '',
-            addressLine1: parsed.addressLine1 || '',
-            addressLine2: parsed.addressLine2 || '',
-            landmark: parsed.landmark || '',
-            city: parsed.city || '',
-            state: parsed.state || '',
-          };
-        }
-      }
-    } catch (e) { }
-
-    if (user) {
-      return {
-        fullName: user.name || '',
-        phone: user.phone || '9876543210',
-        email: user.email || '',
-        pincode: '400006',
-        addressLine1: '402, Royal Residency, Heritage Lane',
-        addressLine2: 'Malabar Hill',
-        landmark: 'Near Hanging Gardens',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-      };
-    }
-
-    return {
-      fullName: '',
-      phone: '',
-      email: '',
-      pincode: '',
-      addressLine1: '',
-      addressLine2: '',
-      landmark: '',
-      city: '',
-      state: '',
-    };
+  // Step 1: Address Details (Auto-loaded from MySQL database or account)
+  const [address, setAddress] = useState({
+    fullName: user?.name || '',
+    phone: user?.phone || '',
+    email: user?.email || '',
+    pincode: '',
+    addressLine1: '',
+    addressLine2: '',
+    landmark: '',
+    city: '',
+    state: '',
   });
+
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
 
   const hasSavedAddress = Boolean(
     address.fullName && address.phone && address.addressLine1 && address.city && address.state && address.pincode
@@ -89,37 +57,47 @@ export function CheckoutPage() {
   const [isEditingAddress, setIsEditingAddress] = useState(!hasSavedAddress);
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(true);
 
-  // Sync user details and saved address if user logs in or state updates
+  // Fetch real saved addresses from database for logged-in user
   React.useEffect(() => {
     if (user) {
-      setAddress((prev) => {
-        const isBlank = !prev.addressLine1;
-        if (isBlank) {
-          const autoAddress = {
-            fullName: prev.fullName || user.name || '',
-            phone: prev.phone || user.phone || '9876543210',
-            email: prev.email || user.email || '',
-            pincode: '400006',
-            addressLine1: '402, Royal Residency, Heritage Lane',
-            addressLine2: 'Malabar Hill',
-            landmark: 'Near Hanging Gardens',
-            city: 'Mumbai',
-            state: 'Maharashtra',
-          };
-          try {
-            if (!localStorage.getItem('suvarna_saved_address')) {
-              localStorage.setItem('suvarna_saved_address', JSON.stringify(autoAddress));
-            }
-          } catch (e) { }
-          return autoAddress;
-        }
-        return {
-          ...prev,
-          fullName: prev.fullName || user.name || '',
-          phone: prev.phone || user.phone || '',
-          email: prev.email || user.email || '',
-        };
-      });
+      setIsLoadingAddresses(true);
+      api
+        .get('/addresses')
+        .then((res) => {
+          if (res?.data?.addresses && res.data.addresses.length > 0) {
+            const list = res.data.addresses;
+            setSavedAddresses(list);
+            const defaultAddr = list.find((a) => a.isDefault) || list[0];
+            setSelectedAddressId(defaultAddr.id);
+            setAddress({
+              fullName: defaultAddr.fullName || user.name || '',
+              phone: defaultAddr.phone || user.phone || '',
+              email: user.email || '',
+              pincode: defaultAddr.pincode || '',
+              addressLine1: defaultAddr.addressLine1 || '',
+              addressLine2: defaultAddr.addressLine2 || '',
+              landmark: defaultAddr.landmark || '',
+              city: defaultAddr.city || '',
+              state: defaultAddr.state || '',
+            });
+            setIsEditingAddress(false);
+          } else {
+            // Logged in but no saved addresses in DB yet
+            setAddress((prev) => ({
+              ...prev,
+              fullName: prev.fullName || user.name || '',
+              phone: prev.phone || user.phone || '',
+              email: prev.email || user.email || '',
+            }));
+            setIsEditingAddress(true);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to load saved addresses from DB:', err);
+        })
+        .finally(() => {
+          setIsLoadingAddresses(false);
+        });
     }
   }, [user]);
 
@@ -144,10 +122,11 @@ export function CheckoutPage() {
       alert('Please fill all required address fields.');
       return;
     }
-    if (saveAddressForFuture) {
-      try {
-        localStorage.setItem('suvarna_saved_address', JSON.stringify(address));
-      } catch (err) { }
+    // If authenticated customer wants to save address to DB, save it immediately
+    if (user && saveAddressForFuture && isEditingAddress) {
+      api.post('/addresses', address).catch((err) => {
+        console.error('Non-critical: background address save error:', err);
+      });
     }
     setStep(2);
   };
@@ -177,6 +156,7 @@ export function CheckoutPage() {
         address,
         paymentMethod,
         idempotencyKey,
+        saveAddressForFuture,
       };
 
       const res = await api.post('/orders', payload);
