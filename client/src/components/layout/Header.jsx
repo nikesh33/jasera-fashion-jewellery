@@ -1,12 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, ArrowUpRight, TrendingUp, Layers, Package, Plus, ChevronDown, SlidersHorizontal } from 'lucide-react';
-import { useCartStore } from '../../stores/cartStore';
-import { useWishlistStore } from '../../stores/wishlistStore';
-import { useAuthStore } from '../../stores/authStore';
-import { useUIStore } from '../../stores/uiStore';
-import { api } from '../../lib/api';
-import './Header.css';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Search,
+  Heart,
+  ShoppingBag,
+  User,
+  Menu,
+  X,
+  ArrowUpRight,
+  TrendingUp,
+  Layers,
+  Package,
+  Plus,
+  ChevronDown,
+  SlidersHorizontal,
+} from "lucide-react";
+import { useCartStore } from "../../stores/cartStore";
+import { useWishlistStore } from "../../stores/wishlistStore";
+import { useAuthStore } from "../../stores/authStore";
+import { useUIStore } from "../../stores/uiStore";
+import { api } from "../../lib/api";
+import "./Header.css";
 
 export function Header() {
   const navigate = useNavigate();
@@ -21,7 +35,7 @@ export function Header() {
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
   const userMenuRef = useRef(null);
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   // Close user menu on outside click
   useEffect(() => {
@@ -30,8 +44,8 @@ export function Header() {
         setIsUserMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
   const cartCount = getCartCount();
@@ -40,43 +54,48 @@ export function Header() {
   // Dynamically fetch categories from Database for customer view
   useEffect(() => {
     if (!isAdminRoute) {
-      api.get('/categories')
+      api
+        .get("/categories")
         .then((res) => {
           if (res?.data?.categories) {
             setCategories(res.data.categories);
           }
         })
-        .catch((err) => console.error('Failed to load categories for header:', err));
+        .catch((err) =>
+          console.error("Failed to load categories for header:", err),
+        );
     }
   }, [isAdminRoute]);
 
   const handleAdminSignOut = () => {
     logout();
-    navigate('/admin/login', { replace: true });
+    navigate("/admin/login", { replace: true });
   };
 
   const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(() => {
-    return sessionStorage.getItem('suvarna_dismiss_announcement') === 'true';
+    return sessionStorage.getItem("suvarna_dismiss_announcement") === "true";
   });
 
   const handleDismissAnnouncement = () => {
     setIsAnnouncementDismissed(true);
-    sessionStorage.setItem('suvarna_dismiss_announcement', 'true');
+    sessionStorage.setItem("suvarna_dismiss_announcement", "true");
   };
 
   return (
     <header className="site-header">
       {/* 1. Announcement Bar */}
       {!isAnnouncementDismissed && (
-        <div className={`announcement-bar ${isAdminRoute ? 'admin-announcement' : ''}`}>
+        <div
+          className={`announcement-bar ${isAdminRoute ? "admin-announcement" : ""}`}
+        >
           <div className="announcement-content">
             {isAdminRoute ? (
               <>
                 <span className="announcement-text">
-                  Jasera Boutique — Store Management Portal
+                  JASERA - Management Portal
                 </span>
                 <div className="announcement-links">
-                  <Link to="/" target="_blank" rel="noopener noreferrer">
+                  <Link to="/" target="_blank" rel="noopener noreferrer" className="announcement-desktop-link">
                     View Customer Storefront ↗
                   </Link>
                   <button
@@ -93,12 +112,12 @@ export function Header() {
             ) : (
               <>
                 <span className="announcement-text">
-                  Free Shipping on orders above ₹799 • Anti-Tarnish & Hypoallergenic Jewels
+                  Free Shipping on orders above ₹999
                 </span>
                 <div className="announcement-links">
-                  <Link to="/track-order">Track Order</Link>
-                  <span className="announcement-divider">|</span>
-                  <Link to="/contact">Need Help? Chat with us</Link>
+                  <Link to="/track-order" className="announcement-desktop-link">Track Order</Link>
+                  <span className="announcement-divider announcement-desktop-link">|</span>
+                  <Link to="/contact" className="announcement-desktop-link">Need Help? Chat with us</Link>
                   <button
                     type="button"
                     className="announcement-dismiss-btn"
@@ -128,10 +147,10 @@ export function Header() {
           </button>
 
           {/* Brand Logo */}
-          <Link to={isAdminRoute ? '/admin' : '/'} className="brand-logo-link">
+          <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
             <span className="brand-logo-title">JASERA</span>
             <span className="brand-logo-subtitle">
-              {isAdminRoute ? 'MANAGEMENT' : 'AESTHETIC JEWELLERY'}
+              {isAdminRoute ? "MANAGEMENT" : "AESTHETIC JEWELLERY"}
             </span>
           </Link>
 
@@ -139,7 +158,6 @@ export function Header() {
           <div className="header-actions">
             {isAdminRoute ? (
               <>
-
                 {/* Admin Profile & Sign Out Dropdown */}
                 <div
                   className="user-menu-wrapper"
@@ -158,15 +176,27 @@ export function Header() {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="user-dropdown-menu" onClick={() => setIsUserMenuOpen(false)}>
+                    <div
+                      className="user-dropdown-menu"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
                       <div className="dropdown-user-info">
-                        <strong>{user?.name || user?.email || 'Store Admin'}</strong>
-                        <span style={{ color: '#2E7D5B', fontWeight: '600' }}>Store Administrator</span>
+                        <strong>
+                          {user?.name || user?.email || "Store Admin"}
+                        </strong>
+                        {/* <span style={{ color: "#2E7D5B", fontWeight: "600" }}>
+                          Store Administrator
+                        </span> */}
                       </div>
                       <div className="dropdown-divider" />
-                      <Link to="/" className="dropdown-item">View Storefront</Link>
+                      <Link to="/" className="dropdown-item">
+                        View Storefront
+                      </Link>
                       <div className="dropdown-divider" />
-                      <button onClick={handleAdminSignOut} className="dropdown-item dropdown-logout-btn">
+                      <button
+                        onClick={handleAdminSignOut}
+                        className="dropdown-item dropdown-logout-btn"
+                      >
                         Sign Out
                       </button>
                     </div>
@@ -184,10 +214,16 @@ export function Header() {
                   <span className="action-label d-none-mobile">Search</span>
                 </button>
 
-                <Link to="/wishlist" className="action-btn" aria-label="Wishlist">
+                <Link
+                  to="/wishlist"
+                  className="action-btn"
+                  aria-label="Wishlist"
+                >
                   <div className="badge-wrap">
                     <Heart size={21} />
-                    {wishlistCount > 0 && <span className="action-badge">{wishlistCount}</span>}
+                    {wishlistCount > 0 && (
+                      <span className="action-badge">{wishlistCount}</span>
+                    )}
                   </div>
                 </Link>
 
@@ -208,29 +244,48 @@ export function Header() {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="user-dropdown-menu" onClick={() => setIsUserMenuOpen(false)}>
+                    <div
+                      className="user-dropdown-menu"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
                       {isAuthenticated ? (
                         <>
                           <div className="dropdown-user-info">
                             <strong>{user?.name || user?.email}</strong>
-                            <span>{user?.isAdmin ? 'Store Owner / Admin' : 'Customer Account'}</span>
+                            <span>
+                              {user?.isAdmin
+                                ? "Store Owner / Admin"
+                                : "Customer Account"}
+                            </span>
                           </div>
                           <div className="dropdown-divider" />
                           {user?.isAdmin ? (
                             <>
-                              <Link to="/admin" className="dropdown-item text-maroon font-semibold">
+                              <Link
+                                to="/admin"
+                                className="dropdown-item text-maroon font-semibold"
+                              >
                                 Admin Store Manager
                               </Link>
-                              <Link to="/shop" className="dropdown-item">Browse Shop</Link>
+                              <Link to="/shop" className="dropdown-item">
+                                Browse Shop
+                              </Link>
                             </>
                           ) : (
                             <>
-                              <Link to="/account" className="dropdown-item">My Account</Link>
-                              <Link to="/track-order" className="dropdown-item">Track Orders</Link>
+                              <Link to="/account" className="dropdown-item">
+                                My Account
+                              </Link>
+                              <Link to="/track-order" className="dropdown-item">
+                                Track Orders
+                              </Link>
                             </>
                           )}
                           <div className="dropdown-divider" />
-                          <button onClick={logout} className="dropdown-item dropdown-logout-btn">
+                          <button
+                            onClick={logout}
+                            className="dropdown-item dropdown-logout-btn"
+                          >
                             Sign Out
                           </button>
                         </>
@@ -243,8 +298,12 @@ export function Header() {
                             </Link>
                           </div>
                           <div className="dropdown-divider" />
-                          <Link to="/track-order" className="dropdown-item">Track Order</Link>
-                          <Link to="/contact" className="dropdown-item">WhatsApp Support</Link>
+                          <Link to="/track-order" className="dropdown-item">
+                            Track Order
+                          </Link>
+                          <Link to="/contact" className="dropdown-item">
+                            WhatsApp Support
+                          </Link>
                         </>
                       )}
                     </div>
@@ -259,7 +318,9 @@ export function Header() {
                 >
                   <div className="badge-wrap">
                     <ShoppingBag size={21} />
-                    {cartCount > 0 && <span className="action-badge">{cartCount}</span>}
+                    {cartCount > 0 && (
+                      <span className="action-badge">{cartCount}</span>
+                    )}
                   </div>
                 </button>
               </>
@@ -275,7 +336,7 @@ export function Header() {
             <ul className="nav-list">
               <li className="nav-item">
                 <Link to="/shop" className="nav-link">
-                  All Jewels
+                  All
                 </Link>
               </li>
               {categories.map((cat) => (
@@ -287,7 +348,7 @@ export function Header() {
               ))}
               <li className="nav-item">
                 <Link to="/about" className="nav-link">
-                  About Our Brand
+                  About
                 </Link>
               </li>
             </ul>
@@ -297,11 +358,17 @@ export function Header() {
 
       {/* 4. Mobile Drawer Navigation */}
       {isMobileNavOpen && (
-        <div className="mobile-nav-overlay" onClick={() => setIsMobileNavOpen(false)}>
-          <div className="mobile-nav-panel" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="mobile-nav-overlay"
+          onClick={() => setIsMobileNavOpen(false)}
+        >
+          <div
+            className="mobile-nav-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mobile-nav-header">
-              <span className="brand-logo-title" style={{ fontSize: '1.3rem' }}>
-                {isAdminRoute ? 'JASERA ADMIN' : 'JASERA'}
+              <span className="brand-logo-title" style={{ fontSize: "1.3rem" }}>
+                {isAdminRoute ? "JASERA ADMIN" : "JASERA"}
               </span>
               <button
                 className="close-mobile-nav"
@@ -315,28 +382,30 @@ export function Header() {
             {isAdminRoute ? (
               /* Admin Mobile Drawer with Tabs & Quick Actions */
               <div className="mobile-admin-drawer">
-                <div className="mobile-drawer-section-title">Navigation Tabs</div>
+                <div className="mobile-drawer-section-title">
+                  Navigation Tabs
+                </div>
                 <ul className="mobile-nav-list">
                   <li className="mobile-nav-item">
                     <button
                       type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes('tab=overview') || (!location.search.includes('tab=') && location.pathname === '/admin') ? 'is-active' : ''}`}
+                      className={`mobile-admin-tab-btn ${location.search.includes("tab=overview") || (!location.search.includes("tab=") && location.pathname === "/admin") ? "is-active" : ""}`}
                       onClick={() => {
                         setIsMobileNavOpen(false);
-                        navigate('/admin?tab=overview');
+                        navigate("/admin?tab=overview");
                       }}
                     >
                       <TrendingUp size={16} />
-                      <span>Overview & Stats</span>
+                      <span>Overview</span>
                     </button>
                   </li>
                   <li className="mobile-nav-item">
                     <button
                       type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes('tab=categories') ? 'is-active' : ''}`}
+                      className={`mobile-admin-tab-btn ${location.search.includes("tab=categories") ? "is-active" : ""}`}
                       onClick={() => {
                         setIsMobileNavOpen(false);
-                        navigate('/admin?tab=categories');
+                        navigate("/admin?tab=categories");
                       }}
                     >
                       <Layers size={16} />
@@ -346,27 +415,27 @@ export function Header() {
                   <li className="mobile-nav-item">
                     <button
                       type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes('tab=products') ? 'is-active' : ''}`}
+                      className={`mobile-admin-tab-btn ${location.search.includes("tab=products") ? "is-active" : ""}`}
                       onClick={() => {
                         setIsMobileNavOpen(false);
-                        navigate('/admin?tab=products');
+                        navigate("/admin?tab=products");
                       }}
                     >
                       <Package size={16} />
-                      <span>Products & Stock</span>
+                      <span>Stock</span>
                     </button>
                   </li>
                   <li className="mobile-nav-item">
                     <button
                       type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes('tab=orders') ? 'is-active' : ''}`}
+                      className={`mobile-admin-tab-btn ${location.search.includes("tab=orders") ? "is-active" : ""}`}
                       onClick={() => {
                         setIsMobileNavOpen(false);
-                        navigate('/admin?tab=orders');
+                        navigate("/admin?tab=orders");
                       }}
                     >
                       <ShoppingBag size={16} />
-                      <span>Customer Orders</span>
+                      <span>Orders</span>
                     </button>
                   </li>
                 </ul>
@@ -379,9 +448,13 @@ export function Header() {
                     className="mobile-quick-action-btn primary"
                     onClick={() => {
                       setIsMobileNavOpen(false);
-                      navigate('/admin?tab=categories');
+                      navigate("/admin?tab=categories");
                       setTimeout(() => {
-                        window.dispatchEvent(new CustomEvent('admin-action', { detail: 'add-category' }));
+                        window.dispatchEvent(
+                          new CustomEvent("admin-action", {
+                            detail: "add-category",
+                          }),
+                        );
                       }, 100);
                     }}
                   >
@@ -393,9 +466,13 @@ export function Header() {
                     className="mobile-quick-action-btn gold"
                     onClick={() => {
                       setIsMobileNavOpen(false);
-                      navigate('/admin?tab=products');
+                      navigate("/admin?tab=products");
                       setTimeout(() => {
-                        window.dispatchEvent(new CustomEvent('admin-action', { detail: 'add-product' }));
+                        window.dispatchEvent(
+                          new CustomEvent("admin-action", {
+                            detail: "add-product",
+                          }),
+                        );
                       }, 100);
                     }}
                   >
@@ -407,7 +484,11 @@ export function Header() {
                 <div className="mobile-nav-divider" />
                 <ul className="mobile-nav-list">
                   <li className="mobile-nav-item">
-                    <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileNavOpen(false)}>
+                    <Link
+                      to="/"
+                      className="mobile-nav-link"
+                      onClick={() => setIsMobileNavOpen(false)}
+                    >
                       View Storefront ↗
                     </Link>
                   </li>
@@ -420,18 +501,18 @@ export function Header() {
                       }}
                       className="mobile-nav-link"
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--color-maroon)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        width: '100%',
-                        padding: '10px 0',
-                        fontSize: '0.85rem',
-                        fontFamily: 'inherit',
-                        fontWeight: '600',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
+                        background: "none",
+                        border: "none",
+                        color: "var(--color-maroon)",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        width: "100%",
+                        padding: "10px 0",
+                        fontSize: "0.85rem",
+                        fontFamily: "inherit",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
                       }}
                     >
                       Sign Out
@@ -443,14 +524,16 @@ export function Header() {
               /* Customer Mobile Drawer */
               <div className="mobile-customer-drawer">
                 {/* Shop Filter Button in Sidebar if on Shop page */}
-                {location.pathname.startsWith('/shop') && (
+                {location.pathname.startsWith("/shop") && (
                   <div className="mobile-drawer-filter-action">
                     <button
                       type="button"
                       className="mobile-sidebar-filter-btn"
                       onClick={() => {
                         setIsMobileNavOpen(false);
-                        window.dispatchEvent(new CustomEvent('open-shop-filters'));
+                        window.dispatchEvent(
+                          new CustomEvent("open-shop-filters"),
+                        );
                       }}
                     >
                       <SlidersHorizontal size={16} />
@@ -461,8 +544,12 @@ export function Header() {
 
                 <ul className="mobile-nav-list">
                   <li className="mobile-nav-item">
-                    <Link to="/shop" className="mobile-nav-link" onClick={() => setIsMobileNavOpen(false)}>
-                      All Jewellery
+                    <Link
+                      to="/shop"
+                      className="mobile-nav-link"
+                      onClick={() => setIsMobileNavOpen(false)}
+                    >
+                      All
                     </Link>
                   </li>
 
@@ -472,16 +559,20 @@ export function Header() {
                       <button
                         type="button"
                         className="mobile-category-toggle-btn"
-                        onClick={() => setIsCategoriesCollapsed((prev) => !prev)}
+                        onClick={() =>
+                          setIsCategoriesCollapsed((prev) => !prev)
+                        }
                         aria-expanded={!isCategoriesCollapsed}
                       >
                         <span className="category-toggle-label">
                           <span>Categories</span>
-                          <span className="category-count-pill">{categories.length}</span>
+                          <span className="category-count-pill">
+                            {categories.length}
+                          </span>
                         </span>
                         <ChevronDown
                           size={17}
-                          className={`category-chevron ${!isCategoriesCollapsed ? 'is-rotated' : ''}`}
+                          className={`category-chevron ${!isCategoriesCollapsed ? "is-rotated" : ""}`}
                         />
                       </button>
 
@@ -506,11 +597,21 @@ export function Header() {
                   <li className="mobile-nav-divider" />
                   <li className="mobile-nav-item">
                     <Link
-                      to={isAuthenticated ? (user?.isAdmin ? '/admin' : '/account') : '/login'}
+                      to={
+                        isAuthenticated
+                          ? user?.isAdmin
+                            ? "/admin"
+                            : "/account"
+                          : "/login"
+                      }
                       className="mobile-nav-link"
                       onClick={() => setIsMobileNavOpen(false)}
                     >
-                      {isAuthenticated ? (user?.isAdmin ? 'Admin Console' : 'My Account') : 'Sign In'}
+                      {isAuthenticated
+                        ? user?.isAdmin
+                          ? "Admin Console"
+                          : "My Account"
+                        : "Sign In"}
                     </Link>
                   </li>
                   <li className="mobile-nav-item">
@@ -528,7 +629,7 @@ export function Header() {
                       className="mobile-nav-link"
                       onClick={() => setIsMobileNavOpen(false)}
                     >
-                      About Our Brand
+                      About
                     </Link>
                   </li>
                 </ul>
