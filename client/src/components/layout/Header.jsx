@@ -91,16 +91,29 @@ export function Header() {
           <div className="announcement-content">
             {isAdminRoute ? (
               <>
-                <span className="announcement-text">
-                  JASERA - Management Portal
-                </span>
-                <div className="announcement-links">
-                  <Link to="/" target="_blank" rel="noopener noreferrer" className="announcement-desktop-link">
-                    View Customer Storefront ↗
-                  </Link>
+                <div className="announcement-main-row">
+                  <span className="announcement-text">
+                    JASERA - Management Portal
+                  </span>
                   <button
                     type="button"
-                    className="announcement-dismiss-btn"
+                    className="announcement-dismiss-btn mobile-dismiss-btn"
+                    onClick={handleDismissAnnouncement}
+                    aria-label="Dismiss announcement"
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+                <div className="announcement-secondary-row">
+                  <div className="announcement-links">
+                    <Link to="/" target="_blank" rel="noopener noreferrer">
+                      View Customer Storefront ↗
+                    </Link>
+                  </div>
+                  <button
+                    type="button"
+                    className="announcement-dismiss-btn desktop-dismiss-btn"
                     onClick={handleDismissAnnouncement}
                     aria-label="Dismiss announcement"
                     title="Dismiss"
@@ -111,16 +124,29 @@ export function Header() {
               </>
             ) : (
               <>
-                <span className="announcement-text">
-                  Free Shipping on orders above ₹999
-                </span>
-                <div className="announcement-links">
-                  <Link to="/track-order" className="announcement-desktop-link">Track Order</Link>
-                  <span className="announcement-divider announcement-desktop-link">|</span>
-                  <Link to="/contact" className="announcement-desktop-link">Need Help? Chat with us</Link>
+                <div className="announcement-main-row">
+                  <span className="announcement-text">
+                    Free Shipping on orders above ₹999
+                  </span>
                   <button
                     type="button"
-                    className="announcement-dismiss-btn"
+                    className="announcement-dismiss-btn mobile-dismiss-btn"
+                    onClick={handleDismissAnnouncement}
+                    aria-label="Dismiss announcement"
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+                <div className="announcement-secondary-row">
+                  <div className="announcement-links">
+                    <Link to="/track-order">Track Order</Link>
+                    <span className="announcement-divider">|</span>
+                    <Link to="/contact">Need Help? Chat with us</Link>
+                  </div>
+                  <button
+                    type="button"
+                    className="announcement-dismiss-btn desktop-dismiss-btn"
                     onClick={handleDismissAnnouncement}
                     aria-label="Dismiss announcement"
                     title="Dismiss"

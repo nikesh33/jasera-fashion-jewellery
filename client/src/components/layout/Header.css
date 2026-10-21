@@ -9,11 +9,11 @@
 
 /* 1. Announcement Bar */
 .announcement-bar {
-  background-color: var(--color-maroon);
+  background-color: var(--color-maroon, #580f1e);
   color: #FFFFFF;
   padding: 8px 0;
-  font-size: var(--text-caption);
-  letter-spacing: 0.04em;
+  font-size: var(--text-caption, 0.75rem);
+  letter-spacing: 0.03em;
   position: relative;
   z-index: 901;
 }
@@ -23,29 +23,42 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-6, 24px);
   box-sizing: border-box;
-  min-height: 24px;
+}
+
+.announcement-main-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .announcement-text {
   font-weight: 500;
   font-size: 0.82rem;
   line-height: 1.3;
+  color: #FFFFFF;
+}
+
+.announcement-secondary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  flex-shrink: 0;
 }
 
 .announcement-links {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-3, 12px);
   flex-shrink: 0;
 }
 
 .announcement-links a {
-  color: var(--color-antique-gold-light);
+  color: var(--color-antique-gold-light, #f1dab0);
   text-decoration: none;
   font-size: 0.8rem;
-  transition: color var(--duration-fast);
+  transition: color var(--duration-fast, 150ms);
 }
 
 .announcement-links a:hover {
@@ -53,73 +66,145 @@
 }
 
 .announcement-divider {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.75rem;
 }
 
 .announcement-dismiss-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.85);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 3px 6px;
-  margin-left: 8px;
-  border-radius: var(--radius-sm);
-  transition: all var(--duration-fast);
+  padding: 4px;
+  border-radius: var(--radius-sm, 4px);
+  transition: all var(--duration-fast, 150ms);
+  line-height: 1;
 }
 
 .announcement-dismiss-btn:hover {
   color: #FFFFFF;
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Announcement Responsive Adjustments for Tablets & Mobile */
+/* On Desktop: Hide mobile dismiss, show desktop dismiss */
+.mobile-dismiss-btn {
+  display: none !important;
+}
+
+.desktop-dismiss-btn {
+  display: inline-flex !important;
+}
+
+/* Announcement Responsive: 2 Clean Rows on Mobile & Small Screens (<= 768px) */
 @media (max-width: 768px) {
-  .announcement-desktop-link {
-    display: none !important;
+  .announcement-bar {
+    padding: 6px 0 5px;
   }
 
   .announcement-content {
-    justify-content: center;
-    position: relative;
-    padding: 0 36px 0 16px;
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+    gap: 4px;
+    box-sizing: border-box;
+  }
+
+  /* Row 1: Promo message on left, cross button on right */
+  .announcement-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
   }
 
   .announcement-text {
-    text-align: center;
-    font-size: 0.78rem;
-    white-space: normal;
-    word-break: break-word;
-    display: inline-block;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.76rem;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 6px;
+    color: #FFFFFF;
+  }
+
+  /* Show mobile dismiss button (✕) on far right of Row 1 */
+  .mobile-dismiss-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #FFFFFF;
+    padding: 2px 4px;
+    margin-left: auto;
+  }
+
+  /* Hide desktop dismiss button */
+  .desktop-dismiss-btn {
+    display: none !important;
+  }
+
+  /* Row 2: Secondary links centered below Row 1 */
+  .announcement-secondary-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    padding-top: 3px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    gap: 0;
   }
 
   .announcement-links {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    flex-wrap: wrap;
   }
 
-  .announcement-dismiss-btn {
-    margin-left: 0;
-    padding: 4px;
+  .announcement-links a {
+    font-size: 0.72rem;
+    color: var(--color-antique-gold-light, #f1dab0);
+    padding: 1px 3px;
+    white-space: nowrap;
+  }
+
+  .announcement-divider {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.65rem;
   }
 }
 
 @media (max-width: 480px) {
   .announcement-bar {
-    padding: 6px 0;
-  }
-
-  .announcement-text {
-    font-size: 0.73rem;
-    letter-spacing: 0.02em;
+    padding: 5px 0 4px;
   }
 
   .announcement-content {
-    padding: 0 30px 0 10px;
+    padding: 0 8px;
+    gap: 3px;
+  }
+
+  .announcement-text {
+    font-size: 0.72rem;
+  }
+
+  .announcement-links {
+    gap: 6px;
+  }
+
+  .announcement-links a {
+    font-size: 0.68rem;
   }
 }
 
@@ -465,14 +550,6 @@
   }
   .mobile-menu-toggle {
     display: block;
-  }
-  .announcement-links {
-    display: none;
-  }
-  .announcement-text {
-    font-size: 0.72rem;
-    text-align: center;
-    width: 100%;
   }
 }
 
