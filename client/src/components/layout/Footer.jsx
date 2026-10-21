@@ -61,7 +61,7 @@ export function Footer() {
 
         {/* Bottom: Minimal Copyright & Payments */}
         {/* <div className="footer-copyright-line">
-          <span>© {new Date().getFullYear()} Jasera. Handcrafted with love in India.</span>
+          <span>© {new Date().getFullYear()} Jassera. Handcrafted with love in India.</span>
           <span className="footer-payments-note">Safe & Secure Payments • UPI • Cards • COD</span>
         </div> */}
       </div>

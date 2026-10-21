@@ -98,7 +98,7 @@ export const useCartStore = create((set, get) => ({
     const subtotal = get().getSubtotal();
     let discountAmount = 0;
 
-    if (code === 'SUVARNA10') {
+    if (code === 'JASSERA10' || code === 'JASERA10' || code === 'SUVARNA10') {
       discountAmount = Math.round(subtotal * 0.1);
     } else if (code === 'WELCOME500') {
       discountAmount = Math.min(500, subtotal);

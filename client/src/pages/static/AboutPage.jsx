@@ -8,10 +8,10 @@ export function AboutPage() {
       {/* 1. Hero Header */}
       <div className="about-hero">
         <div className="container about-hero-content">
-          <span className="about-eyebrow">ABOUT JASERA BOUTIQUE</span>
+          <span className="about-eyebrow">ABOUT JASSERA</span>
           <h1 className="about-title">Crafted For Your Everyday Aesthetic</h1>
           <p className="about-subtitle">
-            The boutique destination for viral Instagram jhumkas, handcrafted statement earrings, and anti-tarnish daily wear jewellery.
+            The boutique destination for viral statement bracelets, handcrafted jhumkas, and anti-tarnish daily wear jewellery.
           </p>
         </div>
       </div>
@@ -23,28 +23,28 @@ export function AboutPage() {
             <span className="section-eyebrow">OUR STORY</span>
             <h2 className="about-story-heading">From An Instagram Dream to Your Jewellery Box</h2>
             <p>
-              Jasera began with a simple passion: creating breathtaking, statement jewellery that doesn't cost a fortune. We noticed how difficult it was to find traditional jhumkas that are lightweight enough for all-day wear, or modern daily wear pieces that don't lose their shine after a few days.
+              Jassera began with a simple passion: creating breathtaking, statement jewellery that doesn't cost a fortune. We noticed how difficult it was to find traditional jhumkas that are lightweight enough for all-day wear, or modern daily wear pieces that don't lose their shine after a few days.
             </p>
             <p>
-              Every collection we launch is hand-curated with immense love — from oxidised silver jhumkas with delicate hanging bells to waterproof stainless steel clover pendants. Whether you're dressing up for college ethnic day, a best friend's wedding, or everyday office chic, Jasera has the perfect piece to elevate your look.
+              Every collection we launch is hand-curated with immense love — from oxidised silver jhumkas with delicate hanging bells to waterproof stainless steel clover pendants and signature statement bracelets. Whether you're dressing up for college ethnic day, a best friend's wedding, or everyday chic, Jassera has the perfect piece to elevate your look.
             </p>
           </div>
           <div className="about-story-img-wrap">
             <img
-              src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80"
-              alt="Handcrafted boutique jewellery collection"
+              src="/images/jassera-hero-banner.jpg"
+              alt="Jassera Handcrafted Statement Bracelet & Jewellery Collection"
               className="about-story-img"
             />
           </div>
         </div>
       </div>
 
-      {/* 3. The Four Pillars of Jasera Boutique */}
+      {/* 3. The Four Pillars of Jassera Boutique */}
       <div className="about-pillars-bg">
         <div className="container">
           <div className="section-header text-center">
             <span className="section-eyebrow">OUR PROMISE</span>
-            <h2 className="section-title">The Jasera Quality Promise</h2>
+            <h2 className="section-title">The Jassera Quality Promise</h2>
           </div>
 
           <div className="about-pillars-grid">

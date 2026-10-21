@@ -467,7 +467,7 @@ export function Header() {
                       ) : (
                         <>
                           <div className="dropdown-prompt">
-                            <p>Welcome to Jasera Jewels</p>
+                            <p>Welcome to Jassera</p>
                             <Link to="/login" className="dropdown-login-btn">
                               Sign In
                             </Link>

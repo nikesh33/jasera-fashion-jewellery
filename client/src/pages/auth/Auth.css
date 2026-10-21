@@ -17,6 +17,40 @@
   text-decoration: none;
   margin-bottom: var(--space-6);
   text-align: center;
+  gap: 8px;
+}
+
+.auth-logo-img {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-antique-gold, #dfb972);
+  box-shadow: 0 4px 14px rgba(92, 26, 43, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.auth-brand-logo:hover .auth-logo-img {
+  transform: scale(1.04);
+}
+
+.auth-brand-logo .brand-logo-title {
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--color-maroon);
+  line-height: 1;
+}
+
+.auth-brand-logo .brand-logo-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.26em;
+  color: var(--color-antique-gold-dark, #8c6d2d);
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
 }
 
 .auth-card {

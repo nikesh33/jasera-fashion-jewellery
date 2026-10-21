@@ -67,7 +67,7 @@ export function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-        <p>Retrieving masterpiece from Jasera vault...</p>
+        <p>Retrieving masterpiece from Jassera vault...</p>
       </div>
     );
   }

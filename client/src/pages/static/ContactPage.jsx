@@ -41,7 +41,7 @@ export function ContactPage() {
               <MapPin className="contact-ic" size={20} />
               <div>
                 <strong>Flagship Address</strong>
-                <span>Jasera Heritage Mansion, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
+                <span>Jassera Studio, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
               </div>
             </div>
 
@@ -57,7 +57,7 @@ export function ContactPage() {
               <Mail className="contact-ic" size={20} />
               <div>
                 <strong>Private Salon Inquiries</strong>
-                <span>concierge@jaserajewels.com</span>
+                <span>concierge@jasserajewels.com</span>
               </div>
             </div>
 
