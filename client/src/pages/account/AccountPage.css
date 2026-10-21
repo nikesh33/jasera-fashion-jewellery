@@ -1,0 +1,253 @@
+/* AccountPage Styles */
+.account-page {
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  flex: 1;
+}
+
+/* Layout */
+.account-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+.account-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background-color: #FFFFFF;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+}
+
+.account-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  color: var(--grey-700);
+  font-size: var(--text-body-sm);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  transition: all var(--duration-fast);
+}
+
+.account-nav-btn:hover {
+  background-color: var(--grey-100);
+  color: var(--color-maroon);
+}
+
+.account-nav-btn.is-active {
+  background-color: rgba(92, 26, 43, 0.08);
+  color: var(--color-maroon);
+  font-weight: 600;
+}
+
+.account-nav-btn.admin-link {
+  color: var(--color-antique-gold-dark);
+  font-weight: 600;
+}
+
+.account-logout-btn {
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--grey-200);
+  padding-top: 12px;
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+.account-logout-btn:hover {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.account-content-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-heading {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  color: var(--color-maroon);
+  border-bottom: 1px solid var(--grey-200);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+/* Orders List */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.order-history-card {
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--grey-50);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.order-num {
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  color: var(--color-charcoal);
+  margin-right: var(--space-3);
+}
+
+.order-date {
+  font-size: var(--text-caption);
+  color: var(--grey-500);
+}
+
+.order-status-badge {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.status-in-transit {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.status-delivered {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.order-card-body {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.order-thumb {
+  width: 60px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.order-details {
+  flex: 1;
+}
+
+.order-details h4 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+
+.order-details span {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--grey-600);
+  margin-bottom: 4px;
+}
+
+.order-price {
+  font-size: var(--text-body-sm);
+  color: var(--color-maroon);
+}
+
+.track-order-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-antique-gold-dark);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Profile Form */
+.profile-form {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.profile-success-msg {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Addresses */
+.saved-address-card {
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  position: relative;
+  max-width: 440px;
+}
+
+.address-badge {
+  display: inline-block;
+  background-color: var(--color-antique-gold);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.saved-address-card p {
+  font-size: var(--text-body-sm);
+  color: var(--grey-700);
+  line-height: 1.5;
+  margin-bottom: var(--space-3);
+}
+
+.address-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.addr-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--grey-700);
+  cursor: pointer;
+  padding: 0;
+}
+
+.addr-btn.text-error {
+  color: var(--color-error);
+}
+
+@media (max-width: 768px) {
+  .account-layout {
+    grid-template-columns: 1fr;
+  }
+}

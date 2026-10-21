@@ -1,0 +1,1737 @@
+P R E M I U M   I N D I A N   H E I R L O O M   J E W E L L E R Y   E - C O M M E R C E
+Suvarna
+Frontend Development Specification v1.0
+Prepared for: Client (Local Jewellery Seller)
+Prepared by: Senior UI/UX Designer & Frontend Architect
+Document version: v1.0
+Date: 20 October 2026
+Classification: For Client Review & Developer Hand-off
+Status: Ready for Coding-Agent Implementation
+Suvarna Jewels          Confidential — Do Not Distribute
+Table of Contents
+1. Executive Summary
+1. Executive Summary1
+2. Project Context, Brand Identity & Scope Boundaries2
+2.1 Business Context2
+2.2 Proposed Brand Identity2
+2.3 Competitive Benchmark References2
+2.4 Out-of-Scope for MVP3
+2.5 Document Conventions4
+3. Customer-Facing Page Inventory & Route Map4
+3.1 Feature Inventory per Page5
+3.2 Route Guards & Authentication5
+4. Homepage Layout, Navigation & Product Discovery5
+4.1 Homepage Anatomy5
+4.2 Header5
+4.3 Footer6
+4.4 Search Experience6
+4.5 Product Discovery Surfaces6
+4.6 Homepage Wireframe (Desktop)6
+5. Product Listing, Filtering, Sorting & Product Detail11
+5.1 Product Listing Page (PLP) Anatomy11
+5.2 Filter Taxonomy11
+5.3 Sort Options12
+5.4 Product Detail Page (PDP) Anatomy12
+5.4.1 Image Gallery12
+5.4.2 Product Information Column12
+5.4.3 PDP Tabs13
+5.4.4 Reviews Section13
+5.4.5 PDP SEO Schema13
+5.5 PLP Wireframe (Desktop)13
+5.6 PDP Wireframe (Desktop)16
+6. Cart, Wishlist, Checkout, Payment & Order Confirmation18
+6.1 Shopping Cart19
+6.2 Wishlist19
+6.3 Checkout — Three-Step Flow19
+6.3.1 Step 1 — Address19
+6.3.2 Step 2 — Payment Method20
+6.3.3 Step 3 — Review & Place Order20
+6.4 Payment UI & Integration Pattern20
+6.5 Order Confirmation20
+6.6 Checkout Edge Cases21
+7. Customer Authentication & Account Pages21
+7.1 Authentication Flows21
+7.2 Account Dashboard21
+7.2.1 Profile22
+7.2.2 Addresses22
+7.2.3 Orders & Order Tracking22
+7.2.4 Wishlist Sync, Coupons, Returns, Notifications22
+7.3 Guest Order Tracking23
+7.4 Authentication Edge Cases23
+8. Admin Dashboard — Screen-by-Screen Specification23
+8.1 Admin Authentication & Roles23
+8.2 Admin Dashboard Home24
+8.3 Catalog → Products24
+8.4 Catalog → Categories24
+8.5 Catalog → Collections25
+8.6 Inventory25
+8.7 Orders25
+8.8 Customers25
+8.9 Coupons & Offers26
+8.10 Reviews26
+8.11 CMS Pages, Banners & Settings26
+8.13 Admin Route Inventory26
+9. Premium Visual Design System27
+9.1 Brand Palette27
+9.2 Extended UI Palette27
+9.3 Typography27
+9.4 Spacing, Radius & Shadow Scales28
+9.5 Product Image Guidelines28
+9.6 Iconography29
+9.7 Responsive Breakpoints29
+9.8 Motion & Animation29
+9.9 Empty & Error States29
+9.10 Brand Voice & Microcopy30
+10. Reusable React Components & Project Folder Structure30
+10.1 Atomic Design Hierarchy30
+10.2 Component Inventory30
+10.3 Component Contract Template31
+10.4 Project Folder Structure33
+10.5 Naming Conventions38
+10.6 Storybook (Phase 2)38
+11. State Management, Forms, Validation, Error Handling, Loading & Accessibility38
+11.1 State Management Strategy38
+11.2 Form Validation39
+11.3 Error Handling39
+11.4 Loading States40
+11.5 Accessibility (WCAG 2.1 AA)40
+11.6 Internationalisation Readiness41
+12. REST API Integration Contract (Frontend ↔ Backend)42
+12.1 API Conventions42
+12.2 Storefront Endpoint Inventory42
+12.3 Admin API Contract Pattern42
+12.4 File Upload Contract43
+12.5 Real-time Order Status (Phase 2)43
+12.6 Backend-Enforced Controls (Reminder)43
+13. Security — Frontend Responsibilities & Backend-Enforced Controls43
+13.1 Frontend Security Responsibilities44
+13.2 Backend-Enforced Security Controls44
+13.3 Trust Boundary Statement44
+14. SEO, Performance, Mobile Responsiveness, Testing & Deployment44
+14.1 Search Engine Optimisation45
+14.2 Performance Budgets45
+14.3 Mobile Responsiveness46
+14.4 Testing Strategy46
+14.5 Build & Deployment46
+15. Edge Cases & Acceptance Criteria47
+15.1 Cart Edge Cases47
+15.2 Checkout Edge Cases47
+15.3 Authentication Edge Cases47
+15.4 Product Edge Cases47
+15.5 Admin Edge Cases48
+15.6 Global Acceptance Criteria48
+16. Phase Plan — MVP, Phase 2 & Phase 350
+16.1 Phase Dependencies & Rationale50
+17. Critical Flow Acceptance Test Cases50
+17.1 New Customer Registration → First Successful Order51
+17.2 Returning Customer — Login → Cart → Coupon → Checkout → Payment51
+17.3 Guest Checkout with COD → Confirmation → Track Order52
+17.4 Admin Order Fulfilment End-to-End52
+17.5 Payment Failure → Retry → Success53
+17.6 Out-of-Stock Mid-Checkout53
+17.7 Concurrent Admin Edit (Optimistic Locking)54
+17.8 Session Expired Mid-Checkout Recovery54
+18. Appendix — Glossary, Conventions & Hand-off Checklist55
+18.1 Glossary55
+18.2 Document Conventions Recap55
+18.3 Hand-off Checklist55
+Note: This Table of Contents is generated via field codes. To ensure page number accuracy after editing, please right-click the TOC and select "Update Field."
+1. Executive Summary
+This document defines the complete frontend development specification for Suvarna, a premium Indian heirloom jewellery e-commerce platform to be built for a local jewellery seller. Suvarna will sell earrings, jhumkas, bangles, rings, necklaces, bracelets, and curated jewellery sets, and is positioned to deliver a shopping experience inspired by established premium brands such as GIVA, CaratLane, and Tanishq while maintaining its own distinct brand identity rooted in Indian heritage and craftsmanship.
+The proposed technology stack is Next.js 14 (App Router) with TypeScript for the frontend, Tailwind CSS for styling, TanStack Query for server-state caching, Zustand for client UI state, shadcn/ui as the component primitive layer, react-hook-form for form management, and zod for schema validation shared between client and backend. The frontend is designed to integrate with a Node.js + Express.js backend and a MySQL database through a versioned REST API contract documented in Section 12 of this specification.
+Scope of this specification covers all eleven requirement areas requested by the client: customer-facing pages and routes; homepage, navigation, and product discovery; product listing and product detail; cart, wishlist, checkout, payment, authentication, account, order tracking, and order history; a complete admin dashboard; a premium visual design system; reusable React components and folder structure; state management, forms, validation, error handling, loading states, and accessibility; a REST API integration contract; frontend security responsibilities and the security controls that must be enforced by the backend; SEO, performance, mobile responsiveness, testing, and production deployment; and all important edge cases with acceptance criteria.
+Beyond the eleven required areas, this document also includes a phase plan that distinguishes the MVP (launch-blocking) feature set from Phase 2 and Phase 3 enhancements, and a set of acceptance test cases written in Given/When/Then format covering the six critical customer and admin flows. These additions are intended to give the client and the eventual coding agent a clear, defensible scope boundary that prevents scope creep without sacrificing commercial completeness.
+The intended audience of this document is the client (for sign-off) and an autonomous coding AI agent (for implementation). After client review and approval, this specification is designed to be converted into a final implementation prompt that the coding agent can execute against with minimal further clarification. Throughout the document, the keywords MUST, SHOULD, and MAY are used in the RFC 2119 sense to indicate requirement strength, and bracketed placeholders such as [CLIENT_NAME] or [PAYMENT_GATEWAY] indicate variables that must be confirmed with the client before the implementation prompt is finalised.
+2. Project Context, Brand Identity & Scope Boundaries
+2.1 Business Context
+The client is a local Indian jewellery seller offering a catalogue spanning seven primary product categories: earrings, jhumkas (traditional bell-shaped earrings), bangles, rings, necklaces, bracelets, and complete jewellery sets. The business currently sells through offline channels and wishes to establish a premium online storefront that reflects the craftsmanship and heritage of its catalogue while operating as a real, revenue-generating e-commerce business — not a portfolio demo or a landing page. Every requirement in this specification is therefore framed against real-world commercial constraints: legal compliance, payment security, tax handling, fulfilment workflows, and customer support.
+2.2 Proposed Brand Identity
+In the absence of a final brand name from the client, this specification proposes the working brand name Suvarna, derived from the Sanskrit term for golden or of good colour. The name evokes heritage, premium positioning, and a clear connection to Indian jewellery tradition while remaining pronounceable, short, and brandable. The proposed tagline is Heirlooms, reimagined. — positioning the brand as both rooted in tradition and contemporary in execution. Should the client choose a different name, every visual and copy element in this specification is designed to be rebranded without architectural change; only string tokens and the logo asset require replacement.
+The proposed brand palette is built around four core colours that signal premium Indian jewellery without copying any specific competitor: Deep Maroon (#5C1A2B) referencing traditional Indian bridal jewellery and the richness of red zariwork, Antique Gold (#B8893D) referencing the warmth of unpolished gold used in heirloom pieces, Ivory (#FAF6EE) as the canvas colour evoking raw silk and parchment, and Charcoal (#1F1F1A) as the primary text colour. A secondary Rose Gold (#C9A87C) is introduced for accent surfaces such as hover states and badges. The full design system is documented in Section 9.
+2.3 Competitive Benchmark References
+The following brands are referenced in this specification as competitive benchmarks only. Their mention does not authorise copying of any visual, copy, or code element; they are referenced solely to communicate the expected quality bar and user experience patterns. The benchmarks are: GIVA (premium positioning, minimalist product photography, clean PDP layout), CaratLane (robust filtering, virtual try-on ambitions, strong mobile checkout), Tanishq (heritage storytelling, trust badges, festive collection merchandising), and Bluestone (configurable ring filters, EMI presentation). Suvarna will establish its own distinct visual identity rather than imitating any of these.
+2.4 Out-of-Scope for MVP
+To preserve delivery quality and time-to-launch, the following features are explicitly excluded from the MVP and are not described as requirements in this specification. They are flagged here so the client and coding agent have a single source of truth for scope boundaries.
+Native iOS and Android applications (mobile web is fully responsive and the site will be installable as a PWA in Phase 3).
+Multi-vendor marketplace functionality (Suvarna is single-seller in MVP).
+Live video shopping or influencer live-stream sessions.
+Augmented-reality try-on in MVP (Phase 2 may include ring try-on for a single category).
+B2B wholesale portal for retailers (Phase 3).
+International shipping, multi-currency, and multi-language in MVP (English only at launch; Hindi in Phase 2; additional regional languages in Phase 3).
+Loyalty programme, referral programme, and gift cards (Phase 3).
+Subscription products and recurring billing.
+2.5 Document Conventions
+Throughout this specification, the verbs MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY are used in the RFC 2119 sense. MUST indicates a hard requirement that, if unmet, blocks launch. SHOULD indicates a strong recommendation that may be deviated from only with documented rationale. MAY indicates an optional enhancement. Bracketed placeholders of the form [PLACEHOLDER] indicate variables that must be confirmed with the client before implementation; common placeholders include [CLIENT_LEGAL_NAME], [SUPPORT_EMAIL], [SUPPORT_PHONE], [PAYMENT_GATEWAY] (Razorpay or Cashfree are the recommended India-optimised options), [SHIPPING_PARTNER], [SMS_GATEWAY], [EMAIL_SERVICE], [ANALYTICS_ID], and [DOMAIN_NAME].
+3. Customer-Facing Page Inventory & Route Map
+This section enumerates every customer-facing route that the storefront MUST expose at MVP launch. Each route is annotated with its render strategy (SSR, SSG with incremental static regeneration, or client-side rendering), authentication requirement, and phase. The render strategy is chosen to balance SEO performance against data freshness; routes that change frequently or depend on user session use SSR or CSR, while catalogue pages that benefit from caching use SSG with ISR.
+Table 3.1 — Customer-facing storefront route inventory
+Route
+Page
+Auth
+Render
+Phase
+/
+Homepage
+No
+SSG + ISR (revalidate 300s)
+MVP
+/shop
+All products listing
+No
+SSG + ISR (revalidate 600s)
+MVP
+/shop/[category]
+Category listing (e.g. /shop/jhumkas)
+No
+SSG + ISR (revalidate 600s)
+MVP
+/shop/[category]/[subCategory]
+Sub-category listing
+No
+SSG + ISR (revalidate 600s)
+MVP
+/product/[slug]
+Product detail page (PDP)
+No
+SSG + ISR (revalidate 60s)
+MVP
+/search
+Search results
+No
+SSR (query-driven)
+MVP
+/cart
+Shopping cart
+No (uses guest cart merged on login)
+CSR
+MVP
+/wishlist
+Wishlist (guest: local; logged-in: server-synced)
+Optional
+CSR + SSR fallback
+MVP
+/checkout
+Checkout entry (redirects to /checkout/address)
+Optional (guest allowed)
+CSR
+MVP
+/checkout/address
+Step 1: Address selection/entry
+Optional
+CSR
+MVP
+/checkout/payment
+Step 2: Payment method selection
+Optional (guest allowed)
+CSR
+MVP
+/checkout/review
+Step 3: Order review & place order
+Optional
+CSR
+MVP
+/order/confirm/[id]
+Order confirmation
+Optional (token-gated)
+SSR
+MVP
+/account
+Account dashboard
+Yes
+SSR + CSR
+MVP
+/account/profile
+Profile edit
+Yes
+CSR
+MVP
+/account/addresses
+Address book CRUD
+Yes
+CSR
+MVP
+/account/orders
+Order history list
+Yes
+SSR
+MVP
+/account/orders/[id]
+Order detail + tracking
+Yes
+SSR
+MVP
+/account/wishlist
+Synced wishlist
+Yes
+SSR
+MVP
+/account/returns
+Return requests
+Yes
+SSR
+MVP
+/account/coupons
+Saved coupons
+Yes
+SSR
+MVP
+/auth/login
+Login
+No
+CSR
+MVP
+/auth/register
+Register
+No
+CSR
+MVP
+/auth/forgot-password
+Forgot password
+No
+CSR
+MVP
+/auth/reset-password
+Reset password
+No
+CSR
+MVP
+/auth/verify-email
+Email verification landing
+No
+CSR
+MVP
+/track-order
+Track order as guest
+No
+CSR
+MVP
+/pages/[slug]
+CMS pages (about, contact, policies)
+No
+SSG + ISR
+MVP
+/contact
+Contact form
+No
+SSG
+MVP
+/about
+Brand story
+No
+SSG
+MVP
+/policies/shipping
+Shipping policy
+No
+SSG
+MVP
+/policies/returns
+Returns policy
+No
+SSG
+MVP
+/policies/privacy
+Privacy policy
+No
+SSG
+MVP
+/policies/terms
+Terms of service
+No
+SSG
+MVP
+/collections/[slug]
+Curated collection page
+No
+SSG + ISR
+Phase 2
+/account/rewards
+Loyalty programme dashboard
+Yes
+SSR
+Phase 3
+/404
+Not found
+No
+Static
+MVP
+/error
+Generic error boundary page
+No
+Static
+MVP
+3.1 Feature Inventory per Page
+The route table above defines the surface area of the storefront. Each page carries an MVP feature set that is described in detail in Sections 4 through 7. Phase 2 and Phase 3 routes are flagged in the route table and described at a feature-list level in Section 16 (Phase Plan). The coding agent MUST implement every MVP route and MUST NOT implement Phase 2 or Phase 3 routes in the MVP delivery unless explicitly requested by the client.
+3.2 Route Guards & Authentication
+Routes marked Auth: Yes require an authenticated session. Unauthenticated visits MUST be redirected to /auth/login with the original destination preserved in a redirect_url query parameter (URL-encoded) and replayed after successful login. Routes marked Auth: Optional allow both guest and authenticated access; the implementation MUST gracefully merge guest cart and guest wishlist into the user account on login. The /order/confirm/[id] route is token-gated — the token is delivered via order confirmation email and SMS — to allow guest customers to view their own order without registration.
+4. Homepage Layout, Navigation & Product Discovery
+4.1 Homepage Anatomy
+The homepage is the primary commercial surface and is organised as a vertical stack of merchandising blocks. Each block has a specific commercial intent and is fully manageable from the admin dashboard so that the client can refresh the storefront for festive seasons (Diwali, Akshaya Tritiya, Karva Chauth, wedding season) without engineering intervention. The blocks, top to bottom, are: (1) promo announcement bar (top of page, dismissible); (2) primary header; (3) hero carousel of three to five slides; (4) shop-by-category circular rail; (5) new-arrivals product rail; (6) editorial collection feature block (full-width image + caption); (7) bestsellers product rail; (8) festivity or seasonal feature block; (9) second product rail (e.g. under INR 5,000); (10) trust badges strip (genuine jewellery, certified, easy returns, secure payments); (11) customer testimonial carousel; (12) Instagram feed grid (Phase 2 social proof); (13) newsletter signup; (14) footer.
+4.2 Header
+The header is persistent across all storefront pages and is composed of four zones. Zone A is the top announcement bar (single line, dismissible per session via cookie) used for site-wide promotions such as festive offers, free shipping thresholds, or new collection launches. Zone B is the main header row containing (left to right): the mobile hamburger trigger, the logo, the primary navigation links (New In, Earrings, Jhumkas, Bangles, Rings, Necklaces, Bracelets, Sets, Collections, About), a search trigger that opens a full-screen overlay, and on the right the account icon, the wishlist icon with live badge count, and the cart icon with live badge count. Zone C is a secondary nav row visible only on category hover, showing sub-category quick links. Zone D is the sticky header shadow that appears on scroll.
+4.3 Footer
+The footer is divided into five columns: Shop (links to each category), Help (track order, contact, shipping, returns, size guide, FAQ), Company (about, careers, press, sustainability), Policies (privacy, terms, cookies, grievance officer per Indian e-commerce rules), and Contact (address, phone, email, hours, social icons). Below the columns: payment method icons (UPI, Visa, Mastercard, RuPay, Razorpay), a grievance officer note (required by Indian Consumer Protection (E-Commerce) Rules 2020), and the copyright line with the registered trademark symbol.
+4.4 Search Experience
+Search is triggered from the header and opens as a full-screen overlay with a large input auto-focused on open. The overlay surfaces four sections: (1) recent searches (last 8 stored in localStorage), (2) trending searches (admin-curated and algorithmically supplemented), (3) suggested products (instant results matching the typed query, displayed as a 2-column image grid), and (4) suggested categories (when the query matches a category name). Search queries are debounced at 250ms; suggestions are fetched from GET /api/v1/search/suggest. Pressing Enter navigates to /search?q=<query>. Empty search state shows the curated trending list.
+4.5 Product Discovery Surfaces
+Beyond the homepage rails, products are discoverable through four additional surfaces. Category and sub-category pages (Section 5) display products with filtering and sorting. Search results pages render the same product grid as PLPs but with a no-results state if no matches. The PDP (Section 5.4) displays related products (same category, same collection) and recently viewed products (last 10 stored in localStorage, synced to server for logged-in users). Wishlist and cart both surface inline product recommendations for cross-sell. Each discovery surface reuses the same ProductCard component (Section 10.2) to ensure consistent visual language.
+4.6 Homepage Wireframe (Desktop)
+The following text wireframe communicates the homepage block ordering and is not a pixel-perfect mock. The coding agent is expected to interpret it as a structural guide and apply the visual design system in Section 9 to produce a polished UI.
+┌──────────────────────────────────────────────────────────────────┐
+│ [PROMO BAR] Free shipping over INR 2,000 · 7-day easy returns  ✕ │
+├──────────────────────────────────────────────────────────────────┤
+│ ☰   SUVARNA     NewIn Earrings Jhumkas Bangles Rings...  ⌕  ♥  🛒 │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│              [HERO CAROUSEL — full-width image]                  │
+│              The Aishwarya Collection — Festive 2026              │
+│                       [Shop the collection]                     │
+│                                                                  │
+├──────────────────────────────────────────────────────────────────┤
+│   SHOP BY CATEGORY                                               │
+│   ○  ○  ○  ○  ○  ○  ○                                           │
+│  Earring Jhumka Bangle Ring Necklace Bracelet Set                │
+├──────────────────────────────────────────────────────────────────┤
+│   NEW ARRIVALS    →  View all                                    │
+│   [card] [card] [card] [card] [card]                            │
+├──────────────────────────────────────────────────────────────────┤
+│   [EDITORIAL FEATURE BLOCK — full-bleed image]                   │
+│   "Heirlooms, reimagined." — wedding season edit                │
+├──────────────────────────────────────────────────────────────────┤
+│   BESTSELLERS    →  View all                                    │
+│   [card] [card] [card] [card] [card]                            │
+├──────────────────────────────────────────────────────────────────┤
+│   ★ Certified  ★ Easy returns  ★ Secure payments  ★ Free ship  │
+├──────────────────────────────────────────────────────────────────┤
+│   "Beautiful jhumkas, faster delivery than expected." — Aarti, … │
+├──────────────────────────────────────────────────────────────────┤
+│   Join the Suvarna list — get 10% off your first order           │
+│   [email input]                          [Subscribe]            │
+├──────────────────────────────────────────────────────────────────┤
+│   Shop · Help · Company · Policies · Contact                    │
+│   © 2026 Suvarna Jewels. All rights reserved.                    │
+└──────────────────────────────────────────────────────────────────┘
+5. Product Listing, Filtering, Sorting & Product Detail
+5.1 Product Listing Page (PLP) Anatomy
+The PLP serves three routes — /shop, /shop/[category], and /shop/[subCategory] — through a single shared component. Anatomy: (1) breadcrumb (Home / Shop / [Category]); (2) optional category banner with editorial copy; (3) result count and active filter chips; (4) sort dropdown (relevance, price low-to-high, price high-to-low, newest, best-selling, rating, discount); (5) filter sidebar (desktop) / filter bottom-sheet (mobile); (6) product grid (4 columns desktop, 3 columns tablet, 2 columns mobile); (7) pagination (12 per page) with infinite-scroll fallback for mobile; (8) empty state with suggested categories when no results; (9) SEO footer with category description and FAQs.
+5.2 Filter Taxonomy
+Filters reflect the specific attributes relevant to jewellery shopping in India. The implementation MUST support multi-select within a filter group, an apply/clear affordance per group, and an active-filter chip row that allows single-click removal. The complete filter taxonomy is:
+Table 5.1 — PLP filter taxonomy
+Filter Group
+Values
+UI Pattern
+Backend Query Param
+Category
+Earrings, Jhumkas, Bangles, Rings, Necklaces, Bracelets, Sets
+Checkbox list
+category[]
+Sub-category
+Studs, Drops, Hoops (etc. — varies by category)
+Checkbox list (contextual)
+subCategory[]
+Price range
+0–1000, 1000–2500, 2500–5000, 5000–10000, 10000+
+Dual-thumb slider
+priceMin, priceMax
+Material
+Gold, Silver, Rose Gold, Brass, Pearl, Diamond, Kundan
+Checkbox chips
+material[]
+Occasion
+Daily wear, Festive, Wedding, Office, Gift
+Checkbox chips
+occasion[]
+Colour
+Yellow, White, Rose, Green, Red, Multi
+Colour swatches
+colour[]
+Collection
+Admin-defined list
+Checkbox list
+collection[]
+Gemstone
+Diamond, Ruby, Emerald, Pearl, Sapphire, None
+Checkbox chips
+gemstone[]
+Rating
+4★+, 3★+
+Star radio
+minRating
+Availability
+In stock, Out of stock
+Toggle
+inStock
+Discount
+10%+, 25%+, 50%+
+Radio
+minDiscount
+5.3 Sort Options
+Sort options are: Relevance (default — admin-defined boost with a manual override per PLP), Price — Low to High, Price — High to Low, Newest (created_at desc), Best-Selling (units_sold desc, last 30 days), Top Rated (avg_rating desc, requires min 10 ratings), Discount (effective discount % desc). Selected sort is reflected in the URL search params to support shareable filtered URLs.
+5.4 Product Detail Page (PDP) Anatomy
+The PDP is the single highest-value page for conversion and is built with particular care. Anatomy: (1) breadcrumb; (2) two-column layout — left column image gallery (60% width), right column product information (40% width); (3) below the two-column area: tabbed content (Description, Specifications, Care Guide, Shipping & Returns), customer reviews with rating distribution and pagination, related products rail, recently viewed rail; (4) sticky mobile add-to-cart bar at viewport bottom.
+5.4.1 Image Gallery
+The image gallery includes a primary image area (4:5 aspect ratio) with hover-zoom on desktop and pinch-zoom on mobile, a vertical thumbnail strip on desktop (left of main image) and horizontal thumbnail strip on mobile (below main image), optional product video (autoplay muted on visible, tap to enable audio), and an AR try-on affordance (Phase 2 — rings only) when available. Every product MUST have at least 5 images: front, side, worn (lifestyle), detail close-up, and packaging. Images use the loading="lazy" attribute except for the first image, which uses priority loading for LCP.
+5.4.2 Product Information Column
+The right column displays: product title (H1), brand badge, rating summary (aggregate rating + review count linking to reviews section), price block (selling price, MRP with strikethrough, discount % in maroon), stock status ("In stock" / "Only N left" / "Out of stock — notify me"), short description (2–3 lines), variant selectors (size selector for rings and bangles with a size guide link; material selector if multiple material options exist; colour selector), quantity stepper (1–10, with backend enforcement of max-purchase-per-order), primary actions (Add to Cart — full-width antique-gold button; Buy Now — maroon button leading directly to /checkout; Wishlist — outline heart icon), secondary actions (Share — opens native share sheet on mobile, copy link on desktop; Pincode delivery check — shows estimated delivery date for entered pincode), trust microcopy (genuine certificate, easy 7-day returns, secure payments), and accordion of additional details.
+5.4.3 PDP Tabs
+The Description tab contains long-form product description, design story, and occasion recommendations. The Specifications tab is a key-value table (material, weight, gemstone, certification, dimensions, origin, purity). The Care Guide tab explains cleaning, storage, and wear guidance. The Shipping & Returns tab summarises shipping timelines, return policy, and exchange process. The reviews tab is described in Section 5.4.4.
+5.4.4 Reviews Section
+Reviews are critical social proof for premium jewellery. The section displays: aggregate rating (one decimal), total review count, rating distribution bar (5★ / 4★ / 3★ / 2★ / 1★ with percentages), sort options (most recent, most helpful, highest, lowest), filter by rating, review cards (reviewer name, verified-buyer badge, rating, date, review title, body, optional photos), and pagination or load-more. The Write-a-Review button opens a modal that accepts rating (mandatory), title, body, and up to 3 photos; submission requires a verified order and is throttled to one review per product per order.
+5.4.5 PDP SEO Schema
+Every PDP MUST embed schema.org Product JSON-LD with name, image (array), description, sku, brand (Organization with name Suvarna), offers (Offer with price, priceCurrency INR, availability, url, priceValidUntil), aggregateRating (ratingValue, reviewCount, bestRating 5), and BreadcrumbList. This enables rich results in Google Search and is a launch-blocking SEO requirement.
+5.5 PLP Wireframe (Desktop)
+┌──────────────────────────────────────────────────────────────────┐
+│ Home / Shop / Earrings                                            │
+│ EARRINGS — 248 results                                             │
+├───────────┬────────────────────────────────────────────────────────┤
+│ FILTERS   │  Sort by: [Relevance ▾]    [✕ Maroon] [✕ In stock]    │
+│           │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐         │
+│ ▼ Price   │  │ [img]  │ │ [img]  │ │ [img]  │ │ [img]  │         │
+│   ▭▭▭▭▭▭  │  │ Name   │ │ Name   │ │ Name   │ │ Name   │         │
+│ ▼ Material│  ₹1,499  │ ₹2,999  │ ₹899    │ ₹4,499  │         │
+│   ☑ Gold  │  ★4.5 99 │ ★4.8 220 │ ★4.2 18 │ ★5.0 7  │         │
+│   ☐ Silver│  └────────┘ └────────┘ └────────┘ └────────┘         │
+│ ▼ Rating  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐         │
+│   ☑ 4★+   │  │ [img]  │ │ [img]  │ │ [img]  │ │ [img]  │         │
+│           │  │  ...   │ │  ...   │ │  ...   │ │  ...   │         │
+│ [Apply]   │  └────────┘ └────────┘ └────────┘ └────────┘         │
+│ [Clear]   │  « 1  2  3  4  5 »                                       │
+└───────────┴────────────────────────────────────────────────────────┘
+5.6 PDP Wireframe (Desktop)
+┌──────────────────────────────────────────────────────────────────┐
+│ Home / Shop / Earrings / Aishwarya Gold Jhumka                   │
+├───────────────────────────┬───────────────────────────────────────┤
+│ ┌──┐                                                     │ Suvarna│
+│ │1 │      ┌────────────────────┐                         │ Aishwarya Gold Jhumka│
+│ │  │      │                    │                         │ ★4.8 (132 reviews)   │
+│ ├──┤      │   [MAIN IMAGE]      │                         │                       │
+│ │2 │      │   hover-zoom        │                         │ ₹2,999  ₹4,999 (-40%)│
+│ │  │      │                    │                         │ In stock             │
+│ ├──┤      └────────────────────┘                         │                       │
+│ │3 │      [play ▶ video]                                │ Size: [S] [M] [L]    │
+│ ├──┤                                                  │ Quantity: [-] 1 [+]   │
+│ │4 │                                                  │                       │
+│ └──┘                                                  │ [Add to Cart]         │
+│                                                       │ [Buy Now]             │
+│                                                       │ ♥ Wishlist  ↗ Share   │
+│                                                       │ Pincode: [____] Check │
+│                                                       │ ✓ Delivery by 24 Oct  │
+└───────────────────────────┴───────────────────────────────────────┘
+│ [Description] [Specifications] [Care] [Shipping & Returns] [Reviews]│
+│ ... long-form content per tab ...                                  │
+6. Cart, Wishlist, Checkout, Payment & Order Confirmation
+6.1 Shopping Cart
+The cart is the first revenue-bearing surface in the conversion funnel and is engineered to remove friction without compromising data integrity. The cart page renders line items as a list, each row showing product thumbnail (square 96px), product name (linked to PDP), variant summary (size, material, colour), unit price, MRP strikethrough, quantity stepper (1–10 with backend max-per-order enforcement), line total, and action menu (Move to Wishlist, Save for Later, Remove). Below the line items: coupon input field with Apply button, gift-wrap add-on checkbox (₹49), and a sticky order summary panel (right column on desktop, sticky bottom sheet on mobile) showing subtotal, applied discount, shipping (free over ₹2,000, else ₹99), tax (GST included in listed price per Indian norms), and grand total. Empty cart state shows a curated rail of bestsellers with a Shop Now CTA.
+The cart MUST be persistent for both guest and authenticated users. For guest users the cart is stored in localStorage and merged into the server-side cart on login (merge strategy: union by product+variant, sum quantities capped at max-per-order). For authenticated users the cart is server-side via TanStack Query mutations with optimistic UI updates; the wishlist operates on the same pattern.
+6.2 Wishlist
+The wishlist is a grid view (4 columns desktop, 2 columns mobile) of saved products with each card supporting Move to Cart, Remove, and Add Note (private, for personal gifting reminders). Wishlist sharing is a Phase 2 enhancement — in the MVP the wishlist is private per user. For guests the wishlist is stored locally; on login it is merged into the server-side wishlist using a union-by-product+variant strategy.
+6.3 Checkout — Three-Step Flow
+Checkout is a three-step linear flow implemented as a single page with step indicators and forward/back navigation. The three steps are Address, Payment, and Review. The implementation MUST support both guest and authenticated checkout; an authenticated user pre-fills from their address book and order history, while a guest can complete the purchase without ever registering. A persistent order summary panel is visible on the right (desktop) or as a sticky bottom sheet (mobile) throughout all three steps so the customer always sees the total.
+6.3.1 Step 1 — Address
+If authenticated, the customer sees their saved address book as selectable radio cards plus an Add New Address affordance. If guest, the form to enter a new address is shown directly. The address form fields are India-specific: Full Name, Phone Number (with +91 prefix and 10-digit validation), Pincode (6-digit, with auto-fetch of city/state via the postal API), Address Line 1 (house no, building), Address Line 2 (street, area), Landmark (optional), City (auto-filled from pincode, editable), State (dropdown of 28 states + 8 UTs), Address Type (Home/Work/Other). Pincode serviceability is checked in real time; if a pincode is not serviceable the customer is shown a clear message and the flow is blocked with an explanation.
+6.3.2 Step 2 — Payment Method
+The payment method selection is radio-grouped into: UPI (with PhonePe, Google Pay, Paytm, BHIM sub-options and a UPI ID collect option), Credit/Debit Cards (with saved cards visible if authenticated — only card brand + last 4 digits + nickname are stored, never the full card number), Net Banking (drop-down of major banks), Wallets (Paytm, Mobikwik, Amazon Pay), EMI (Phase 2; in MVP show only on cart > ₹5,000 with credit-card EMI options), Cash on Delivery (gated by pincode serviceability). A coupon can be applied here if not already applied in cart. The order summary recalculates to reflect any shipping or COD charges.
+6.3.3 Step 3 — Review & Place Order
+The review step shows the final order: items with quantities and totals, shipping address (with edit link returning to step 1), payment method (with edit link returning to step 2), coupon summary, shipping, tax, and grand total. A final Place Order button triggers the payment initiation flow described in Section 6.4. A confirmation checkbox for terms acceptance (mandatory — links to /policies/terms) and an optional marketing opt-in are present.
+6.4 Payment UI & Integration Pattern
+Payment is the highest-risk integration in the application and is implemented to never touch raw card data on the frontend. The integration pattern is: (1) on Place Order click, the frontend calls POST /api/v1/checkout/payment/initiate with the order payload (items, address, payment method, coupon) and an idempotency key generated client-side; (2) the backend validates the order, computes final totals server-side, creates a pending order in MySQL, and returns a payment session URL or token from the payment gateway (Razorpay or Cashfree recommended for India); (3) the frontend either opens the hosted payment page (full redirect) or embeds the gateway's hosted fields in an iframe — never native inputs for card data; (4) after payment completion the gateway redirects to /order/confirm/[id] or shows a failure screen, and the frontend polls POST /api/v1/checkout/payment/verify to confirm the order status server-side; (5) on success the cart is cleared, the order confirmation page is rendered with order ID and estimated delivery, and a confirmation email and SMS are triggered by the backend.
+6.5 Order Confirmation
+The order confirmation page (/order/confirm/[id]) shows: success hero with order ID and a thank-you message, ordered items summary, shipping address, payment summary, estimated delivery date (computed by backend based on pincode and warehouse), Track Order button (links to /account/orders/[id] for authenticated users, or to /track-order for guests), Continue Shopping button, and a personalised cross-sell rail. This page is token-gated for guests via a query parameter token that is delivered by email/SMS and validated server-side; the token has a 24-hour TTL.
+6.6 Checkout Edge Cases
+The following edge cases MUST be handled gracefully by the frontend. (1) Payment gateway timeout — show a clear message with a Check Status button that polls the verify endpoint; do not allow a duplicate place-order attempt without confirmation. (2) Payment success but order creation failure — the backend reconciliation webhook from the gateway will recover the order; the frontend must show a Payment Received, Order Being Confirmed state and instruct the user to check email. (3) Address validation failure (pincode unserviceable) — block navigation to step 2 with an inline error and suggest alternative pincode if nearby areas are serviceable. (4) COD not available for pincode — hide COD option on step 2 dynamically based on the pincode serviceability response. (5) Coupon expired mid-session — show toast notification, recompute totals, allow user to proceed without coupon. (6) Price changed between cart and checkout — show a Price Change notice with the new total and require explicit Re-accept before placing the order. (7) Out-of-stock discovered at order creation — block with a clear message, return user to cart with the unavailable item flagged, and offer replacement suggestions.
+7. Customer Authentication & Account Pages
+7.1 Authentication Flows
+Authentication uses a phone-OTP-first registration flow, which is the dominant pattern for Indian e-commerce and avoids the high friction of email verification before first purchase. The registration flow is: (1) customer enters full name, phone number (+91, 10 digits), password (min 8 chars, 1 letter, 1 number), and optional email; (2) frontend calls POST /api/v1/auth/otp/send which sends an SMS OTP; (3) customer enters the 6-digit OTP within 5 minutes; (4) frontend calls POST /api/v1/auth/register with the OTP to complete registration; (5) on success the backend returns access and refresh tokens and the frontend redirects to the intended redirect_url or /account. Login flow: customer enters phone or email + password; on success tokens are issued; on 3 consecutive failures the account is rate-limited for 5 minutes and the customer is shown a forgot-password link.
+Forgot password flow: customer enters registered phone or email; an OTP is sent; on OTP verification a reset-password form is shown; on submit the backend updates the password and invalidates all existing sessions. Email verification is a Phase 2 enhancement; in MVP, email is optional and unverified. Social login (Google, Facebook) is a Phase 2 enhancement. Session persistence uses an access token (15-minute TTL) stored in memory (Zustand) and a refresh token (7-day TTL) stored in an httpOnly, secure, sameSite=lax cookie set by the backend; the frontend never reads the refresh token directly. On access-token expiry, the next request transparently calls POST /api/v1/auth/refresh which uses the refresh-token cookie to issue a new access token; on refresh failure the user is redirected to login.
+7.2 Account Dashboard
+The account dashboard (/account) is the landing page after login and shows an overview: profile summary card, recent orders (last 5 with status badges), default address, wishlist count, saved coupons, and quick links. The left sidebar (collapsible on mobile to a drawer) provides navigation to all account sub-pages.
+7.2.1 Profile
+The profile page (/account/profile) shows first name, last name, email (with verified/unverified badge), phone (with verified badge), gender (optional, used for gifting personalisation), date of birth and wedding anniversary (optional, used for gifting prompts and birthday discount). All fields are editable through inline forms with optimistic UI and confirmation toasts. Personal data is treated as PII per Section 13 — the frontend must mask phone and email in any display that is not the profile-edit form itself.
+7.2.2 Addresses
+The addresses page (/account/addresses) is a CRUD interface for the address book with the same India-specific fields as Section 6.3.1. Each address card shows a default badge, edit, delete, and set-as-default actions. Deletion of an address used by a pending order is blocked with an explanatory message.
+7.2.3 Orders & Order Tracking
+The orders list (/account/orders) is a paginated table of past orders showing order ID, date, item count, total, status badge, and a View Detail link. The order detail page (/account/orders/[id]) shows: order summary, items with images and individual totals, shipping address, payment method and summary, and a status timeline. The status timeline is a vertical stepper with completed steps filled in maroon and the current step pulsing. The standard timeline stages are Placed → Confirmed → Packed → Shipped → Out for Delivery → Delivered. Returns and cancellations show on a parallel timeline. An Invoice download button (PDF generated by the backend) and a Reorder button (which adds the same items to cart if still available) are present.
+7.2.4 Wishlist Sync, Coupons, Returns, Notifications
+The account wishlist (/account/wishlist) is the server-side view of the wishlist described in Section 6.2. The coupons page (/account/coupons) shows coupons saved to the user's wallet (issued by the admin or auto-issued by marketing rules) with validity, value, and a Copy & Apply to Cart action. The returns page (/account/returns) lists return requests with status, reason, refund method, and amount. Notifications preferences (/account/notifications — Phase 2) controls channels (SMS, email, WhatsApp) and event types (order, offers, festival).
+7.3 Guest Order Tracking
+The /track-order page allows a guest customer to track an order without logging in by entering the order ID (from confirmation email/SMS) and the delivery phone number or email. The backend validates the combination and returns the same order detail view that an authenticated user would see for their own order. This route is publicly accessible but rate-limited (5 attempts per minute per IP).
+7.4 Authentication Edge Cases
+(1) Expired OTP — show a Resend OTP link with a cooldown timer (60 seconds between resends, max 5 resends per number per hour). (2) Account lockout after 5 failed login attempts — show a clear message and offer forgot-password. (3) Session expired mid-checkout — show a modal that allows re-login without losing the cart contents (cart is persisted client-side and re-merged on re-login). (4) Social login email conflict (Phase 2) — if a Google-login email matches an existing account, prompt for password to confirm ownership before linking. (5) Refresh token invalidation (e.g. user logged out from another device) — redirect to /auth/login with a Session Expired notice.
+8. Admin Dashboard — Screen-by-Screen Specification
+8.1 Admin Authentication & Roles
+The admin dashboard is a separate product surface accessed at /admin (which redirects to /admin/dashboard after auth). Admin authentication uses the same JWT pattern as the storefront but with separate tokens issued via POST /api/v1/admin/auth/login and stored in a separate cookie namespace. Admin sessions are short-lived (15-minute access TTL, 4-hour refresh TTL) and require re-authentication after 4 hours of inactivity. Two-factor authentication (TOTP via authenticator app) is mandatory for the super-admin role and recommended for all roles in Phase 2.
+Role-based access control follows a permission-matrix model rather than freeform roles. The four MVP roles and their permissions are:
+Table 8.1 — Admin role × permission matrix (✓ = allowed, ✗ = denied)
+Module
+Super-Admin
+Manager
+Content-Editor
+Customer-Support
+Dashboard (view)
+✓
+✓
+✓
+✓
+Products (CRUD)
+✓
+✓
+✓
+✗
+Categories (CRUD)
+✓
+✓
+✓
+✗
+Inventory (adjust)
+✓
+✓
+✗
+✗
+Orders (view)
+✓
+✓
+✗
+✓
+Orders (fulfil/cancel/refund)
+✓
+✓
+✗
+✗
+Customers (view)
+✓
+✓
+✗
+✓
+Customers (edit/blacklist)
+✓
+✗
+✗
+✗
+Coupons (CRUD)
+✓
+✓
+✗
+✗
+Reviews (moderate)
+✓
+✓
+✓
+✓
+CMS pages (CRUD)
+✓
+✓
+✓
+✗
+Banners (CRUD)
+✓
+✓
+✓
+✗
+Settings (store, payment, shipping)
+✓
+✗
+✗
+✗
+Admin user management
+✓
+✗
+✗
+✗
+8.2 Admin Dashboard Home
+The dashboard home (/admin/dashboard) is the landing page after admin login. Anatomy: (1) top bar with logo, search across orders/customers/products, admin profile menu, notifications bell; (2) left sidebar navigation; (3) main content area arranged as KPI cards row (revenue today, revenue MTD, orders today, AOV, conversion rate, low-stock alert count), a revenue trend chart (last 30 days with comparison to previous 30 days), a two-column row with Top Products (table) and Top Categories (donut chart), and a Recent Orders table with status pills and a quick-action menu per order. Below: pending-orders alert strip and recent-reviews moderation queue.
+8.3 Catalog → Products
+The product list (/admin/catalog/products) is a DataTable with columns: image, name (with category sub-line), price (selling + MRP), stock status (in/low/out), status (active/draft/archived), updated-at, and actions (edit, duplicate, archive). Filters above the table: search by name or SKU, category dropdown, status dropdown, stock status dropdown. Bulk actions: edit status, bulk delete (archived only), bulk export CSV. Pagination is 25 per page with jump-to-page.
+The product create/edit form (/admin/catalog/products/new and /admin/catalog/products/[id]) is a tabbed interface with tabs General, Variants, Images, Pricing, Inventory, SEO, Shipping, Status. General: name, slug (auto-generated from name, editable), short description, long description (rich text), category (multi-select with sub-category), brand (default Suvarna), tags. Variants: define variant axes (size for rings/bangles, material, colour) with per-variant SKU, price override, stock, and image. Images: multi-upload via drag-drop with thumbnail grid, primary image selector, alt text per image, image order. Pricing: selling price, MRP, cost price (admin only), tax slab (3% or 5% GST based on HSN), effective discount auto-calculated. Inventory: stock per variant, low-stock threshold, reorder point, warehouse location. SEO: meta title, meta description, URL slug, canonical URL, schema override. Shipping: weight, dimensions, HSN code, hazardous flag. Status: draft, active, archived — with effective-from/effective-to scheduling (Phase 2).
+8.4 Catalog → Categories
+The categories page (/admin/catalog/categories) renders the category tree as a draggable nested list. Each node shows name, image, slug, product count, and a status toggle. CRUD actions support parent/child relationships (depth ≤ 2), image upload (square 256px), display order (auto-set by drag, manual override), and an optional SEO description. Deleting a category with active products is blocked; the admin must reassign products to another category before deletion.
+8.5 Catalog → Collections
+Collections (/admin/catalog/collections) are curated merchandising groups that span categories (e.g. Aishwarya Festive 2026, Bridal Couture, Daily Wear Essentials). CRUD with name, slug, description, hero image, scheduled publish window, and product selection (search-add products to the collection with manual ordering).
+8.6 Inventory
+The inventory view (/admin/catalog/inventory) is a stock ledger per SKU showing current stock, committed (in unpaid/pending orders), available, and a transaction history (adjustment reasons: receipt, damage, loss, transfer). Bulk import via CSV and bulk export are supported. Low-stock rules are configurable per product (alert threshold, reorder point) and trigger email notifications to the configured inventory manager.
+8.7 Orders
+The order list (/admin/orders) is a DataTable with columns: order ID, customer name, items (count + first 3 thumbnails), total, payment status, fulfilment status, channel (web/phone), placed-at. Filters: status, payment status, date range, channel. The order detail view (/admin/orders/[id]) shows: customer info (with link to customer detail), shipping address, items with quantities and totals, payment summary, fulfilment timeline (vertical stepper matching the customer-facing timeline), and an Actions panel with: Confirm Order, Pack Order, Mark Shipped (opens carrier + tracking-number form), Mark Out-for-Delivery (auto from carrier webhook), Mark Delivered (auto or manual), Cancel Order (with reason), Initiate Refund (with reason and refund-method dropdown), and Add Internal Note. Invoice print (PDF download) and Packing Slip print (PDF download) actions are available.
+8.8 Customers
+The customer list (/admin/customers) shows name, email, phone, orders count, total spent, last order date, segment, tags, and status (active/blacklisted). The customer detail view (/admin/customers/[id]) shows profile, address book, full order history with status, support tickets (Phase 2), segment membership, tags (admin-managed), and a blacklist toggle (with reason and reactivation). Blacklisting blocks new orders from that customer; existing pending orders are not auto-cancelled but flagged for review.
+8.9 Coupons & Offers
+The coupons module (/admin/marketing/coupons) is a CRUD interface for promotional codes. Coupon types: percentage off, flat amount off, free shipping, buy-one-get-one (Phase 2). Coupon rules: code (admin-set or auto-generated), description, type, value, min order amount, max discount amount, applicable categories (multi-select), applicable products (multi-select), valid-from, valid-to, usage cap (total), per-customer cap, first-order-only flag, customer segment (all, new, returning, VIP). A preview-and-test feature allows the admin to validate a coupon against a hypothetical cart before publishing. Coupon status: draft, active, paused, expired.
+8.10 Reviews
+The reviews moderation queue (/admin/catalog/reviews) lists pending reviews with reviewer name, product, rating, title, body, photos, and actions: Approve, Reject (with reason), Reply (admin response shown alongside the customer review on PDP), Report Spam (auto-flag pattern-based). Filtered views: pending, approved, rejected, flagged. Bulk actions: approve-all, reject-all (with confirmation).
+8.11 CMS Pages, Banners & Settings
+CMS pages (/admin/cms/pages) is a CRUD for static pages with rich-text editor (TipTap or Quill), slug, SEO meta, and status. Banners (/admin/cms/banners) manages hero carousel slides (image, mobile image, title, subtitle, link, scheduling, order) and mid-page feature blocks. Settings (/admin/settings) is a tabbed form covering store info (name, legal name, GSTIN, PAN, address, support contacts), currency (default INR), tax (GST slabs by HSN), shipping rules (free-shipping threshold, flat rates, pincode serviceability file upload), payment gateways (Razorpay/Cashfree key entry with secret masking), SEO defaults, email templates (order confirmation, shipping, delivery, abandoned cart), SMS templates (OTP, order status), and integrations (GA4, Meta Pixel, GTM container ID).
+8.13 Admin Route Inventory
+Table 8.2 — Admin dashboard route inventory
+Route
+Screen
+Roles
+/admin/auth/login
+Admin login
+Public
+/admin
+Redirect to /admin/dashboard
+Any admin
+/admin/dashboard
+Dashboard home with KPIs
+All roles
+/admin/catalog/products
+Product list
+Super-Admin, Manager, Content-Editor
+/admin/catalog/products/new
+Create product
+Super-Admin, Manager, Content-Editor
+/admin/catalog/products/[id]
+Edit product
+Super-Admin, Manager, Content-Editor
+/admin/catalog/categories
+Category tree
+Super-Admin, Manager, Content-Editor
+/admin/catalog/collections
+Collections list
+Super-Admin, Manager, Content-Editor
+/admin/catalog/inventory
+Inventory ledger
+Super-Admin, Manager
+/admin/orders
+Order list
+Super-Admin, Manager, Customer-Support (view)
+/admin/orders/[id]
+Order detail + fulfilment
+Super-Admin, Manager, Customer-Support (view)
+/admin/customers
+Customer list
+Super-Admin, Manager, Customer-Support (view)
+/admin/customers/[id]
+Customer detail
+Super-Admin, Manager (view), Customer-Support (view)
+/admin/marketing/coupons
+Coupon CRUD
+Super-Admin, Manager
+/admin/catalog/reviews
+Review moderation
+All roles
+/admin/cms/pages
+CMS page CRUD
+Super-Admin, Manager, Content-Editor
+/admin/cms/banners
+Banner CRUD
+Super-Admin, Manager, Content-Editor
+/admin/settings
+Store settings
+Super-Admin
+/admin/users
+Admin user management
+Super-Admin
+9. Premium Visual Design System
+9.1 Brand Palette
+The brand palette is anchored on four core colours that signal premium Indian jewellery and three supporting tokens for UI feedback. All colours meet WCAG 2.1 AA contrast ratios when paired with their intended foreground as specified in Table 9.1.
+Table 9.1 — Brand colour tokens and usage
+Token
+Hex
+Role
+Pair With
+maroon
+#5C1A2B
+Primary brand, CTAs (Buy Now), badges, headings on dark
+Ivory or White text
+antique-gold
+#B8893D
+Accent, primary CTAs (Add to Cart), focus rings, dividers
+Charcoal or Maroon text
+ivory
+#FAF6EE
+Page background, card surfaces
+Charcoal text
+charcoal
+#1F1F1F
+Primary body text, headings on light
+Ivory background
+rose-gold
+#C9A87C
+Hover states, secondary accents, gift-related surfaces
+Charcoal text
+success
+#2E7D5B
+Success toasts, in-stock badges, confirmed states
+White text
+error
+#B3261E
+Error toasts, out-of-stock badges, validation errors
+White text
+warning
+#B85C00
+Low-stock badges, pending states
+White text
+info
+#1F6F8B
+Informational banners, tooltips
+White text
+9.2 Extended UI Palette
+Beyond brand tokens the system defines a neutral ramp (grey-50 through grey-900) for borders, surfaces, disabled states, and text variants. A simplified ramp: grey-50 #FAFAFA (page surface), grey-100 #F4F4F2 (card surface), grey-200 #E8E6E1 (border default), grey-400 #C7C2B7 (border emphasis), grey-600 #6F6A60 (secondary text), grey-700 #4A463E (tertiary text), grey-900 #1F1F1F (primary text, alias of charcoal). Disabled state: background grey-100, text grey-400, border grey-200. Hover state on light surfaces: tint of antique-gold at 8% opacity. Active state: tint at 16%.
+9.3 Typography
+Typography pairs a premium serif for headings with a clean sans-serif for body and UI. Headings use Cormorant Garamond (display weights 500/600/700) — a contemporary serif with editorial warmth that signals premium positioning without overwhelming product photography. Body and UI use Inter (weights 400/500/600/700) — a screen-optimised sans-serif with excellent legibility across sizes. Numerals in prices and order summaries use tabular-figure variants (font-feature-settings: tnum) to prevent column jitter. Loading strategy: both fonts are loaded with preload and font-display: swap; subsets are restricted to Latin + Devanagari (for Hindi Phase 2).
+Table 9.2 — Type scale
+Token
+Size (rem/px)
+Line height
+Weight
+Font
+Usage
+display-1
+3.5 / 56
+1.1
+600
+Cormorant
+Hero carousel headline
+display-2
+2.75 / 44
+1.15
+600
+Cormorant
+Editorial feature headline
+h1
+2.25 / 36
+1.2
+600
+Cormorant
+PDP title, page H1
+h2
+1.75 / 28
+1.25
+600
+Cormorant
+Section heading
+h3
+1.375 / 22
+1.3
+600
+Cormorant
+Subsection heading
+h4
+1.125 / 18
+1.4
+600
+Inter
+Card title, tab heading
+body
+1 / 16
+1.6
+400
+Inter
+Body text
+body-small
+0.875 / 14
+1.5
+400
+Inter
+Secondary text, captions
+caption
+0.75 / 12
+1.4
+500
+Inter
+Microcopy, badges
+price
+1.25 / 20
+1.2
+600
+Inter (tnum)
+Price displays
+price-mrp
+0.875 / 14
+1.2
+400
+Inter (tnum)
+MRP strikethrough
+9.4 Spacing, Radius & Shadow Scales
+Spacing uses a 4px base unit with scale tokens 0(0), 1(4), 2(8), 3(12), 4(16), 5(20), 6(24), 8(32), 10(40), 12(48), 16(64), 20(80), 24(96). Radius tokens: 0(0px), sm(2px), md(4px), lg(8px), xl(12px), 2xl(16px), full(9999px for pills and circular avatars). Shadow tokens: sm(0 1px 2px rgba(31,31,31,0.06)), md(0 4px 12px rgba(31,31,31,0.08)), lg(0 8px 24px rgba(31,31,31,0.12)), xl(0 16px 40px rgba(31,31,31,0.16)) — the elevation scale intentionally stays subtle to preserve the editorial premium feel; hover lifts use lg shadow only on cards.
+9.5 Product Image Guidelines
+Product imagery is the single most important visual asset for a jewellery brand. The following guidelines MUST be enforced by the admin uploader and reviewed by the content-editor before publishing.
+Table 9.3 — Product image specifications
+Surface
+Aspect Ratio
+Display Size (px)
+File Size
+Format
+Notes
+PLP card
+1 : 1
+600 × 600
+< 80 KB
+WebP (AVIF fallback)
+Pure white #FFFFFF background, no logo, no watermark
+PDP main
+4 : 5
+1200 × 1500
+< 200 KB
+WebP
+Pure white background, soft shadow allowed
+PDP zoom
+1 : 1
+2000 × 2000
+< 500 KB
+WebP
+Loaded on hover/tap, lazy
+PDP lifestyle
+3 : 4
+1200 × 1600
+< 250 KB
+WebP
+Ivory #FAF6EE background, model worn
+Cart thumbnail
+1 : 1
+96 × 96
+< 30 KB
+WebP
+Derived from PLP card via image CDN
+OG/Twitter card
+1.91 : 1
+1200 × 630
+< 300 KB
+JPEG
+Brand-marketed, lifestyle
+Admin thumbnail
+1 : 1
+256 × 256
+< 60 KB
+WebP
+For admin lists only
+Each product MUST have a minimum of 5 images: front, side, lifestyle (worn), detail close-up, and packaging. Alt text is mandatory per image and is written by the content-editor (not auto-generated) for accessibility and SEO. Image filenames are normalised to {product-slug}-{view}-{nn}.webp on upload. A video is optional; if provided it must be MP4 (H.264, < 5 MB, max 15 seconds, no audio).
+9.6 Iconography
+Icons use a single library — Phosphor Icons (regular weight) — for consistency. The default size is 24px with 20px for inline UI and 16px for microcopy accents. Brand-specific icons (jhumka, bangle silhouette) are designed as custom SVGs and live in /public/icons/brand/. Icons must use currentColor so they inherit text colour and respect dark/light mode.
+9.7 Responsive Breakpoints
+The site is mobile-first with breakpoints aligned to Tailwind defaults: sm 640px (large phones landscape, small tablets), md 768px (tablets), lg 1024px (small laptops), xl 1280px (desktops), 2xl 1536px (large desktops, used for PDP and admin tables). The storefront is optimised for the 360–414px mobile width band as the primary device class for Indian e-commerce; admin is optimised for 1280px and degrades gracefully to 1024px; mobile admin is supported only for customer-support read-only actions.
+9.8 Motion & Animation
+Motion is restrained and editorial — jewellery is a considered purchase, not an impulse buy, so motion must reinforce trust rather than urgency. Duration tokens: fast 150ms (hover, focus, toggle), normal 250ms (page transition, drawer open), slow 400ms (carousel slide, image zoom). Easing: ease-out for entries, ease-in for exits, ease-in-out for state changes. Specific patterns: product cards lift on hover (translateY -2px + shadow-lg), PDP main image zooms on hover (scale 1.08 over 400ms), drawers slide in from the right over 250ms, skeletons shimmer at 1.5s loop. prefers-reduced-motion media query is respected — all non-essential animations are disabled and instant transitions replace them.
+9.9 Empty & Error States
+Empty states (empty cart, no search results, no orders yet) use a small custom illustration (line-art, single-colour maroon on ivory) with a headline, a supportive sub-line, and a primary CTA. Error states (network failure, server error, not found) use the same illustration style with appropriate copy and a retry or back-home CTA. The 404 page uses a witty jewellery-themed line (e.g. This page has slipped off like a bangle.) with a search bar and the primary nav.
+9.10 Brand Voice & Microcopy
+Brand voice is warm, considered, and quietly confident — never shouty, never apologetic. Microcopy avoids discount-driven urgency (no Last 5 left!; no Hurry!); uses we and you; addresses the customer as someone choosing an heirloom, not chasing a deal. Microcopy examples: Add to Cart (not Add to Bag), Buy Now (not Grab Yours), Save for Later (not Move to Saved), Estimated delivery by 24 October (not Arrives soon). All copy is externalised in /locales/en.json for Phase 2 i18n.
+10. Reusable React Components & Project Folder Structure
+10.1 Atomic Design Hierarchy
+The component library follows the Atomic Design methodology with five levels: Atoms (single-purpose primitives such as Button, Input, Icon, Badge), Molecules (combinations of atoms such as FormField, QuantityStepper, RatingStars), Organisms (full UI sections such as ProductCard, CartLineItem, OrderSummary), Templates (page skeletons such as StorefrontLayout, AdminLayout, AuthLayout), and Pages (route-level implementations). This hierarchy is enforced through folder placement rather than rigid interface contracts, but components at each level MUST NOT import from a higher-complexity level (e.g. an Atom MUST NOT import an Organism).
+10.2 Component Inventory
+The following inventory lists the components required for MVP delivery. Each component is implemented in TypeScript with a defined props interface, support for the design tokens defined in Section 9, and full keyboard accessibility. The coding agent MUST implement every component listed; the inventory is the minimum viable library.
+Table 10.1 — Component inventory by category
+Category
+Components
+Notes
+Layout
+StorefrontHeader, StorefrontFooter, MobileNav, AccountSidebar, AdminTopbar, AdminSidebar, Breadcrumb, PageContainer, Section
+Responsive at all breakpoints; admin sidebar collapses to a drawer on < 1024px
+Product
+ProductCard, ProductGrid, ProductGallery, VariantSelector, SizeGuide, PriceBlock, StockBadge, RatingStars, ReviewCard, ReviewForm, RelatedProducts, RecentlyViewed
+ProductCard has 3 densities: default (PLP), compact (cart), mini (cart drawer)
+Cart & Checkout
+CartLineItem, CartSummary, CouponInput, QuantityStepper, AddressForm, AddressCard, PaymentMethodSelector, OrderReviewTable, OrderConfirmationHero, PincodeChecker
+AddressForm includes India-specific pincode auto-fetch
+Forms
+Input, PasswordInput, Select, Checkbox, Radio, TextArea, OTPInput, PhoneNumberInput, FormField, FormError, useFormPersist (hook)
+All inputs support aria-invalid and aria-describedby
+Feedback
+Toast (Toaster), Alert, Modal, Drawer, BottomSheet, Skeleton, EmptyState, ErrorBoundary, Loader, InlineError, Retry
+Modal and Drawer implement focus trap and ESC-to-close
+Navigation
+Tabs, Stepper, Pagination, Breadcrumbs, BackToTop, CommandPalette (admin)
+Stepper used in checkout and admin order fulfilment
+Marketing
+HeroCarousel, CategoryRail, ProductRail, EditorialFeatureBlock, TestimonialCard, InstagramGrid, NewsletterCTA, TrustBadges, CountdownTimer
+CountdownTimer only for festive sales; used sparingly
+Admin
+DataTable, FilterBar, StatCard, ChartCard (Recharts wrapper), ImageUploader, RichTextEditor (TipTap), StatusPill, ActionMenu, PermissionGate, ConfirmDialog
+PermissionGate hides UI based on admin role
+Common
+Button (5 variants), IconButton, Link, Badge, Avatar, Tooltip, Separator, Skeleton, Spinner, Sheet, Popover, DropdownMenu
+Built on shadcn/ui base with brand theming
+10.3 Component Contract Template
+Every component MUST follow a standardised contract documented in JSDoc above the component definition. The contract template is:
+/**
+ * ProductCard — Displays a single product for grid rendering.
+ *
+ * @example
+ *   <ProductCard product={product} density="default"
+ *     onAddToCart={(p) => mutate(p)} onWishlist={(p) => toggle(p)} />
+ *
+ * @prop {Product} product         - Product object (see types/product.ts)
+ * @prop {"default"|"compact"|"mini"} density - Visual density preset
+ * @prop {(p: Product) => void} [onAddToCart]  - Add-to-cart callback
+ * @prop {(p: Product) => void} [onWishlist]    - Wishlist-toggle callback
+ * @prop {boolean} [isWishlisted]              - Current wishlist state
+ * @prop {string}  [className]                  - Tailwind merge target
+ */
+10.4 Project Folder Structure
+The recommended folder structure uses the Next.js App Router convention. The /app directory contains route files only; all reusable code lives in /components, /lib, /hooks, /types, and /public. This separation allows the coding agent to navigate the codebase predictably and supports future migration to a Turborepo monorepo if the brand scales to multi-experience.
+suvarna/
+├─ app/                          # Next.js App Router routes only
+│  ├─ (shop)/                    # Storefront route group
+│  │  ├─ page.tsx                 # /
+│  │  ├─ shop/[category]/page.tsx
+│  │  ├─ product/[slug]/page.tsx
+│  │  ├─ cart/page.tsx
+│  │  ├─ checkout/...
+│  │  └─ account/...
+│  ├─ (auth)/                    # Auth route group (no layout chrome)
+│  │  ├─ login/page.tsx
+│  │  └─ register/page.tsx
+│  ├─ admin/                     # Admin dashboard
+│  │  ├─ dashboard/page.tsx
+│  │  ├─ catalog/...
+│  │  └─ orders/...
+│  ├─ api/                       # Local route handlers ONLY for BFF (proxying)
+│  └─ layout.tsx, error.tsx, not-found.tsx, globals.css
+├─ components/
+│  ├─ ui/                        # shadcn/ui primitives (Button, Input, …)
+│  ├─ shop/                      # Storefront-specific organisms
+│  ├─ admin/                     # Admin-specific organisms
+│  ├─ forms/                     # Form molecules
+│  ├─ feedback/                  # Toasts, skeletons, errors
+│  └─ layout/                    # Headers, footers, sidebars
+├─ lib/
+│  ├─ api/                        # Generated API client + raw fetchers
+│  ├─ hooks/                     # Custom hooks (useCart, useAuth, useWishlist)
+│  ├─ store/                     # Zustand stores (ui-store, auth-store)
+│  ├─ validations/               # Zod schemas (product, cart, auth)
+│  ├─ utils/                     # cn(), formatINR(), formatDate()
+│  └─ analytics/                # GA4 / GTM event helpers
+├─ types/                        # Shared TS types (Product, Order, User)
+├─ styles/                       # globals.css + design tokens
+├─ public/                       # Static assets (favicons, fonts, brand icons)
+├─ middleware.ts                # Auth + admin route guards
+├─ next.config.ts                # Image, env, CSP config
+├─ tailwind.config.ts            # Brand palette + type scale
+├─ tsconfig.json
+└─ package.json
+10.5 Naming Conventions
+Components use PascalCase (ProductCard); hooks use camelCase prefixed with use (useCart); utility functions use camelCase (formatINR); route files use Next.js conventions (page.tsx, layout.tsx, loading.tsx, error.tsx, not-found.tsx); TypeScript types use PascalCase (Product, Order, Customer); zod schemas use camelCase (productSchema, cartItemSchema); environment variables use SCREAMING_SNAKE_CASE with NEXT_PUBLIC_ prefix for client-exposed values. File names for components use kebab-case (product-card.tsx); route segments use kebab-case URLs (/shop/jhumkas).
+10.6 Storybook (Phase 2)
+Storybook is configured in Phase 2 to provide a visual regression baseline for the component library. Stories live alongside components in *.stories.tsx files. The MVP delivery does not require stories but the component folder structure is designed to accept them without reorganisation.
+11. State Management, Forms, Validation, Error Handling, Loading & Accessibility
+11.1 State Management Strategy
+The state strategy separates concerns by lifetime and origin: server state is owned by TanStack Query; ephemeral client UI state is owned by Zustand; URL-serialisable state (filters, pagination, sort) is owned by Next.js searchParams; form state is owned by react-hook-form; auth token state is owned by a Zustand store that synchronises with the httpOnly refresh cookie. This separation prevents the most common React-state anti-patterns (server data in client state, URL-derivable state in useState, form state duplicated in store).
+TanStack Query is configured with: default staleTime 60 seconds, gcTime 5 minutes, retry (1 retry with exponential backoff for 5xx errors, 0 retries for 4xx), refetchOnWindowFocus false (avoid unnecessary refetches on tab focus), refetchOnReconnect true. Mutations implement optimistic updates with rollback on error; the cart add/remove flow uses this pattern so the UI updates instantly and rolls back if the server rejects. Query keys are structured hierarchically (['products', { category, page, filters }]) to enable targeted invalidation after mutations.
+Zustand stores are: uiStore (cart drawer open, search overlay open, mobile nav open, theme); authStore (user object, accessToken, isAuthenticated, loginInProgress flag); wishlistStore (hydrated from server for authed users, localStorage for guests). All stores are persisted only where necessary (wishlist and guest cart to localStorage with a 7-day TTL); authStore is persisted to sessionStorage only for the access token to survive reload during a session, with the refresh cookie providing re-auth.
+11.2 Form Validation
+Forms use react-hook-form for state management and zod for schema validation. The same zod schemas are shared between client and (eventually) backend, ensuring a single source of truth for shape and constraint. Validation is field-level on blur, submit-blocked on invalid, and accessible — every error is associated with its input via aria-describedby, the error container has role="status" for screen-reader announcement, and the submit button shows a disabled state until the form is valid.
+India-specific validation rules: phone numbers must match ^+91[6-9]\d{9}$ (Indian mobile numbers start with 6, 7, 8, or 9); pincodes must match ^\d{6}$; GSTIN must match the 15-character pattern with check-digit validation; email must be a valid RFC 5322 address. Password rules: minimum 8 characters, at least 1 letter and 1 number (Phase 2 may enforce special characters). The OTP input component enforces numeric-only input with auto-advance and paste-distribution across the 6 boxes.
+11.3 Error Handling
+The error-handling strategy normalises backend errors into a predictable client-side shape and routes them to the appropriate UI surface. Every API call is wrapped in a typed fetcher that catches network errors, HTTP errors, and parse errors, and emits an ApiError of the form { code, message, fieldErrors?, traceId }. The fetcher integrates with TanStack Query's onError to fire toasts for actionable errors and with the global ErrorBoundary for unrecoverable errors.
+Table 11.1 — HTTP status to UI behaviour mapping
+HTTP Status
+Meaning
+Frontend Behaviour
+200 / 201 / 204
+Success
+Render data; toast success for mutations
+400
+Validation error
+Show field-level errors; do not toast
+401
+Access token expired or missing
+Attempt refresh; if refresh fails, redirect to /auth/login
+403
+Forbidden (role/permission)
+Show /403 page or toast; log to Sentry
+404
+Resource not found
+Render not-found.tsx or inline EmptyState
+409
+Conflict (duplicate, stale)
+Show toast with explanatory message; offer refresh
+422
+Unprocessable (business rule)
+Show inline error on relevant field
+429
+Rate limited
+Show toast; disable the trigger for retry-after seconds
+500 / 502 / 503 / 504
+Server error
+Show /error page; log to Sentry; offer retry
+The global ErrorBoundary in app/error.tsx catches React render errors and shows a friendly error page with a Try Again button that calls reset(). API errors during mutations surface as toasts via the Toaster mounted in the root layout. Network errors (offline) are detected via the navigator.onLine API and surface as a persistent banner until connectivity returns.
+11.4 Loading States
+Every async surface MUST show a loading state — there is no acceptable blank state during a fetch. Patterns: (1) Skeleton loaders for grid lists (ProductCardSkeleton mimics the card shape with shimmer animation); (2) Inline spinners for action buttons (Add to Cart shows a 16px spinner for the 200ms request); (3) Disabled-with-spinner for submit buttons (Place Order disabled + spinner during payment initiation); (4) Optimistic UI for cart/wishlist toggles (the heart icon fills instantly and rolls back on error); (5) Suspense boundaries for route transitions with a branded fallback. Page-level Suspense fallbacks are minimal branded loaders; component-level Suspense fallbacks are skeletons.
+11.5 Accessibility (WCAG 2.1 AA)
+Accessibility is a launch-blocking requirement, not a post-launch enhancement. The target conformance level is WCAG 2.1 AA. The implementation MUST pass an axe-core audit in CI with zero serious or critical violations on all storefront routes. Specific requirements:
+Semantic HTML throughout — use <button> for actions (not <div onClick>), <a> for navigation, <form> for forms, <nav>, <main>, <article>, <section> with aria-label where appropriate.
+ARIA roles only where native semantics are insufficient — drawer (role="dialog" aria-modal="true"), dropdown (role="listbox"), tabs (role="tablist" with aria-selected), accordion (aria-expanded on header).
+Keyboard navigation: all interactive elements reachable via Tab in logical order; visible focus rings (2px antique-gold outline, never removed); Escape closes overlays and returns focus to trigger; focus trap inside Modal and Drawer; focus returns to trigger on close.
+Colour contrast: text-on-background meets 4.5:1 (normal text) and 3:1 (large text). The maroon-on-ivory primary combination meets 7.1:1; antique-gold-on-charcoal meets 4.6:1.
+Alt text on every meaningful image; decorative images use alt=""; product images have alt text written by content-editors.
+Form labels: every input has a programmatically associated <label> (htmlFor or aria-labelledby); errors are announced via aria-describedby pointing to error container with role="status".
+Skip-to-content link at the top of every page (visible on focus) to bypass repeated header navigation.
+prefers-reduced-motion respected — all non-essential animations disabled when the user has set this preference.
+Screen reader testing: NVDA on Windows + VoiceOver on macOS tested for the critical flows (homepage, PDP, cart, checkout, account) before launch.
+11.6 Internationalisation Readiness
+Although the MVP launches in English only, the codebase is structured for i18n from day one. All user-facing strings are externalised into /locales/en.json; the next-intl library is installed but only English is configured at launch. Phase 2 adds Hindi (hi.json) and toggles the language switcher in the header. The Cormorant and Inter fonts are preloaded with Devanagari subset support so font loading does not block the Hindi launch.
+12. REST API Integration Contract (Frontend ↔ Backend)
+12.1 API Conventions
+This section defines the contract the frontend expects from the Node.js + Express backend. The backend team and the coding agent MUST implement exactly this contract. Any deviation requires explicit negotiation and an update to this specification. The conventions are: (1) base URL via NEXT_PUBLIC_API_BASE_URL with /api/v1 version prefix; (2) request and response bodies are JSON with Content-Type: application/json; (3) authentication uses Bearer JWT access tokens in the Authorization header for storefront endpoints and a separate cookie-based admin JWT for admin endpoints; (4) refresh tokens travel in httpOnly cookies set by the backend and are never read by frontend JavaScript; (5) idempotency keys are sent via the Idempotency-Key header on POST /orders and POST /checkout/payment/initiate to prevent duplicate orders on retry.
+Standard error envelope: { error: { code: string, message: string, fieldErrors?: Array<{field, message}>, traceId: string } }. Standard paginated envelope: { items: T[], page: number, pageSize: number, total: number, totalPages: number, hasNext: boolean }. Status codes follow HTTP 1.1 with the mapping in Table 11.1.
+12.2 Storefront Endpoint Inventory
+Table 12.1 — Storefront API endpoints (selected; full inventory in Appendix)
+Method
+Path
+Purpose
+Auth
+Cache
+POST
+/auth/register
+Register with phone+OTP+password
+No
+No
+POST
+/auth/login
+Login with phone/email + password
+No
+No
+POST
+/auth/refresh
+Refresh access token via cookie
+Cookie
+No
+POST
+/auth/logout
+Invalidate refresh token
+Yes
+No
+POST
+/auth/otp/send
+Send OTP to phone
+No
+Rate-limited
+POST
+/auth/otp/verify
+Verify OTP (for register/reset)
+No
+No
+POST
+/auth/forgot-password
+Trigger password reset OTP
+No
+Rate-limited
+POST
+/auth/reset-password
+Reset password with OTP
+No
+No
+GET
+/products
+List products with filters+sort+pagination
+No
+60s SWR
+GET
+/products/:slug
+Single product detail
+No
+60s SWR
+GET
+/products/:slug/reviews
+Paginated reviews
+No
+60s SWR
+GET
+/categories
+Category tree
+No
+1h SWR
+GET
+/collections
+Active collections
+No
+1h SWR
+GET
+/cart
+Get cart (guest by cartId cookie, user by token)
+Optional
+No
+POST
+/cart/items
+Add to cart
+Optional
+No
+PATCH
+/cart/items/:id
+Update qty / variant
+Optional
+No
+DELETE
+/cart/items/:id
+Remove from cart
+Optional
+No
+POST
+/cart/apply-coupon
+Apply coupon code
+Optional
+No
+DELETE
+/cart/coupon
+Remove coupon
+Optional
+No
+GET
+/wishlist
+Get wishlist
+Optional
+No
+POST
+/wishlist/items
+Add to wishlist
+Optional
+No
+DELETE
+/wishlist/items/:id
+Remove from wishlist
+Optional
+No
+POST
+/checkout/quote
+Get tax+shipping+totals for a cart+address
+Optional
+No
+POST
+/checkout/validate-address
+Pincode serviceability + address validation
+Optional
+No
+POST
+/checkout/payment/initiate
+Create pending order + get payment session
+Optional
+Idempotent
+POST
+/checkout/payment/verify
+Poll payment status
+Optional
+No
+POST
+/orders
+Finalise order (called by payment-verify)
+Optional
+Idempotent
+GET
+/account/profile
+Get profile
+Yes
+No
+PATCH
+/account/profile
+Update profile
+Yes
+No
+GET
+/account/addresses
+List addresses
+Yes
+No
+POST
+/account/addresses
+Add address
+Yes
+No
+PATCH
+/account/addresses/:id
+Update address
+Yes
+No
+DELETE
+/account/addresses/:id
+Delete address
+Yes
+No
+GET
+/account/orders
+List orders
+Yes
+No
+GET
+/account/orders/:id
+Order detail + tracking
+Yes
+No
+POST
+/account/orders/:id/return
+Initiate return request
+Yes
+No
+GET
+/search?q=...
+Search products
+No
+30s SWR
+GET
+/search/suggest?q=...
+Typeahead suggestions
+No
+30s SWR
+GET
+/pages/:slug
+CMS page content
+No
+1h SWR
+POST
+/contact
+Submit contact form
+No
+Rate-limited
+GET
+/config/init
+Bootstrap config (categories, settings, banners)
+No
+1h SWR
+12.3 Admin API Contract Pattern
+Admin endpoints live under /api/v1/admin/* and follow the same conventions but require an admin JWT (separate cookie) and pass through the PermissionGate middleware on the backend that checks role-permission per route. The admin endpoint inventory mirrors the admin routes in Table 8.2 and is implemented as: GET/POST/PATCH/DELETE /admin/products, /admin/categories, /admin/orders, /admin/customers, /admin/coupons, /admin/reviews, /admin/pages, /admin/banners, /admin/settings (PATCH only), /admin/users (super-admin only). Each list endpoint supports the same pagination envelope and a total summary for dashboard KPIs.
+12.4 File Upload Contract
+Image uploads (admin product images, banner images, customer review photos) use a presigned-URL flow: the client calls POST /api/v1/admin/uploads/request with { filename, contentType, size } and receives a presigned S3 URL + an assetId; the client then PUTs the file directly to S3 (bypassing the backend for the binary blob) and calls POST /api/v1/admin/uploads/confirm with the assetId to register the upload. This pattern keeps the backend stateless for binary traffic and limits the backend's exposure to large request bodies. The backend validates MIME type, file size, and magic bytes before issuing the presigned URL.
+12.5 Real-time Order Status (Phase 2)
+In the MVP, order status updates are delivered via polling — the customer's order detail page refetches the order every 30 seconds when the tab is visible. Phase 2 introduces a WebSocket connection at /realtime that pushes order status events ({ orderId, status, timestamp, message }) to authenticated customers. The frontend integrates via a useOrderStatus hook that abstracts the transport so the polling-to-WebSocket migration is invisible to the UI.
+12.6 Backend-Enforced Controls (Reminder)
+The frontend cannot be trusted with security or data-integrity decisions. The backend MUST enforce: server-side price recompute on order creation (never trust the cart total sent by the client), server-authoritative stock check (re-validate availability at order creation; if stock has dropped since cart add, fail the order with a clear message), coupon validation (re-validate coupon eligibility, expiry, usage cap), idempotency-key enforcement on POST /orders and POST /checkout/payment/initiate (return the original response on duplicate), and audit logging of all admin actions. These are non-negotiable and are restated here because they shape the frontend's responsibility boundary in Section 13.
+13. Security — Frontend Responsibilities & Backend-Enforced Controls
+This section deliberately splits security into two columns: what the frontend MUST do (defence in depth, UX) and what the backend MUST enforce (the actual security boundary). The fundamental principle: the frontend is untrusted code running on a customer's device; the backend is the only authoritative source of truth. No security decision can rely on the frontend doing or not doing something.
+13.1 Frontend Security Responsibilities
+Table 13.1 — Frontend MUST do
+Concern
+Frontend Responsibility
+Token storage
+Access token (15-min TTL) in memory via Zustand; refresh token in httpOnly secure sameSite=lax cookie set by backend (frontend JS never reads it)
+Auth expiry
+On 401 response, attempt silent refresh; on refresh failure, redirect to /auth/login with redirect_url preserved
+PII in storage
+NEVER store phone, email, address, or card data in localStorage or sessionStorage; cart and wishlist can persist product IDs + variants only, not customer PII
+XSS prevention
+Render user-generated content (reviews, addresses, CMS pages) via React's default escaping; NEVER use dangerouslySetInnerHTML without DOMPurify sanitisation
+CSP
+Configure Content-Security-Policy via next.config.ts: script-src 'self' 'nonce-<random>'; style-src 'self'; img-src 'self' <image-cdn> https:; connect-src 'self' <api-origin> <gateway-origin>; frame-src <gateway-hosted-fields>
+No secrets in client
+Only NEXT_PUBLIC_* env vars are exposed to the browser; server-only secrets (Razorpay key secret, JWT signing keys, DB credentials) MUST NOT be prefixed NEXT_PUBLIC_ and are used only in route handlers or server components
+File uploads
+Use presigned-URL flow (Section 12.4); never accept multipart uploads through the Next.js app server
+Payment data
+NEVER render native <input> for card number, CVV, or expiry; use hosted fields or redirect from the gateway (Razorpay/Cashfree); the frontend only ever sees the gateway's token, never raw card data
+Rate-limit retry
+On 429, disable the triggering UI for the retry-after duration; do not allow spam clicks on OTP send or login
+PII masking
+Mask phone and email in display: +91 98XXX XXX21, aar***@example.com — except in the profile-edit form
+URL safety
+Reject dangerous characters in URL-derived state (filters, search) via zod parsing before sending to backend
+Session logout
+Logout button calls POST /auth/logout then clears in-memory authStore and clears cart sync flag; reload to ensure clean state
+Cookie flags
+Cannot enforce Secure/HttpOnly/SameSite from frontend — backend MUST set these on the Set-Cookie header
+13.2 Backend-Enforced Security Controls
+Table 13.2 — Backend MUST enforce (frontend cannot be trusted)
+Concern
+Backend Enforcement
+Authentication
+Validate JWT signature + expiry on every protected route; reject expired access tokens with 401; refresh tokens are single-use and rotated on each refresh
+Authorisation / RBAC
+Re-check role-permission on every admin route; reject with 403 if role lacks permission; never trust client-side PermissionGate alone
+Price integrity
+Recompute order total server-side from product records; NEVER trust client-provided totals; reject if totals mismatch by more than ₹1
+Stock integrity
+Re-validate stock at order creation; use SELECT FOR UPDATE or optimistic locking to prevent overselling; fail order with 409 if stock has dropped
+Coupon integrity
+Re-validate coupon code, eligibility (min order, first-order-only, customer segment), expiry, per-customer cap, total usage cap
+Idempotency
+For POST /orders and POST /checkout/payment/initiate: store Idempotency-Key in a Redis set with 24h TTL; on duplicate, return the original response; prevents double-charge on retry
+Rate limiting
+OTP send: max 5 per phone per hour, 60s between; login attempts: max 5 per identifier per 5 min, then 5-min lockout; password reset: max 3 per hour; contact form: 5 per IP per hour
+Input validation
+Same zod schemas as frontend; reject with 422 and fieldErrors if invalid; never trust client shape
+SQL injection
+Parameterised queries ONLY via the chosen query builder (Knex or Prisma); no string concatenation in SQL; OWASP top-1 defence
+XSS (output)
+Encode all user-generated content on output (reviews, addresses, CMS pages); reject HTML in fields that don't need it
+CSRF
+For cookie-auth endpoints (auth refresh), validate Origin header and a double-submit CSRF token; SameSite=lax handles most cases but explicit CSRF tokens for sensitive mutations
+HTTPS
+Force HTTPS via HSTS; reject HTTP requests; set Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Cookies
+Secure, HttpOnly, SameSite=lax; refresh token cookie path=/api/v1/auth, expiry 7d; admin refresh cookie separate path=/api/v1/admin/auth
+Password hashing
+argon2id with recommended parameters (memory 64MB, iterations 3, parallelism 4); never MD5/SHA
+JWT signing
+RS256 with key rotation (kid header); access token 15min; refresh token 7d single-use; refresh on each refresh; blacklist compromised refresh tokens
+File upload validation
+Validate MIME via magic bytes (not just Content-Type); limit size (5 MB product images, 1 MB review photos); re-encode images server-side to strip EXIF and metadata
+Presigned URLs
+S3 presigned URLs with 5-minute expiry; restrict content-type and content-length; bucket policy denies public PUT
+Audit logging
+Log every admin mutation (action, actor, target, before, after, timestamp, IP) to an append-only audit table
+PII access logging
+Log every read of customer PII (which admin viewed which customer) for compliance
+PCI scope
+NEVER log card numbers, CVV, or full card data; the application MUST be out of PCI scope by design via hosted-fields integration
+Payment reconciliation
+Verify payment status via gateway webhook + polling; never trust client-reported payment success; auto-refund if order creation fails after successful payment
+13.3 Trust Boundary Statement
+To remove any ambiguity: the frontend is untrusted code. Any check the frontend performs is for UX, not for security. Every security decision is re-made by the backend on the corresponding endpoint. The frontend cannot prevent a customer from calling POST /api/v1/checkout/payment/initiate with a tampered cart total — the backend MUST reject it. The frontend cannot prevent a customer from calling GET /api/v1/admin/orders — the backend MUST reject it. The frontend cannot prevent a customer from reusing an old OTP — the backend MUST reject it. The implementation MUST be reviewed against this principle before launch.
+14. SEO, Performance, Mobile Responsiveness, Testing & Deployment
+14.1 Search Engine Optimisation
+SEO is a launch-blocking requirement for an e-commerce site because organic search is a primary acquisition channel for jewellery queries in India. The render strategy per route is defined in Table 3.1; the most SEO-critical routes — homepage, PLP, PDP — use SSG with ISR to ensure fast first paint and fresh content. The Next.js Metadata API is used to set title, description, open-graph, Twitter card, canonical, robots, and hreflang per route. The metadata is generated dynamically from the admin-managed SEO fields (meta title, meta description, canonical) with sensible fallbacks for routes without explicit overrides.
+Structured data via JSON-LD is embedded on the relevant routes: Organization + WebSite + SearchAction on the homepage; BreadcrumbList on all routes with breadcrumbs; ItemList on PLPs; Product + Offer + AggregateRating + Review on PDPs; FAQPage on policy pages that include FAQ sections. The schema is validated via Google's Rich Results Test before launch.
+A sitemap.xml is generated dynamically from the backend GET /api/v1/sitemap endpoint (which enumerates products, categories, collections, and CMS pages with their last-modified dates) and submitted to Google Search Console. A robots.txt allows all storefront routes and disallows /admin/, /account/, /checkout/, /auth/. Canonical URLs prevent duplicate content from query parameters — filter URLs include rel=canonical pointing to the base PLP. hreflang tags are stubbed for en only at MVP and extended in Phase 2 when Hindi is added.
+14.2 Performance Budgets
+Performance is a commercial concern — every 100ms reduction in LCP measurably improves conversion in Indian e-commerce. The site MUST meet the following Core Web Vitals targets on the 75th percentile of real-user traffic measured via field data (not lab data):
+Table 14.1 — Performance budgets (field, 75th percentile, 4G)
+Metric
+Target
+Hard Limit
+Measurement
+LCP (Largest Contentful Paint)
+< 2.5 s
+4.0 s
+Real-user via web-vitals; lab via Lighthouse
+INP (Interaction to Next Paint)
+< 200 ms
+500 ms
+Field only (web-vitals)
+CLS (Cumulative Layout Shift)
+< 0.1
+0.25
+Field + lab
+TBT (Total Blocking Time, lab)
+< 200 ms
+600 ms
+Lighthouse only
+JS bundle per route (gzip)
+< 200 KB
+350 KB
+Bundle analyser in CI
+First image load on PDP
+< 200 KB
+400 KB
+Image audit script
+Total page weight (PDP, no images)
+< 500 KB
+1 MB
+Bundle + JSON
+Tactics to meet the budgets: (1) code-split per route and dynamically import heavy components (image zoom, charts); (2) preload the LCP image (first PDP image, hero carousel first slide) via next/image priority; (3) lazy-load below-the-fold images with next/image; (4) font subsetting via next/font with display: swap; (5) prefetch on hover for likely-next routes (PDP from PLP); (6) image CDN with on-the-fly resizing and format negotiation (WebP/AVIF); (7) TanStack Query caching to avoid redundant fetches across navigation; (8) Suspense streaming for above-the-fold vs below-the-fold content where SSR is used.
+14.3 Mobile Responsiveness
+The storefront is mobile-first because the majority of Indian e-commerce traffic is on mobile. The implementation MUST: target 360–414px width as the primary device class; ensure all touch targets are at least 44×44px (Apple HIG) and 48×48px (Google Material) with adequate spacing; implement a sticky bottom add-to-cart bar on mobile PDPs that becomes visible on scroll-past the in-content add-to-cart button; render filters as a bottom-sheet rather than a sidebar on mobile; implement swipeable image gallery with native touch gestures; respect safe-area-insets for notched devices (iPhone X+); disable pull-to-refresh only where it conflicts with custom gestures; and test on real devices (at minimum one Android mid-range + one iPhone) before launch.
+14.4 Testing Strategy
+The testing strategy has four layers. (1) Unit tests with Vitest cover utility functions, zod schemas, and pure hooks (formatINR, useCart calculations, validators). Coverage target: 80% on lib/ folders. (2) Component tests with React Testing Library + Vitest cover the component library — every component has at least one render test and one interaction test. Coverage target: 70% on components/. (3) Integration tests with Playwright cover the critical flows in Section 17 (registration + first order, login + checkout, guest checkout, admin fulfilment, payment failure recovery, out-of-stock mid-checkout). (4) Accessibility audit with axe-core runs in CI on every PR and fails the build on serious or critical violations.
+Lighthouse CI is configured to run on every PR against a preview deployment and enforces thresholds: Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 on the homepage, a sample PLP, and a sample PDP (mobile emulation). Visual regression with Chromatic or Percy is a Phase 2 enhancement. Load testing with k6 simulates 1000 concurrent users on the homepage and 100 concurrent users on checkout before launch; targets: P95 response time < 2s for homepage, < 3s for checkout initiation under load.
+14.5 Build & Deployment
+The build pipeline: lint (eslint + prettier), type-check (tsc --noEmit), unit tests, component tests, build (next build), Playwright smoke tests against a built preview, Lighthouse CI, deploy. Environment variables are differentiated across dev/stage/prod via a NEXT_PUBLIC_ENV variable and server-side secrets managed via the deployment platform (Vercel for MVP, or a self-managed Node.js host with PM2 + nginx if client requires). Preview deployments are auto-created per PR and shared with the client for review.
+Static assets (next/image outputs, fonts, favicons) are served via a CDN with cache-control: public, max-age=31536000, immutable for hashed assets and no-cache for HTML. Product images are served via an image CDN (Cloudinary, ImageKit, or AWS CloudFront + Lambda Sharp) with on-the-fly resizing and WebP/AVIF format negotiation. Monitoring: Sentry for runtime errors with source-map upload, Vercel Web Analytics or GA4 for product analytics, Better Uptime or UptimeRobot for uptime monitoring (1-min interval on /api/v1/health), structured logging on the backend (pino) shipped to a log aggregator. Rollback strategy: Vercel instant rollback to previous deployment; for self-managed, blue-green deployment via PM2 reload.
+15. Edge Cases & Acceptance Criteria
+15.1 Cart Edge Cases
+(1) Add out-of-stock item — frontend SHOULD block the Add-to-Cart click and show Notify Me instead; backend MUST reject POST /cart/items for out-of-stock products with 422. (2) Quantity exceeds available stock — frontend stepper disables at max-available; backend rejects PATCH with quantity > stock with 422. (3) Variant no longer available — on PDP load, if the variant referenced by URL is archived, redirect to the canonical product URL and show a toast. (4) Coupon expired mid-session — on /cart/apply-coupon returning 422, show toast Coupon expired, remove applied coupon from cart state, recompute totals. (5) Price changed between add-to-cart and checkout — on /checkout/quote returning a different total than the cart shows, show Price Change notice and require Re-accept before Place Order. (6) Guest cart merge on login — on successful login, POST /cart/merge merges guest cart into server cart; conflicts (same product, different variants) are summed with max-per-order cap.
+15.2 Checkout Edge Cases
+(1) Pincode serviceable check fails — block navigation to step 2; suggest nearby serviceable pincodes if available (via GET /pincode/nearby?q=). (2) Payment gateway timeout — frontend shows Payment Being Processed screen and polls /checkout/payment/verify every 5s for 5 minutes; on timeout, instructs user to check email; backend reconciliation webhook from gateway finalises the order within 24h. (3) Payment success but order creation failure — backend reconciliation catches this via gateway webhook; the order is auto-created from the webhook payload; the customer sees Payment Received, Order Being Confirmed state. (4) Address validation fails — inline errors per field; pincode field auto-fetches city/state and rejects pincodes that do not match the regex. (5) COD not available for pincode — COD radio hidden on step 2 based on /checkout/quote response. (6) Order placed but confirmation email delayed — show order confirmation page regardless; email is best-effort; the order is visible in /account/orders or /track-order immediately.
+15.3 Authentication Edge Cases
+(1) Register with existing email — backend returns 409; frontend shows inline error Email already registered; offer login link. (2) OTP brute force — backend rate-limits; on 429, frontend disables Resend OTP for retry-after seconds. (3) Session expired mid-checkout — modal Session Expired with Re-login button; cart is preserved client-side and re-synced on re-login; checkout flow resumes at the same step. (4) Refresh token stolen — single-use refresh detects reuse and invalidates the entire token family; user is logged out across all devices. (5) Social login email conflict (Phase 2) — show This email is registered; please log in with password to confirm ownership.
+15.4 Product Edge Cases
+(1) PDP for archived product — backend returns 410 Gone with a Location header pointing to the category; frontend renders a PDP with This product is no longer available and a Shop Similar Products rail. (2) PDP slug changed — backend maintains a slug-redirect table; on GET /products/:slug returning 301 with Location, frontend follows and Next.js rewrites the URL. (3) Variant sold out after add-to-cart — on next page load or cart refetch, the variant shows as Out of Stock in the cart with a Remove option; backend blocks checkout with a clear message.
+15.5 Admin Edge Cases
+(1) Concurrent edits to the same product — backend uses optimistic locking (updated_at timestamp); on PATCH returning 409, frontend shows Another admin edited this product; reload to see their changes. (2) Deleting a category with active products — backend returns 409 with the count of affected products; frontend prompts the admin to reassign before deletion. (3) Refund for already-refunded order — backend returns 422; frontend disables the Refund button if order status is refunded. (4) Bulk action exceeding limit — backend rejects with 413; frontend splits the action into batches of 25.
+15.6 Global Acceptance Criteria
+The following criteria MUST be met before launch sign-off. Each criterion is independently verifiable and forms part of the client acceptance test.
+All MVP routes listed in Table 3.1 render without console errors in production build (zero React warnings, zero network errors).
+Lighthouse mobile score: Performance ≥ 90, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 on homepage, one PLP, and one PDP.
+WCAG 2.1 AA conformance on all storefront routes verified via axe-core CI with zero serious or critical violations.
+End-to-end successful order placement test passes (Section 17.1): registration → cart → checkout → payment (test mode) → confirmation.
+End-to-end admin fulfilment flow passes (Section 17.4): new order → confirm → pack → ship → delivered → customer sees timeline update.
+Payment failure recovery test passes (Section 17.5): failed payment → retry → success.
+Out-of-stock mid-checkout test passes (Section 17.6): graceful block with clear messaging.
+All security controls in Section 13.2 verified by a security review (OWASP Top 10 coverage documented).
+Backup & restore procedure documented and tested once before launch.
+Privacy policy, terms of service, shipping policy, and returns policy pages published with client-approved content.
+Grievance officer name and contact details displayed in footer per Indian Consumer Protection (E-Commerce) Rules 2020.
+Sentry error monitoring integrated and verified to receive a test error in production.
+16. Phase Plan — MVP, Phase 2 & Phase 3
+The phase plan distinguishes launch-blocking MVP features from post-launch enhancements. The MVP is the minimum feature set required to operate as a real e-commerce business: customers can browse, search, add to cart, checkout, pay, track orders, and self-serve their account; the admin can manage the catalogue, fulfil orders, view customers, run basic coupons, and configure the store. Phase 2 (3–6 months after launch) expands payments and marketing automation. Phase 3 (6–12 months after launch) introduces platform-scale features such as native apps, loyalty, and B2B.
+Table 16.1 — Feature → Phase mapping
+Feature
+MVP
+Phase 2
+Phase 3
+Storefront (home, PLP, PDP, search)
+✓
+—
+—
+Cart + guest merge on login
+✓
+—
+—
+Wishlist (local + server sync)
+✓
+Share wishlist
+—
+Checkout (3-step, guest allowed)
+✓
+—
+—
+UPI + Cards + COD via Razorpay/Cashfree
+✓
+Add EMI, pay-later
+Crypto (optional)
+Order confirmation + email + SMS
+✓
+—
+—
+Customer account (profile, addresses, orders)
+✓
+—
+—
+Guest order tracking
+✓
+—
+—
+Returns initiation
+✓
+—
+—
+Reviews + moderation
+✓
+Photo reviews, reply threading
+—
+CMS pages (about, contact, policies)
+✓
+Rich editor
+—
+Banner + hero scheduling
+✓
+A/B testing
+—
+Admin dashboard + fulfilment
+✓
+—
+—
+Admin coupons (% and flat)
+✓
+BOGO, free gift, tiered
+—
+Admin store settings
+✓
+—
+—
+Analytics (GA4 + GTM)
+✓
+Meta Pixel, server-side
+—
+Error monitoring (Sentry)
+✓
+—
+—
+SEO basics (SSR, sitemap, schema)
+✓
+hreflang for Hindi
+—
+Storybook
+—
+✓
+—
+Visual regression (Chromatic/Percy)
+—
+✓
+—
+Hindi language
+—
+✓
+—
+Social login (Google, Facebook)
+—
+✓
+—
+Abandoned cart email/SMS
+—
+✓
+—
+AR ring try-on (single category)
+—
+✓
+Expand to more categories
+Loyalty programme
+—
+—
+✓
+Referral programme + gift cards
+—
+—
+✓
+PWA installable
+—
+—
+✓
+Native iOS/Android apps (React Native)
+—
+—
+✓
+B2B wholesale portal
+—
+—
+✓
+International shipping + multi-currency
+—
+—
+✓
+Live video shopping
+—
+—
+✓
+AI recommendations
+—
+—
+✓
+16.1 Phase Dependencies & Rationale
+The MVP features are sequenced for the smallest viable launch: catalogue management is built first because it is the data backbone; storefront and cart follow because they exercise the catalogue; checkout and payment are added once cart is stable; admin fulfilment is added once orders can be placed. Phase 2 features are sequenced by ROI: abandoned cart recovery has the highest revenue impact, followed by additional payment methods and Hindi localisation. Phase 3 features are sequenced by strategic value: loyalty programme and referral are the strongest retention levers; native apps are the largest engineering investment and are deferred until the web experience is mature.
+17. Critical Flow Acceptance Test Cases
+The following test cases are the acceptance criteria for the six critical flows. They are written in Given/When/Then format and MUST pass in CI before launch. Each test case is implemented as a Playwright spec in /tests/e2e/.
+17.1 New Customer Registration → First Successful Order
+Given: a fresh browser session with no existing account; the cart is empty; the test product (Gold Jhumka SKU TEST-001) is in stock at ₹1,499.
+When: the customer navigates to /auth/register, enters full name + phone + password, receives OTP via test-mode SMS, enters OTP, and submits; then navigates to /shop/jhumkas, opens the test PDP, selects size M, clicks Add to Cart, opens /cart, applies coupon WELCOME10 (10% off first order), proceeds to /checkout/address, enters a serviceable address, selects UPI payment, completes payment in test mode, and lands on /order/confirm/[id].
+Then: the order is created with status placed; the cart is cleared; the coupon usage is recorded (first-order-only flag is set); the order appears in /account/orders; a confirmation email is queued; the customer receives a success toast and the order confirmation page shows the correct estimated delivery date. Exit criteria: order ID matches between confirmation page, account order history, and admin order list.
+17.2 Returning Customer — Login → Cart → Coupon → Checkout → Payment
+Given: an existing customer with a verified phone, at least one past order, and an address in their address book; the test product is in stock.
+When: the customer navigates to /auth/login, enters phone + password, logs in; visits the wishlist, moves one item to cart; applies a coupon; proceeds to checkout; selects the saved address; selects card payment; completes payment; lands on confirmation.
+Then: the cart line items, address, payment method, coupon, and total are all correctly reflected on the confirmation page; the order appears in account history with status paid. Exit criteria: order total = (item subtotal − coupon discount + shipping + tax).
+17.3 Guest Checkout with COD → Confirmation → Track Order
+Given: a fresh browser session with no account; the test product supports COD for the test pincode.
+When: the guest adds a product to cart, navigates to /cart, proceeds to checkout as guest, enters a new address in a COD-serviceable pincode, selects COD payment, places order, lands on confirmation.
+Then: the order is created with payment_status = pending_cod and status = placed; a confirmation email is sent; the guest navigates to /track-order, enters order ID + phone, and sees the order detail. Exit criteria: order is visible in track-order without requiring login.
+17.4 Admin Order Fulfilment End-to-End
+Given: an admin (manager role) is logged in; a new order exists in placed status.
+When: the admin navigates to /admin/orders, opens the order detail, clicks Confirm Order, then Pack Order, then Mark Shipped (enters carrier and tracking number), then Mark Delivered (manual or via carrier webhook).
+Then: each transition updates the order status in the database and the customer-facing timeline; the customer's /account/orders/[id] page shows the timeline step change in real time (or on next poll). Exit criteria: timeline shows all six stages with timestamps; invoice and packing slip PDFs download successfully.
+17.5 Payment Failure → Retry → Success
+Given: a customer at the payment step of checkout with a valid cart and address.
+When: the customer triggers payment via card, the gateway returns a failure (test mode mock), the customer sees the failure screen with a Retry button; the customer retries with a different payment method (UPI) and the gateway returns success.
+Then: the failed payment attempt is logged but no order is created (idempotency); the successful payment creates exactly one order; the cart is cleared only after success. Exit criteria: no duplicate order; customer sees confirmation page; no double-charge in the gateway dashboard.
+17.6 Out-of-Stock Mid-Checkout
+Given: a customer has added a product to cart with quantity 2, and stock is 1.
+When: the stock drops to 0 (admin adjusts inventory or another customer purchases the last unit) before the customer reaches the Place Order step; the customer clicks Place Order.
+Then: the backend returns 422 with a clear message; the frontend shows a modal Item no longer in stock, redirects to /cart with the affected item flagged, and offers replacement suggestions. Exit criteria: no order is created; customer is clearly informed; cart is in a recoverable state.
+17.7 Concurrent Admin Edit (Optimistic Locking)
+Given: two admin sessions (manager A and manager B) are both editing the same product.
+When: manager A saves first; manager B saves second without reloading.
+Then: manager B receives a 409 conflict response; the frontend shows Another admin edited this product. Reload to see their changes. and discards manager B's changes. Exit criteria: the database reflects manager A's version; no silent overwrite.
+17.8 Session Expired Mid-Checkout Recovery
+Given: a customer is on the Review step of checkout and their access token expires (TTL 15min reached).
+When: the customer clicks Place Order; the fetch returns 401; the silent refresh attempt also fails (refresh token expired).
+Then: a modal Session Expired appears with a Re-login button; the cart is preserved in localStorage; on re-login, the cart is re-synced and the customer returns to the same checkout step with all data preserved. Exit criteria: no data loss; the customer can complete the order without re-entering cart or address.
+18. Appendix — Glossary, Conventions & Hand-off Checklist
+18.1 Glossary
+Table 18.1 — Glossary of terms
+Term
+Definition
+AOV
+Average Order Value — total revenue divided by total orders in a period
+COD
+Cash on Delivery — payment collected at the doorstep
+CLS
+Cumulative Layout Shift — Core Web Vital measuring visual stability
+EMI
+Equated Monthly Instalment — instalment payment option, typically via credit card
+GST
+Goods and Services Tax — Indian unified indirect tax (3%, 5%, 12%, 18%, 28% slabs by HSN)
+GSTIN
+Goods and Services Tax Identification Number — 15-character unique ID
+HSN
+Harmonised System of Nomenclature — product classification code for GST
+httpOnly cookie
+Cookie inaccessible to client-side JavaScript — protects against XSS token theft
+INP
+Interaction to Next Paint — Core Web Vital measuring interaction responsiveness
+Idempotency key
+Client-generated unique key on POST /orders preventing duplicate creation on retry
+ISR
+Incremental Static Regeneration — Next.js pattern for static pages that re-render on a schedule
+JSON-LD
+JSON for Linked Data — schema.org structured data format for SEO rich results
+JWT
+JSON Web Token — signed token carrying user identity claims
+LCP
+Largest Contentful Paint — Core Web Vital measuring perceived load speed
+MVP
+Minimum Viable Product — the smallest launch-blocking feature set
+PDP
+Product Detail Page — single product page
+PLP
+Product Listing Page — category or search-results grid page
+PII
+Personally Identifiable Information — phone, email, address, etc.
+Presigned URL
+Time-limited S3 URL allowing direct client upload without exposing AWS credentials
+RBAC
+Role-Based Access Control — permission model assigning permissions to roles, not users
+SSG
+Static Site Generation — pre-rendering at build time
+SSR
+Server-Side Rendering — per-request rendering on the server
+TBT
+Total Blocking Time — Lighthouse lab metric measuring main-thread blocking
+UPI
+Unified Payments Interface — Indian real-time payment rail
+WCAG
+Web Content Accessibility Guidelines — W3C standard, target 2.1 AA
+Zustand
+Lightweight React state-management library used for client UI state
+18.2 Document Conventions Recap
+MUST indicates a hard requirement blocking launch. SHOULD indicates a strong recommendation. MAY indicates an optional enhancement. Bracketed placeholders [LIKE_THIS] indicate variables that must be confirmed with the client before the implementation prompt is finalised. The verbs are used in the RFC 2119 sense throughout. Section numbers are stable and should be referenced in commit messages, PR descriptions, and acceptance test reports.
+18.3 Hand-off Checklist
+Before converting this specification into an implementation prompt for an autonomous coding agent, the following items MUST be confirmed with the client. Each item affects multiple sections of this specification; resolving them upfront prevents costly rework.
+Table 18.2 — Hand-off checklist
+Item
+Confirmation Needed
+Affects
+Brand name
+Confirm Suvarna or supply final brand name + tagline
+Sections 2, 9
+Brand logo
+Vector logo file (SVG), favicon, and app-icon assets
+Sections 2, 9
+Domain name
+Final domain (e.g. suvarna.in)
+Sections 9, 14
+Payment gateway
+Razorpay or Cashfree; live keys for production
+Sections 6, 12, 13
+Shipping partner
+Shiprocket, Delhivery, or Bluedart; API credentials
+Sections 6, 8, 12
+SMS gateway
+MSG91, TextLocal, or Karix; OTP + transactional templates
+Sections 6, 7, 12
+Email service
+SendGrid, Postmark, or Amazon SES; template approvals
+Sections 6, 7, 12
+Image CDN
+Cloudinary, ImageKit, or AWS CloudFront + Lambda
+Sections 9, 14
+Pincode serviceability data
+Source: shipping partner API or static CSV for MVP
+Sections 6, 8
+GSTIN
+Client's GSTIN for invoicing and tax configuration
+Sections 6, 8, 13
+Bank account
+For COD reconciliation and refund processing
+Sections 6, 8
+Grievance officer
+Name, email, phone for legal compliance
+Section 4.3, 14
+Analytics IDs
+GA4 measurement ID, GTM container ID, Meta Pixel ID
+Section 14
+Sentry DSN
+Project DSN for error monitoring
+Section 14
+Hosting
+Vercel or self-managed (Node.js + PM2 + nginx)
+Section 14
+Admin users
+Initial super-admin email + 2FA secret
+Section 8
+Initial catalogue
+Product data CSV + images (or sample seed for testing)
+Sections 8, 9
+Legal pages
+Final content for shipping, returns, privacy, terms
+Sections 3, 4
+Coupon strategy
+Launch coupons (first-order discount, festive code)
+Sections 6, 8
+Return policy
+Return window (7 days recommended), conditions, refund timelines
+Sections 3, 6
+This specification is now complete and ready for client review. On client sign-off, it is intended to be converted into a single implementation prompt for an autonomous coding agent. The agent MUST implement every MVP item in Section 16, meet every acceptance criterion in Section 15.6, and pass every test case in Section 17 before delivery is considered complete.

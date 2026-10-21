@@ -1,0 +1,145 @@
+/* Ultra-Compact & Minimal Boutique Footer - Suvarna Royal Boutique Theme */
+.site-footer {
+  background: linear-gradient(180deg, var(--color-maroon-dark, #3E0F1B) 0%, #280811 100%);
+  color: var(--color-ivory, #FAF6EE);
+  margin-top: auto;
+  border-top: 2px solid var(--color-antique-gold, #B8893D);
+  padding: 18px 0 16px;
+}
+
+.footer-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 1. Brand Line */
+.footer-brand-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(184, 137, 61, 0.22);
+}
+
+.footer-logo {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  letter-spacing: 0.18em;
+  color: var(--color-antique-gold-light, #D4A84F);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color var(--duration-fast);
+}
+
+.footer-logo:hover {
+  color: #FFFFFF;
+}
+
+.footer-tagline {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: rgba(250, 246, 238, 0.75);
+}
+
+.footer-contacts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+
+.footer-contacts a {
+  color: rgba(250, 246, 238, 0.85);
+  text-decoration: none;
+  transition: color var(--duration-fast);
+}
+
+.footer-contacts a:hover {
+  color: var(--color-antique-gold-light, #D4A84F);
+}
+
+.footer-contacts .insta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.footer-contacts .sep {
+  color: rgba(184, 137, 61, 0.55);
+}
+
+/* 2. Horizontal Nav Links */
+.footer-nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.footer-nav-links a {
+  font-size: 0.82rem;
+  color: rgba(250, 246, 238, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--duration-fast);
+}
+
+.footer-nav-links a:hover {
+  color: var(--color-antique-gold-light, #D4A84F);
+}
+
+.footer-nav-links .dot {
+  color: rgba(184, 137, 61, 0.45);
+  font-size: 0.75rem;
+}
+
+/* 3. Copyright Line */
+.footer-copyright-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: rgba(250, 246, 238, 0.6);
+  padding-top: 4px;
+}
+
+.footer-payments-note {
+  color: var(--color-antique-gold-light, #D4A84F);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 640px) {
+  .site-footer {
+    padding: 14px 0 12px;
+  }
+
+  .footer-brand-line {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 5px;
+    padding-bottom: 8px;
+  }
+
+  .footer-nav-links {
+    justify-content: center;
+    gap: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .footer-copyright-line {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+  }
+}

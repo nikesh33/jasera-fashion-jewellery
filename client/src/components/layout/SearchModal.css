@@ -1,0 +1,110 @@
+/* Search Modal Styles */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(31, 31, 31, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  animation: fadeIn var(--duration-fast) var(--ease-out);
+}
+
+.search-container {
+  width: 90%;
+  max-width: 680px;
+  background-color: #FFFFFF;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  border: 1px solid var(--grey-200);
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--grey-200);
+  background-color: #FFFFFF;
+}
+
+.search-input-icon {
+  color: var(--color-maroon);
+  margin-right: var(--space-3);
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--color-charcoal);
+  outline: none;
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: var(--grey-400);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.search-close-button {
+  background: none;
+  border: none;
+  color: var(--grey-500);
+  cursor: pointer;
+  padding: var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast);
+}
+
+.search-close-button:hover {
+  color: var(--color-maroon);
+}
+
+.search-recommendations {
+  padding: var(--space-6);
+  background-color: var(--grey-50);
+}
+
+.search-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--grey-600);
+  margin-bottom: var(--space-3);
+}
+
+.search-keywords-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.search-pill {
+  background-color: #FFFFFF;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: var(--text-body-sm);
+  color: var(--grey-800);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.search-pill:hover {
+  border-color: var(--color-antique-gold);
+  color: var(--color-maroon);
+  background-color: rgba(184, 137, 61, 0.06);
+}

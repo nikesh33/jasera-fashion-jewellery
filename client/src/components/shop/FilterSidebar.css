@@ -1,0 +1,189 @@
+/* FilterSidebar Styles - Minimal, Compact & Responsive */
+.filter-sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  background-color: #FFFFFF;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 10px;
+  height: fit-content;
+  position: sticky;
+  top: 75px;
+}
+
+.filter-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--grey-200);
+  margin-bottom: 10px;
+}
+
+.filter-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-maroon);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.filter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--color-antique-gold-dark);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast);
+}
+
+.filter-reset-btn:hover {
+  color: var(--color-maroon);
+  background-color: var(--grey-100);
+}
+
+.filter-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--grey-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.filter-close-btn:hover {
+  color: var(--color-maroon);
+}
+
+/* Accordion Group Header */
+.filter-group {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grey-100);
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.filter-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: var(--font-body);
+  text-align: left;
+  user-select: none;
+  color: var(--grey-800);
+  transition: color var(--duration-fast);
+}
+
+.filter-group-header:hover {
+  color: var(--color-maroon);
+}
+
+.filter-group-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-active-count {
+  font-size: 0.7rem;
+  color: var(--color-maroon);
+  font-weight: 700;
+}
+
+.filter-chevron {
+  color: var(--grey-400);
+  transition: transform var(--duration-fast) ease, color var(--duration-fast);
+}
+
+.filter-chevron.is-rotated {
+  transform: rotate(180deg);
+  color: var(--color-maroon);
+}
+
+/* Options List */
+.filter-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0 6px 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.filter-radio-item,
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.filter-radio-item input,
+.filter-checkbox-item input {
+  accent-color: var(--color-maroon);
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.filter-label-text {
+  font-size: 0.8rem;
+  color: var(--grey-700);
+  transition: color var(--duration-fast);
+}
+
+.filter-radio-item:hover .filter-label-text,
+.filter-checkbox-item:hover .filter-label-text {
+  color: var(--color-maroon);
+}
+
+/* Mobile responsive drawer */
+.filter-sidebar-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(300px, 85vw);
+  z-index: 1100;
+  border-radius: 0;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  padding: 18px 16px;
+  animation: slideInLeft var(--duration-normal) var(--ease-out);
+}
