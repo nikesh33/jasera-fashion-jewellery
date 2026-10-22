@@ -15,7 +15,8 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const from = location.state?.from?.pathname;
+  const searchParams = new URLSearchParams(location.search);
+  const from = location.state?.from?.pathname || searchParams.get('redirect');
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -10,8 +10,14 @@ import './AccountPage.css';
 
 export function AccountPage() {
   const navigate = useNavigate();
-  const { user, logout, updateProfile } = useAuthStore();
+  const { user, isAuthenticated, logout, updateProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'profile' | 'addresses'
+
+  useEffect(() => {
+    if (!isAuthenticated && !localStorage.getItem('suvarna_token')) {
+      navigate('/login?redirect=/account', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -27,7 +33,7 @@ export function AccountPage() {
   const [addressError, setAddressError] = useState(null);
 
   const initialAddressForm = {
-    fullName: user?.name || '',
+    fullName: user?.name || user?.full_name || '',
     phone: user?.phone || '',
     email: user?.email || '',
     pincode: '',
@@ -50,14 +56,20 @@ export function AccountPage() {
       }
     } catch (err) {
       console.error('Failed to load delivery addresses from DB:', err);
+      if (err.status === 401) {
+        logout();
+        navigate('/login?redirect=/account', { replace: true });
+      }
     } finally {
       setIsLoadingAddresses(false);
     }
   };
 
   useEffect(() => {
-    fetchAddresses();
-  }, []);
+    if (isAuthenticated || localStorage.getItem('suvarna_token')) {
+      fetchAddresses();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (user) {
@@ -122,6 +134,11 @@ export function AccountPage() {
       setAddressSavedSuccess(true);
       setTimeout(() => setAddressSavedSuccess(false), 3500);
     } catch (err) {
+      if (err.status === 401) {
+        logout();
+        navigate('/login?redirect=/account', { replace: true });
+        return;
+      }
       setAddressError(err.message || 'Failed to save address to database');
     }
   };

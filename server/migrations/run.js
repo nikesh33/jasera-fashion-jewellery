@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS addresses (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED DEFAULT NULL,
   full_name VARCHAR(100) NOT NULL,
   phone VARCHAR(15) NOT NULL,
   pincode VARCHAR(6) NOT NULL,

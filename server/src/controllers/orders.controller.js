@@ -30,6 +30,7 @@ export async function createOrder(req, res) {
     pincode: rawAddr.pincode || rawAddr.postalCode || rawAddr.postal_code,
     addressLine1: rawAddr.addressLine1 || rawAddr.address_line_1 || rawAddr.address,
     addressLine2: rawAddr.addressLine2 || rawAddr.address_line_2 || '',
+    landmark: rawAddr.landmark || '',
     city: rawAddr.city,
     state: rawAddr.state,
   };
@@ -169,9 +170,27 @@ export async function createOrder(req, res) {
 
     // 4. Create Order Number & determine payment initial status
     const orderNumber = `SUV-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-    const userId = req.user ? req.user.id : null;
+    let userId = req.user ? req.user.id : null;
     const guestEmail = (address.email || (req.user ? req.user.email : '') || '').toLowerCase().trim();
     const guestPhone = (address.phone || (req.user ? req.user.phone : '') || '').trim();
+
+    // If not authenticated via token, check if customer with this email or phone already exists in users table
+    if (!userId && (guestEmail || guestPhone)) {
+      try {
+        const [existingUsers] = await conn.query(
+          `SELECT id FROM users 
+           WHERE (email = ? AND email IS NOT NULL AND email != '') 
+              OR (phone = ? AND phone IS NOT NULL AND phone != '') 
+           LIMIT 1`,
+          [guestEmail, guestPhone]
+        );
+        if (existingUsers.length > 0) {
+          userId = existingUsers[0].id;
+        }
+      } catch (findErr) {
+        console.warn('Non-critical: error checking existing user by email/phone:', findErr.message);
+      }
+    }
 
     // Non-COD payments start as 'pending' - never marked as paid without verification!
     const initialPaymentStatus = selectedPayment === 'cod' ? 'pending_cod' : 'pending';
@@ -248,42 +267,51 @@ export async function createOrder(req, res) {
       [insertedOrderId, userId]
     );
 
-    // Auto-save delivery address into MySQL addresses table for logged-in user
-    if (userId && (req.body.saveAddressForFuture || req.body.save_address !== false)) {
-      try {
+    // Auto-save delivery address into MySQL addresses table for all orders (registered, matched, or guest)
+    try {
+      let shouldInsert = true;
+      if (userId) {
         const [matchingAddr] = await conn.query(
           `SELECT id FROM addresses WHERE user_id = ? AND pincode = ? AND address_line1 = ? LIMIT 1`,
           [userId, address.pincode, address.addressLine1]
         );
-        if (matchingAddr.length === 0) {
+        if (matchingAddr.length > 0) {
+          shouldInsert = false;
+        }
+      }
+
+      if (shouldInsert) {
+        let isDefault = 0;
+        if (userId) {
           const [cntRows] = await conn.query(
             `SELECT COUNT(*) as count FROM addresses WHERE user_id = ?`,
             [userId]
           );
-          const isFirst = (cntRows[0]?.count || 0) === 0;
-          await conn.query(
-            `INSERT INTO addresses (
-              user_id, full_name, phone, pincode,
-              address_line1, address_line2, landmark,
-              city, state, address_type, is_default
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'home', ?)`,
-            [
-              userId,
-              address.fullName,
-              address.phone,
-              address.pincode,
-              address.addressLine1,
-              address.addressLine2 || null,
-              address.landmark || null,
-              address.city,
-              address.state,
-              isFirst ? 1 : 0,
-            ]
-          );
+          isDefault = (cntRows[0]?.count || 0) === 0 ? 1 : 0;
         }
-      } catch (addrErr) {
-        console.error('Non-critical: Failed to auto-save address to addresses table:', addrErr);
+
+        await conn.query(
+          `INSERT INTO addresses (
+            user_id, full_name, phone, pincode,
+            address_line1, address_line2, landmark,
+            city, state, address_type, is_default
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'home', ?)`,
+          [
+            userId || null,
+            address.fullName,
+            address.phone,
+            address.pincode,
+            address.addressLine1,
+            address.addressLine2 || null,
+            address.landmark || null,
+            address.city,
+            address.state,
+            isDefault,
+          ]
+        );
       }
+    } catch (addrErr) {
+      console.error('Non-critical: Failed to auto-save address to addresses table:', addrErr);
     }
 
     // 7. Check Razorpay payment integration
