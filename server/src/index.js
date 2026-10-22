@@ -9,6 +9,7 @@ import categoriesRoutes from './routes/categories.routes.js';
 import ordersRoutes from './routes/orders.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import addressesRoutes from './routes/addresses.routes.js';
+import bannersRoutes from './routes/banners.routes.js';
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/addresses', addressesRoutes);
+app.use('/api/banners', bannersRoutes);
 
 // Error handling
 app.use(errorHandler);

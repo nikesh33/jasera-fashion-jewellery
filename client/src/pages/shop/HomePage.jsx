@@ -10,17 +10,21 @@ export function HomePage() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [heroIndex, setHeroIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [catRes, prodRes] = await Promise.all([
+        const [catRes, prodRes, bannerRes] = await Promise.all([
           api.get('/categories'),
           api.get('/products?limit=8'),
+          api.get('/banners').catch(() => null),
         ]);
         if (catRes?.data?.categories) setCategories(catRes.data.categories);
         if (prodRes?.data?.products) setFeaturedProducts(prodRes.data.products);
+        if (bannerRes?.data?.banners) setBanners(bannerRes.data.banners);
       } catch (err) {
         console.error('Error fetching homepage data:', err);
       } finally {
@@ -29,6 +33,25 @@ export function HomePage() {
     }
     loadData();
   }, []);
+
+  const heroBanners = banners.filter((b) => b.position === 'hero');
+  const promoBanner = banners.find((b) => b.position === 'promo' || b.position === 'feature');
+
+  // Auto-rotate hero banners if more than 1 exist
+  useEffect(() => {
+    if (heroBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroBanners.length);
+    }, 5500);
+    return () => clearInterval(interval);
+  }, [heroBanners.length]);
+
+  const currentHero = heroBanners[heroIndex] || heroBanners[0] || {
+    title: 'STATEMENT BRACELET',
+    subtitle: 'Traditional Charm with a Modern Touch',
+    imageUrl: '/images/jassera-hero-banner.jpg',
+    linkUrl: '/shop',
+  };
 
   return (
     <div className="home-page">
@@ -76,16 +99,59 @@ export function HomePage() {
 
           {/* Model Visual Showcase Card */}
           <div className="hero-visual-col">
-            <div className="hero-visual-card">
+            <div
+              className="hero-visual-card"
+              style={{ cursor: currentHero.linkUrl ? 'pointer' : 'default', position: 'relative' }}
+              onClick={() => {
+                if (currentHero.linkUrl) navigate(currentHero.linkUrl);
+              }}
+            >
               <img
-                src="/images/jassera-hero-banner.jpg"
-                alt="Jassera Statement Bracelet - Traditional Charm with a Modern Touch"
+                src={currentHero.imageUrl || '/images/jassera-hero-banner.jpg'}
+                alt={currentHero.title || 'Jassera Jewellery'}
                 className="hero-model-img"
               />
               <div className="hero-floating-glass-badge">
-                <span className="glass-badge-tag">STATEMENT BRACELET</span>
-                <span className="glass-badge-subtitle">Traditional Charm with a Modern Touch</span>
+                <span className="glass-badge-tag">{currentHero.title || 'STATEMENT BRACELET'}</span>
+                <span className="glass-badge-subtitle">
+                  {currentHero.subtitle || 'Traditional Charm with a Modern Touch'}
+                </span>
               </div>
+
+              {/* Dots indicator when multiple hero banners are in database */}
+              {heroBanners.length > 1 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: '6px',
+                    zIndex: 10,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {heroBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      aria-label={`Slide ${idx + 1}`}
+                      onClick={() => setHeroIndex(idx)}
+                      style={{
+                        width: heroIndex === idx ? '22px' : '8px',
+                        height: '8px',
+                        borderRadius: '4px',
+                        backgroundColor: heroIndex === idx ? 'var(--color-antique-gold, #dfb972)' : 'rgba(255,255,255,0.6)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        padding: 0,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -185,8 +251,8 @@ export function HomePage() {
         <div className="container heritage-story-grid">
           <div className="heritage-image-wrapper">
             <img
-              src="/images/jassera-logo.jpg"
-              alt="Jassera Jewellery & Accessories Emblem"
+              src={promoBanner?.imageUrl || "/images/jassera-logo.jpg"}
+              alt={promoBanner?.title || "Jassera Jewellery & Accessories Emblem"}
               className="heritage-main-img"
               style={{ objectFit: 'contain', padding: '16px', background: '#FFFFFF', borderRadius: '24px' }}
             />
@@ -197,8 +263,12 @@ export function HomePage() {
           </div>
 
           <div className="heritage-text-content">
-            <span className="section-eyebrow">HANDCRAFTED WITH CARE</span>
-            <h2 className="heritage-title">The Art of Statement Jewellery</h2>
+            <span className="section-eyebrow">
+              {promoBanner?.title ? promoBanner.title.toUpperCase() : "HANDCRAFTED WITH CARE"}
+            </span>
+            <h2 className="heritage-title">
+              {promoBanner?.subtitle || "The Art of Statement Jewellery"}
+            </h2>
             <p className="heritage-desc">
               At Jassera, we believe beautiful jewellery shouldn't cost a fortune. Every statement bracelet, jhumka, earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
             </p>

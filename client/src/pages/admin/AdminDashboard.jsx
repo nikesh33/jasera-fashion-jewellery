@@ -24,6 +24,7 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Menu,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Pagination } from "../../components/ui/Pagination";
@@ -111,17 +112,35 @@ export function AdminDashboard() {
     status: "active",
   });
 
+  // Banner Modal / Form
+  const [banners, setBanners] = useState([]);
+  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState(null);
+  const [bannerForm, setBannerForm] = useState({
+    title: "",
+    subtitle: "",
+    imageUrl: "",
+    mobileImageUrl: "",
+    linkUrl: "/shop",
+    position: "hero",
+    displayOrder: 1,
+    status: "active",
+  });
+  const [bannerSearch, setBannerSearch] = useState("");
+  const [bannerPositionFilter, setBannerPositionFilter] = useState("all");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load all initial data from MySQL database
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [statsRes, catRes, prodRes, ordRes] = await Promise.all([
+      const [statsRes, catRes, prodRes, ordRes, banRes] = await Promise.all([
         api.get("/admin/stats").catch(() => null),
         api.get("/categories/admin").catch(() => api.get("/categories")),
         api.get("/products?limit=150").catch(() => null),
         api.get("/admin/orders").catch(() => null),
+        api.get("/banners/all").catch(() => null),
       ]);
 
       if (statsRes?.data?.stats) setStats(statsRes.data.stats);
@@ -136,6 +155,7 @@ export function AdminDashboard() {
       }
       if (prodRes?.data?.products) setProducts(prodRes.data.products);
       if (ordRes?.data?.orders) setOrders(ordRes.data.orders);
+      if (banRes?.data?.banners) setBanners(banRes.data.banners);
     } catch (err) {
       console.error("Failed to load admin data:", err);
       setErrorMessage("Failed to load database records.");
@@ -392,6 +412,89 @@ export function AdminDashboard() {
     }
   };
 
+  // ---------------- BANNER MANAGEMENT ----------------
+
+  const handleOpenAddBanner = () => {
+    setEditingBanner(null);
+    setBannerForm({
+      title: "",
+      subtitle: "",
+      imageUrl: "",
+      mobileImageUrl: "",
+      linkUrl: "/shop",
+      position: "hero",
+      displayOrder: banners.length + 1,
+      status: "active",
+    });
+    setShowBannerModal(true);
+  };
+
+  const handleOpenEditBanner = (b) => {
+    setEditingBanner(b);
+    setBannerForm({
+      title: b.title || "",
+      subtitle: b.subtitle || "",
+      imageUrl: b.imageUrl || b.image_url || "",
+      mobileImageUrl: b.mobileImageUrl || b.mobile_image_url || "",
+      linkUrl: b.linkUrl || b.link_url || "/shop",
+      position: b.position || "hero",
+      displayOrder: b.displayOrder ?? b.display_order ?? 1,
+      status: b.status || "active",
+    });
+    setShowBannerModal(true);
+  };
+
+  const handleSaveBanner = async (e) => {
+    e.preventDefault();
+    if (!bannerForm.imageUrl.trim()) {
+      notifyError("Banner image URL is required");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      if (editingBanner) {
+        await api.put(`/banners/${editingBanner.id}`, bannerForm);
+        notifySuccess(`Banner updated successfully in database!`);
+      } else {
+        await api.post("/banners", bannerForm);
+        notifySuccess(`New banner added to database successfully!`);
+      }
+      setShowBannerModal(false);
+      setEditingBanner(null);
+      await loadDashboardData();
+    } catch (err) {
+      notifyError(err.message || "Failed to save banner");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteBanner = async (bannerId, title) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete banner "${title || bannerId}" from database?`
+      )
+    )
+      return;
+    try {
+      await api.delete(`/banners/${bannerId}`);
+      notifySuccess(`Banner deleted from database.`);
+      await loadDashboardData();
+    } catch (err) {
+      notifyError(err.message || "Failed to delete banner");
+    }
+  };
+
+  const handleToggleBannerStatus = async (bannerId) => {
+    try {
+      const res = await api.patch(`/banners/${bannerId}/status`);
+      notifySuccess(res?.message || "Banner status updated.");
+      await loadDashboardData();
+    } catch (err) {
+      notifyError(err.message || "Failed to update banner status");
+    }
+  };
+
   // Quick Action listeners (from mobile sidebar or URL param)
   useEffect(() => {
     const action = searchParams.get("action");
@@ -600,6 +703,17 @@ export function AdminDashboard() {
             style={{ marginRight: "6px", verticalAlign: "middle" }}
           />
           Orders ({orders.length})
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "banners" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("banners")}
+        >
+          <ImageIcon
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Banners ({banners.length})
         </button>
       </div>
 
@@ -1673,6 +1787,299 @@ export function AdminDashboard() {
                   pageSizeOptions={[5, 10, 20, 50]}
                 />
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: BANNERS (DYNAMIC DATABASE BANNERS) */}
+      {activeTab === "banners" && (
+        <div className="admin-tab-content">
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <div>
+                <h3 className="admin-card-title">Homepage & Promotional Banners</h3>
+                <p className="admin-card-desc">
+                  Manage dynamic banners stored in MySQL database (<code>suvarna.banners</code>). Displayed live on the storefront.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Plus}
+                onClick={handleOpenAddBanner}
+              >
+                Add New Banner
+              </Button>
+            </div>
+
+            {/* Banner Form Modal */}
+            {showBannerModal && (
+              <form onSubmit={handleSaveBanner} className="admin-inline-form">
+                <h4>
+                  {editingBanner
+                    ? `Edit Banner (ID: ${editingBanner.id})`
+                    : "Add New Banner to Database"}
+                </h4>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Banner Image URL *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="/images/jassera-hero-banner.jpg or https://..."
+                      value={bannerForm.imageUrl}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, imageUrl: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Target Link URL</label>
+                    <input
+                      type="text"
+                      placeholder="/shop or /collections"
+                      value={bannerForm.linkUrl}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, linkUrl: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Banner Title / Tag</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. STATEMENT BRACELET"
+                      value={bannerForm.title}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, title: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Subtitle / Caption</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Traditional Charm with a Modern Touch"
+                      value={bannerForm.subtitle}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, subtitle: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Placement Position</label>
+                    <select
+                      value={bannerForm.position}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, position: e.target.value })
+                      }
+                    >
+                      <option value="hero">Hero Showcase (Homepage Main)</option>
+                      <option value="promo">Boutique Promo / Story</option>
+                      <option value="feature">Feature Collection</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Display Priority / Order</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={bannerForm.displayOrder}
+                      onChange={(e) =>
+                        setBannerForm({
+                          ...bannerForm,
+                          displayOrder: parseInt(e.target.value, 10) || 1,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Status</label>
+                    <select
+                      value={bannerForm.status}
+                      onChange={(e) =>
+                        setBannerForm({ ...bannerForm, status: e.target.value })
+                      }
+                    >
+                      <option value="active">Active (Visible on Storefront)</option>
+                      <option value="inactive">Inactive (Hidden)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {bannerForm.imageUrl && (
+                  <div style={{ marginTop: "12px", marginBottom: "16px" }}>
+                    <label style={{ display: "block", fontSize: "0.82rem", color: "var(--grey-600)", marginBottom: "6px" }}>
+                      Image Preview:
+                    </label>
+                    <img
+                      src={bannerForm.imageUrl}
+                      alt="Banner Preview"
+                      style={{
+                        maxHeight: "140px",
+                        maxWidth: "100%",
+                        borderRadius: "8px",
+                        border: "1px solid var(--grey-300)",
+                        objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div className="form-actions">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Saving to Database..." : "Save Banner"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowBannerModal(false);
+                      setEditingBanner(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* Banners List */}
+            {banners.length === 0 ? (
+              <div style={{ padding: "40px", textAlign: "center", color: "var(--grey-600)" }}>
+                <ImageIcon size={36} style={{ margin: "0 auto 12px", display: "block", color: "var(--color-antique-gold)" }} />
+                <p>No banners found in database table <code>suvarna.banners</code>.</p>
+                <Button variant="primary" size="sm" onClick={handleOpenAddBanner}>
+                  Add Your First Banner
+                </Button>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "18px", marginTop: "16px" }}>
+                {banners.map((b) => (
+                  <div
+                    key={b.id}
+                    style={{
+                      border: "1px solid var(--grey-300)",
+                      borderRadius: "10px",
+                      overflow: "hidden",
+                      backgroundColor: "#FFFFFF",
+                      display: "flex",
+                      flexDirection: "column",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+                    }}
+                  >
+                    <div style={{ position: "relative", height: "160px", backgroundColor: "#f5f5f5" }}>
+                      <img
+                        src={b.imageUrl || b.image_url}
+                        alt={b.title || "Banner"}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.target.src = "/images/jassera-hero-banner.jpg";
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          left: "10px",
+                          backgroundColor: b.position === "hero" ? "var(--color-maroon)" : "var(--color-charcoal)",
+                          color: "#FFFFFF",
+                          padding: "3px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        {b.position}
+                      </span>
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          backgroundColor: b.status === "active" ? "#E8F5E9" : "#FFEBEE",
+                          color: b.status === "active" ? "#2E7D32" : "#C62828",
+                          padding: "3px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.72rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {b.status === "active" ? "Live" : "Hidden"}
+                      </span>
+                    </div>
+
+                    <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                      <strong style={{ fontSize: "0.98rem", color: "var(--color-charcoal)", marginBottom: "4px" }}>
+                        {b.title || "Untitled Banner"}
+                      </strong>
+                      <p style={{ fontSize: "0.82rem", color: "var(--grey-600)", margin: "0 0 10px", lineHeight: "1.4" }}>
+                        {b.subtitle || "No subtitle provided"}
+                      </p>
+
+                      <div style={{ fontSize: "0.78rem", color: "var(--grey-500)", marginBottom: "14px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <span><strong>Link:</strong> {b.linkUrl || b.link_url || "/shop"}</span>
+                        <span><strong>Display Order:</strong> #{b.displayOrder ?? b.display_order ?? 1}</span>
+                      </div>
+
+                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--grey-200)", paddingTop: "10px" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleBannerStatus(b.id)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: b.status === "active" ? "#C62828" : "#2E7D32",
+                            fontSize: "0.82rem",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            padding: 0,
+                          }}
+                        >
+                          {b.status === "active" ? "Deactivate" : "Activate"}
+                        </button>
+
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            icon={Edit2}
+                            onClick={() => handleOpenEditBanner(b)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={Trash2}
+                            onClick={() => handleDeleteBanner(b.id, b.title)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
