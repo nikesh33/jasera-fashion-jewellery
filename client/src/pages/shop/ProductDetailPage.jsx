@@ -201,29 +201,32 @@ export function ProductDetailPage() {
 
   return (
     <div className="pdp-page">
-      {/* 1. Breadcrumbs Path (Consistent with shop-header) */}
-      <div className="shop-header pdp-shop-header">
-        <div className="shop-full-container shop-header-content">
-          <nav className="shop-breadcrumb-text" aria-label="Breadcrumb">
-            <Link to="/" className="breadcrumb-link">Home</Link>
-            <span className="breadcrumb-sep">/</span>
-            <Link to="/shop" className="breadcrumb-link">Shop</Link>
-            {product.category_slug && (
-              <>
-                <span className="breadcrumb-sep">/</span>
-                <Link to={`/shop?category=${product.category_slug}`} className="breadcrumb-link">
-                  {product.category_name}
-                </Link>
-              </>
-            )}
-            <span className="breadcrumb-sep">/</span>
-            <span className="breadcrumb-current">{product.name}</span>
-          </nav>
+      {/* 1. Breadcrumbs Path (Consistent with shop-header, framed in pdp-container) */}
+      <div className="pdp-container pdp-breadcrumb-container">
+        <div className="shop-header pdp-shop-header">
+          <div className="shop-header-content">
+            <nav className="shop-breadcrumb-text" aria-label="Breadcrumb">
+              <Link to="/" className="breadcrumb-link">Home</Link>
+              <span className="breadcrumb-sep">/</span>
+              <Link to="/shop" className="breadcrumb-link">Shop</Link>
+              {product.category_slug && (
+                <>
+                  <span className="breadcrumb-sep">/</span>
+                  <Link to={`/shop?category=${product.category_slug}`} className="breadcrumb-link">
+                    {product.category_name}
+                  </Link>
+                </>
+              )}
+              <span className="breadcrumb-sep">/</span>
+              <span className="breadcrumb-current">{product.name}</span>
+            </nav>
+          </div>
         </div>
       </div>
 
       {/* 2. Main Product Hero (Gallery + Purchase Info) */}
-      <div className="shop-full-container pdp-hero-grid pdp-main-grid">
+      <div className="pdp-container pdp-hero-container">
+        <div className="pdp-hero-grid pdp-main-grid">
         {/* Left: Gallery (Item #18: product_images) */}
         <div className="pdp-gallery-wrap pdp-gallery-column">
           <div className="pdp-thumbnail-strip pdp-thumbnails">
@@ -318,19 +321,21 @@ export function ProductDetailPage() {
           {/* Quantity Selector */}
           <div className="pdp-quantity-selector">
             <label className="variant-label">Quantity:</label>
-            <div className="qty-controls">
+            <div className="pdp-quantity-stepper">
               <button
                 type="button"
-                className="qty-btn"
+                className="pdp-qty-btn"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                aria-label="Decrease quantity"
               >
-                -
+                −
               </button>
-              <span className="qty-display">{quantity}</span>
+              <span className="pdp-qty-display">{quantity}</span>
               <button
                 type="button"
-                className="qty-btn"
+                className="pdp-qty-btn"
                 onClick={() => setQuantity(quantity + 1)}
+                aria-label="Increase quantity"
               >
                 +
               </button>
@@ -411,11 +416,13 @@ export function ProductDetailPage() {
               <span>100% Skin-Friendly Hypoallergenic</span>
             </div>
           </div>
+          </div>
         </div>
       </div>
 
       {/* 3. Product Tabs */}
-      <div className="shop-full-container pdp-tabs-section">
+      <div className="pdp-container">
+        <div className="pdp-tabs-section">
         <div className="pdp-tab-headers">
           <button
             className={`pdp-tab-btn ${activeTab === 'specs' ? 'is-active' : ''}`}
@@ -445,31 +452,55 @@ export function ProductDetailPage() {
 
         <div className="pdp-tab-content">
           {activeTab === 'specs' && (
-            <div className="specs-table-wrap">
-              <table className="specs-table">
-                <tbody>
-                  <tr>
-                    <th>Material / Finish</th>
-                    <td>{product.material || 'Fashion Jewellery'}</td>
-                  </tr>
-                  <tr>
-                    <th>Occasion</th>
-                    <td>{product.occasion || 'College, Office & Festive'}</td>
-                  </tr>
-                  <tr>
-                    <th>Approx Weight</th>
-                    <td>{product.weight || 'Lightweight for all-day comfort'}</td>
-                  </tr>
-                  <tr>
-                    <th>Dimensions</th>
-                    <td>{product.dimensions || 'Standard ergonomic proportion'}</td>
-                  </tr>
-                  <tr>
-                    <th>HSN / Tax</th>
-                    <td>HSN 71179090 (3% GST)</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="pdp-specs-layout">
+              <div className="specs-table-wrap">
+                <table className="specs-table">
+                  <tbody>
+                    <tr>
+                      <th>Material / Finish</th>
+                      <td>{product.material || 'Fashion Jewellery'}</td>
+                    </tr>
+                    <tr>
+                      <th>Occasion</th>
+                      <td>{product.occasion || 'College, Office & Festive'}</td>
+                    </tr>
+                    <tr>
+                      <th>Approx Weight</th>
+                      <td>{product.weight || 'Lightweight for all-day comfort'}</td>
+                    </tr>
+                    <tr>
+                      <th>Dimensions</th>
+                      <td>{product.dimensions || 'Standard ergonomic proportion'}</td>
+                    </tr>
+                    <tr>
+                      <th>HSN / Tax</th>
+                      <td>HSN 71179090 (3% GST)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Jassera Quality Assurance Card */}
+              <div className="pdp-specs-guarantee-card">
+                <div className="guarantee-badge-icon">
+                  <ShieldCheck size={26} />
+                </div>
+                <h4>The Jassera Quality Promise</h4>
+                <p>
+                  Every piece is handcrafted by master artisans with premium skin-friendly anti-tarnish plating, ensuring long-lasting brilliance and timeless elegance.
+                </p>
+                <ul className="guarantee-points">
+                  <li>
+                    <Check size={16} /> 100% Skin Safe & Nickel-Free
+                  </li>
+                  <li>
+                    <Check size={16} /> Certified Quality Inspection
+                  </li>
+                  <li>
+                    <Check size={16} /> Secure Luxury Packaging Included
+                  </li>
+                </ul>
+              </div>
             </div>
           )}
 
@@ -572,6 +603,7 @@ export function ProductDetailPage() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Review Submission Modal (Items #23, #24) */}
       {isReviewModalOpen && (
@@ -672,7 +704,7 @@ export function ProductDetailPage() {
       {/* 4. Related Products */}
       {relatedProducts.length > 0 && (
         <section className="section-related-products">
-          <div className="container">
+          <div className="pdp-container">
             <div className="section-header text-center">
               <span className="section-eyebrow">COMPLEMENTARY PIECES</span>
               <h2 className="section-title">Complete Your Look</h2>
