@@ -29,8 +29,16 @@
   min-height: 24px;
 }
 
-/* Left dismiss button */
-.announcement-dismiss-left {
+/* Right Group & Dismiss button */
+.announcement-right-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.announcement-dismiss-right {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.75);
@@ -43,9 +51,10 @@
   transition: all var(--duration-fast);
   flex-shrink: 0;
   z-index: 2;
+  margin-left: 4px;
 }
 
-.announcement-dismiss-left:hover {
+.announcement-dismiss-right:hover {
   color: #FFFFFF;
   background-color: rgba(255, 255, 255, 0.2);
 }
@@ -593,10 +602,10 @@
     position: relative;
   }
 
-  /* Cross button positioned on the left in responsive mode */
-  .announcement-dismiss-left {
+  /* Cross button positioned on the right in responsive mode */
+  .announcement-dismiss-right {
     position: absolute;
-    left: 8px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     padding: 4px;
@@ -606,7 +615,7 @@
   /* Center announcement text and rotating link */
   .announcement-ticker-wrap {
     width: 100%;
-    padding: 0 24px 0 32px;
+    padding: 0 32px 0 20px;
     justify-content: center;
   }
 
@@ -891,13 +900,13 @@
     padding: 5px 0;
   }
 
-  .announcement-dismiss-left {
-    left: 4px;
+  .announcement-dismiss-right {
+    right: 6px;
     padding: 2px;
   }
 
   .announcement-ticker-wrap {
-    padding: 0 16px 0 28px;
+    padding: 0 28px 0 16px;
   }
 
   .announcement-text {

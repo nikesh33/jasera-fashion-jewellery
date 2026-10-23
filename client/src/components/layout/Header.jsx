@@ -173,17 +173,6 @@ export function Header() {
           className={`announcement-bar ${isAdminRoute ? "admin-announcement" : ""}`}
         >
           <div className="announcement-content">
-            {/* Left-aligned close button in responsive & desktop */}
-            <button
-              type="button"
-              className="announcement-dismiss-btn announcement-dismiss-left"
-              onClick={handleDismissAnnouncement}
-              aria-label="Dismiss announcement"
-              title="Dismiss announcement"
-            >
-              <X size={14} />
-            </button>
-
             {/* Centered Announcement Message + Rotating Action Link */}
             <div className="announcement-ticker-wrap">
               <div key={announcementIndex} className="announcement-ticker-slide">
@@ -206,14 +195,26 @@ export function Header() {
               </div>
             </div>
 
-            {/* Desktop right utility links (hidden on mobile to guarantee perfect centering & zero overflow) */}
-            {!isAdminRoute && (
-              <div className="announcement-right-links d-none-mobile">
-                <Link to="/track-order">Track Order</Link>
-                <span className="announcement-divider">|</span>
-                <Link to="/contact">Need Help?</Link>
-              </div>
-            )}
+            {/* Right Group: Utility Links + Right Dismiss Cross Button */}
+            <div className="announcement-right-group">
+              {!isAdminRoute && (
+                <div className="announcement-right-links d-none-mobile">
+                  <Link to="/track-order">Track Order</Link>
+                  <span className="announcement-divider">|</span>
+                  <Link to="/contact">Need Help?</Link>
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="announcement-dismiss-btn announcement-dismiss-right"
+                onClick={handleDismissAnnouncement}
+                aria-label="Dismiss announcement"
+                title="Dismiss announcement"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
         </div>
       )}
