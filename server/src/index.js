@@ -61,7 +61,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     database: "MySQL connected",
-    service: "Jasera Boutique E-Commerce API",
+    service: "Jassera Boutique E-Commerce API",
     timestamp: new Date().toISOString(),
   });
 });
@@ -116,6 +116,6 @@ app.use(errorHandler);
 
 const PORT = config.port || 5001;
 app.listen(PORT, () => {
-  console.log(`Jasera Server running on port ${PORT}`);
+  console.log(`Jassera Server running on port ${PORT}`);
   console.log(`Health endpoint: http://localhost:${PORT}/api/health`);
 });

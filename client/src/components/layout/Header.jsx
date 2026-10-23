@@ -92,7 +92,7 @@ export function Header() {
             {isAdminRoute ? (
               <>
                 <span className="announcement-text">
-                  JASERA - Management Portal
+                  JASSERA - Management Portal
                 </span>
                 <div className="announcement-links">
                   <Link to="/" target="_blank" rel="noopener noreferrer">
@@ -148,10 +148,17 @@ export function Header() {
 
           {/* Brand Logo */}
           <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
-            <span className="brand-logo-title">JASERA</span>
-            <span className="brand-logo-subtitle">
-              {isAdminRoute ? "MANAGEMENT" : "AESTHETIC JEWELLERY"}
-            </span>
+            <img
+              src="/images/jassera-logo.jpg"
+              alt="Jassera Jewellery & Accessories"
+              className="brand-logo-crest"
+            />
+            <div className="brand-logo-text-group">
+              <span className="brand-logo-title">JASSERA</span>
+              <span className="brand-logo-subtitle">
+                {isAdminRoute ? "MANAGEMENT PORTAL" : "JEWELLERY & ACCESSORIES"}
+              </span>
+            </div>
           </Link>
 
           {/* Action Icons */}
@@ -292,7 +299,7 @@ export function Header() {
                       ) : (
                         <>
                           <div className="dropdown-prompt">
-                            <p>Welcome to Jasera Jewels</p>
+                            <p>Welcome to Jassera Jewels</p>
                             <Link to="/login" className="dropdown-login-btn">
                               Sign In
                             </Link>
@@ -367,9 +374,22 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mobile-nav-header">
-              <span className="brand-logo-title" style={{ fontSize: "1.3rem" }}>
-                {isAdminRoute ? "JASERA ADMIN" : "JASERA"}
-              </span>
+              <Link
+                to={isAdminRoute ? "/admin" : "/"}
+                className="brand-logo-link"
+                onClick={() => setIsMobileNavOpen(false)}
+                style={{ gap: "8px" }}
+              >
+                <img
+                  src="/images/jassera-logo.jpg"
+                  alt="Jassera"
+                  className="brand-logo-crest"
+                  style={{ width: "32px", height: "32px" }}
+                />
+                <span className="brand-logo-title" style={{ fontSize: "1.25rem" }}>
+                  {isAdminRoute ? "JASSERA ADMIN" : "JASSERA"}
+                </span>
+              </Link>
               <button
                 className="close-mobile-nav"
                 onClick={() => setIsMobileNavOpen(false)}

@@ -59,7 +59,7 @@ export function CmsPage({ slugOverride }) {
       <div className="about-hero">
         <div className="container about-hero-content">
           <span className="about-eyebrow">
-            <Sparkles size={14} /> JASERA BOUTIQUE
+            <Sparkles size={14} /> JASSERA BOUTIQUE
           </span>
           <h1 className="about-title">{page.title}</h1>
           {page.seo_description && <p className="about-subtitle">{page.seo_description}</p>}

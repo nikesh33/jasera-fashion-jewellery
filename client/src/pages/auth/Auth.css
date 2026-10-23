@@ -19,6 +19,21 @@
   text-align: center;
 }
 
+.auth-logo-crest {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(197, 162, 98, 0.45);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  margin-bottom: 10px;
+  transition: transform var(--duration-fast);
+}
+
+.auth-brand-logo:hover .auth-logo-crest {
+  transform: scale(1.04);
+}
+
 .auth-card {
   max-width: 460px;
   width: 100%;

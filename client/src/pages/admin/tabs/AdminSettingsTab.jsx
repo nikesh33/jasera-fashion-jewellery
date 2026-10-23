@@ -5,18 +5,18 @@ import { api } from '../../../lib/api';
 
 export function AdminSettingsTab({ onNotify }) {
   const [settings, setSettings] = useState({
-    store_name: 'Jasera',
-    tagline: 'Aesthetic Handcrafted Jewellery',
-    announcement_banner_text: 'Free Shipping on orders above ₹499 | Handcrafted with Care',
+    store_name: 'Jassera',
+    tagline: 'Jewellery & Accessories',
+    announcement_banner_text: 'Free Shipping on orders above ₹499 | Handcrafted with Care by Jassera',
     announcement_banner_link: '/shop',
-    support_email: 'support@jasera.in',
+    support_email: 'support@jassera.in',
     support_phone: '+91 98200 12345',
     whatsapp_number: '+91 98200 12345',
     free_shipping_threshold: '499',
     shipping_fee: '50',
     tax_rate_percent: '3',
     cod_enabled: 'true',
-    instagram_url: 'https://instagram.com/jasera.jewels',
+    instagram_url: 'https://instagram.com/jassera.jewels',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);

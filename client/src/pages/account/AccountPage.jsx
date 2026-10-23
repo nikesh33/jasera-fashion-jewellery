@@ -323,7 +323,7 @@ export function AccountPage() {
                       >
                         <option value="original">Original Payment Method (Reversal)</option>
                         <option value="upi">Direct UPI Transfer</option>
-                        <option value="store_credit">Jasera Store Credit / Gift Voucher</option>
+                        <option value="store_credit">Jassera Store Credit / Gift Voucher</option>
                       </select>
                     </div>
 

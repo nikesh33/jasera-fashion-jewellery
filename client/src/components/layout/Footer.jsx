@@ -27,7 +27,7 @@ export function Footer() {
     try {
       const res = await api.post("/newsletter/subscribe", { email });
       setSubscribeStatus("success");
-      setSubscribeMsg(res?.message || "Subscribed successfully! Welcome to the Jasera circle.");
+      setSubscribeMsg(res?.message || "Subscribed successfully! Welcome to the Jassera circle.");
       setEmail("");
     } catch (err) {
       setSubscribeStatus("error");
@@ -35,8 +35,8 @@ export function Footer() {
     }
   };
 
-  const supportEmail = settings?.support_email || "support@jasera.in";
-  const instagramUrl = settings?.instagram_url || "https://instagram.com/jasera.jewels";
+  const supportEmail = settings?.support_email || "support@jassera.in";
+  const instagramUrl = settings?.instagram_url || "https://instagram.com/jassera.jewels";
 
   return (
     <footer className="site-footer">
@@ -56,7 +56,7 @@ export function Footer() {
         }}>
           <div>
             <h4 style={{ margin: '0 0 6px', color: '#FDFBF7', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Sparkles size={16} color="#D4AF37" /> Join The Jasera VIP Circle
+              <Sparkles size={16} color="#D4AF37" /> Join The Jassera VIP Circle
             </h4>
             <p style={{ margin: 0, color: '#A0A0A0', fontSize: '0.88rem' }}>
               Receive secret drop previews, festive discounts & styling tips straight to your inbox.
@@ -108,10 +108,15 @@ export function Footer() {
           )}
         </div>
 
-        {/* Top: Brand & Contacts (Item #25: store_settings) */}
+        {/* Top: Brand & Contacts */}
         <div className="footer-brand-line">
-          <Link to="/" className="footer-logo">
-            JASERA
+          <Link to="/" className="footer-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <img
+              src="/images/jassera-logo.jpg"
+              alt="Jassera Jewellery"
+              style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(212,175,55,0.4)', objectFit: 'cover' }}
+            />
+            <span>JASSERA</span>
           </Link>
           <div className="footer-contacts">
             <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
@@ -136,7 +141,7 @@ export function Footer() {
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                 <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
               </svg>
-              @jasera.jewels
+              @jassera.jewels
             </a>
           </div>
         </div>

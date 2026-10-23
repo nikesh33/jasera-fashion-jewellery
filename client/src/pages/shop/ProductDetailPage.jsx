@@ -99,7 +99,7 @@ export function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-        <p>Retrieving masterpiece from Jasera catalogue...</p>
+        <p>Retrieving masterpiece from Jassera catalogue...</p>
       </div>
     );
   }
@@ -548,7 +548,7 @@ export function ProductDetailPage() {
 
                       {rev.admin_reply && (
                         <div style={{ marginTop: '12px', padding: '10px 14px', background: '#F9F7F2', borderLeft: '3px solid #D4AF37', borderRadius: '4px', fontSize: '0.85rem' }}>
-                          <strong>Jasera Team:</strong> {rev.admin_reply}
+                          <strong>Jassera Team:</strong> {rev.admin_reply}
                         </div>
                       )}
                     </div>

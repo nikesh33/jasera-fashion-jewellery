@@ -60,24 +60,33 @@ export function ContactPage() {
     <div className="contact-page container">
       <div className="contact-header text-center">
         <span className="section-eyebrow">CUSTOMER CONCIERGE</span>
-        <h1 className="contact-title">Get In Touch With Jasera</h1>
+        <h1 className="contact-title">Get In Touch With Jassera</h1>
         <p className="contact-subtitle">
-          Have a question about our viral jhumkas, shipping timelines, or custom orders? Send us a message and our team will get back to you swiftly.
+          Have a question about our viral statement earrings, shipping timelines, or custom orders? Send us a message and our team will get back to you swiftly.
         </p>
       </div>
 
       <div className="contact-grid">
         {/* Salon Details */}
         <div className="salon-info-card">
-          <h2 className="salon-name">The Jasera Boutique Studio</h2>
-          <span className="salon-tag">Handcrafted With Care</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <img
+              src="/images/jassera-logo.jpg"
+              alt="Jassera Jewellery"
+              style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(197, 162, 98, 0.45)', objectFit: 'cover' }}
+            />
+            <div>
+              <h2 className="salon-name" style={{ margin: 0 }}>The Jassera Boutique Studio</h2>
+              <span className="salon-tag">Jewellery & Accessories</span>
+            </div>
+          </div>
 
           <div className="salon-contact-list">
             <div className="contact-item">
               <MapPin className="contact-ic" size={20} />
               <div>
                 <strong>Boutique Studio</strong>
-                <span>Jasera Design Studio, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
+                <span>Jassera Design Studio, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
               </div>
             </div>
 
@@ -93,7 +102,7 @@ export function ContactPage() {
               <Mail className="contact-ic" size={20} />
               <div>
                 <strong>Support & Order Queries</strong>
-                <span>{storeSettings?.support_email || 'support@jasera.in'}</span>
+                <span>{storeSettings?.support_email || 'support@jassera.in'}</span>
               </div>
             </div>
 

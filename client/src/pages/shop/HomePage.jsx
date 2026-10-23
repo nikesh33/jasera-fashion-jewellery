@@ -86,9 +86,9 @@ export function HomePage() {
   };
 
   const activeBanner = banners[currentSlide] || {
-    title: 'Trendy Handcrafted Jewellery For Every Aesthetic',
-    subtitle: 'From viral Instagram jhumkas & oxidised silver to anti-tarnish waterproof daily wear jewellery crafted to turn heads.',
-    imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=85',
+    title: 'Statement Bracelet Collection',
+    subtitle: 'Traditional Charm with a Modern Touch — Beautifully Handcrafted by Jassera.',
+    imageUrl: '/images/jassera-hero-banner.jpg',
     linkUrl: '/shop',
   };
 
@@ -358,7 +358,7 @@ export function HomePage() {
             <span className="section-eyebrow">HANDCRAFTED WITH CARE</span>
             <h2 className="heritage-title">The Art of Statement Jewellery</h2>
             <p className="heritage-desc">
-              At Jasera, we believe beautiful jewellery shouldn't cost a fortune. Every jhumka, statement earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
+              At Jassera, we believe beautiful jewellery shouldn't cost a fortune. Every jhumka, statement earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
             </p>
             <div className="heritage-points">
               <div className="point-item">

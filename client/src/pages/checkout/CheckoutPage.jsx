@@ -210,7 +210,7 @@ export function CheckoutPage() {
             key: orderData.razorpay.keyId,
             amount: orderData.razorpay.amount,
             currency: 'INR',
-            name: 'Jasera Boutique',
+            name: 'Jassera Boutique',
             description: `Payment for Order ${orderData.orderNumber}`,
             order_id: orderData.razorpay.id,
             prefill: {
@@ -672,7 +672,7 @@ export function CheckoutPage() {
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                 />
                 <span>
-                  I agree to the Jasera Boutique Terms of Sale, 7-Day Easy Exchange Policy, and Privacy Policy.
+                  I agree to the Jassera Boutique Terms of Sale, 7-Day Easy Exchange Policy, and Privacy Policy.
                 </span>
               </label>
 

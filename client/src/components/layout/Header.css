@@ -99,16 +99,32 @@
 
 .brand-logo-link {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 12px;
   text-decoration: none;
+}
+
+.brand-logo-crest {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(197, 162, 98, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.brand-logo-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .brand-logo-title {
   font-family: var(--font-heading);
-  font-size: 2rem;
+  font-size: 1.85rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   color: var(--color-maroon);
   line-height: 1;
 }
@@ -116,7 +132,7 @@
 .brand-logo-subtitle {
   font-family: var(--font-body);
   font-size: 0.62rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.22em;
   color: var(--color-antique-gold-dark);
   font-weight: 600;
   margin-top: 3px;

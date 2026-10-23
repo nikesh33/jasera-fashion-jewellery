@@ -2,18 +2,18 @@ import { getPool } from '../config/db.js';
 import { logAdminAction } from '../utils/auditLogger.js';
 
 const DEFAULT_SETTINGS = [
-  { key: 'store_name', value: 'Jasera', group: 'general' },
-  { key: 'tagline', value: 'Aesthetic Handcrafted Jewellery', group: 'general' },
-  { key: 'announcement_banner_text', value: 'Free Shipping on orders above ₹499 | Handcrafted with Care', group: 'header' },
+  { key: 'store_name', value: 'Jassera', group: 'general' },
+  { key: 'tagline', value: 'Jewellery & Accessories', group: 'general' },
+  { key: 'announcement_banner_text', value: 'Free Shipping on orders above ₹499 | Handcrafted with Care by Jassera', group: 'header' },
   { key: 'announcement_banner_link', value: '/shop', group: 'header' },
-  { key: 'support_email', value: 'support@jasera.in', group: 'contact' },
+  { key: 'support_email', value: 'support@jassera.in', group: 'contact' },
   { key: 'support_phone', value: '+91 98200 12345', group: 'contact' },
   { key: 'whatsapp_number', value: '+91 98200 12345', group: 'contact' },
   { key: 'free_shipping_threshold', value: '499', group: 'checkout' },
   { key: 'shipping_fee', value: '50', group: 'checkout' },
   { key: 'tax_rate_percent', value: '3', group: 'checkout' },
   { key: 'cod_enabled', value: 'true', group: 'checkout' },
-  { key: 'instagram_url', value: 'https://instagram.com/jasera.jewels', group: 'social' },
+  { key: 'instagram_url', value: 'https://instagram.com/jassera.jewels', group: 'social' },
 ];
 
 /**
