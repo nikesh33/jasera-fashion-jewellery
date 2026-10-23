@@ -928,29 +928,7 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          {/* Quick Shortcuts */}
-          <div className="admin-quick-actions">
-            <h3>Store Operations</h3>
-            <div className="quick-btn-group">
-              <Button
-                variant="primary"
-                icon={Plus}
-                onClick={handleOpenAddCategory}
-              >
-                Add Category
-              </Button>
-              <Button variant="gold" icon={Plus} onClick={handleOpenAddProduct}>
-                Add Product
-              </Button>
-              <Button
-                variant="outline"
-                icon={ShoppingBag}
-                onClick={() => setActiveTab("orders")}
-              >
-                View Customer Orders ({orders.length})
-              </Button>
-            </div>
-          </div>
+
         </div>
       )}
 
@@ -1617,20 +1595,20 @@ export function AdminDashboard() {
                 productCategoryFilter !== "all" ||
                 productStockFilter !== "all" ||
                 productStatusFilter !== "all") && (
-                <button
-                  type="button"
-                  className="admin-filter-reset"
-                  onClick={() => {
-                    setProductSearch("");
-                    setProductCategoryFilter("all");
-                    setProductStockFilter("all");
-                    setProductStatusFilter("all");
-                  }}
-                >
-                  <RotateCcw size={13} />
-                  Reset
-                </button>
-              )}
+                  <button
+                    type="button"
+                    className="admin-filter-reset"
+                    onClick={() => {
+                      setProductSearch("");
+                      setProductCategoryFilter("all");
+                      setProductStockFilter("all");
+                      setProductStatusFilter("all");
+                    }}
+                  >
+                    <RotateCcw size={13} />
+                    Reset
+                  </button>
+                )}
               <span className="admin-filter-count">
                 Showing {filteredProducts.length} of {products.length}
               </span>
@@ -1799,19 +1777,19 @@ export function AdminDashboard() {
               {(orderSearch ||
                 orderStatusFilter !== "all" ||
                 orderPaymentFilter !== "all") && (
-                <button
-                  type="button"
-                  className="admin-filter-reset"
-                  onClick={() => {
-                    setOrderSearch("");
-                    setOrderStatusFilter("all");
-                    setOrderPaymentFilter("all");
-                  }}
-                >
-                  <RotateCcw size={13} />
-                  Reset
-                </button>
-              )}
+                  <button
+                    type="button"
+                    className="admin-filter-reset"
+                    onClick={() => {
+                      setOrderSearch("");
+                      setOrderStatusFilter("all");
+                      setOrderPaymentFilter("all");
+                    }}
+                  >
+                    <RotateCcw size={13} />
+                    Reset
+                  </button>
+                )}
               <span className="admin-filter-count">
                 Showing {filteredOrders.length} of {orders.length}
               </span>

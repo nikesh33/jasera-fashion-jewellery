@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, Calendar, User, CheckCircle } from 'lucide-react';
+import { Mail, Phone, Calendar, Search, RotateCcw } from 'lucide-react';
 import { api } from '../../../lib/api';
 
 export function AdminInquiriesTab({ onNotify }) {
   const [inquiries, setInquiries] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   const loadInquiries = async () => {
     setIsLoading(true);
@@ -24,60 +25,102 @@ export function AdminInquiriesTab({ onNotify }) {
     loadInquiries();
   }, []);
 
-  return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>Customer Contact Inquiries</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Live patron inquiries and appointment requests captured from the storefront (<code>contact_submissions</code> table).
-          </p>
-        </div>
-      </div>
+  const filtered = inquiries.filter(
+    (inq) =>
+      !search ||
+      inq.name?.toLowerCase().includes(search.toLowerCase()) ||
+      inq.email?.toLowerCase().includes(search.toLowerCase()) ||
+      inq.phone?.includes(search) ||
+      inq.subject?.toLowerCase().includes(search.toLowerCase()) ||
+      inq.message?.toLowerCase().includes(search.toLowerCase())
+  );
 
-      <div className="table-card" style={{ background: '#FFF', borderRadius: '8px', border: '1px solid #ECECEC', overflow: 'hidden' }}>
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EAEAEA', fontSize: '0.85rem' }}>
-              <th style={{ padding: '14px' }}>ID</th>
-              <th style={{ padding: '14px' }}>Name & Contacts</th>
-              <th style={{ padding: '14px' }}>Subject</th>
-              <th style={{ padding: '14px' }}>Message Content</th>
-              <th style={{ padding: '14px' }}>Submitted On</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inquiries.length === 0 ? (
+  return (
+    <div className="admin-tab-content">
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>Customer Contact Inquiries</h3>
+            <p className="table-card-sub">
+              Live patron inquiries and appointment requests captured from storefront (<code>contact_submissions</code> table)
+            </p>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by name, email, phone or message content..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {search && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => setSearch('')}
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+          <span className="admin-filter-count">
+            Showing {filtered.length} of {inquiries.length}
+          </span>
+        </div>
+
+        {/* Table */}
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
-                  {isLoading ? 'Loading customer inquiries...' : 'No contact submissions yet.'}
-                </td>
+                <th>ID</th>
+                <th>Name & Contacts</th>
+                <th>Subject / Service</th>
+                <th>Message Content</th>
+                <th>Submitted On</th>
               </tr>
-            ) : (
-              inquiries.map((inq) => (
-                <tr key={inq.id} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
-                  <td style={{ padding: '12px 14px', color: '#888' }}>#{inq.id}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong>{inq.name}</strong>
-                    <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>
-                      <a href={`mailto:${inq.email}`} style={{ color: '#1565C0', textDecoration: 'none' }}>{inq.email}</a>
-                      {inq.phone && <span style={{ marginLeft: '8px' }}>• {inq.phone}</span>}
-                    </div>
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ fontWeight: 600, color: '#333' }}>{inq.subject || 'General Inquiry'}</span>
-                  </td>
-                  <td style={{ padding: '12px 14px', maxWidth: '380px', color: '#444' }}>
-                    {inq.message}
-                  </td>
-                  <td style={{ padding: '12px 14px', color: '#888', whiteSpace: 'nowrap' }}>
-                    {new Date(inq.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading customer inquiries...' : 'No contact submissions found.'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((inq) => (
+                  <tr key={inq.id}>
+                    <td className="font-mono text-muted">#{inq.id}</td>
+                    <td>
+                      <strong style={{ color: 'var(--color-charcoal)' }}>{inq.name}</strong>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--grey-600)', marginTop: '2px' }}>
+                        <a href={`mailto:${inq.email}`} style={{ color: 'var(--color-maroon)', textDecoration: 'none' }}>
+                          {inq.email}
+                        </a>
+                        {inq.phone && <span style={{ marginLeft: '8px' }}>• {inq.phone}</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="font-semibold text-maroon">{inq.subject || 'General Inquiry'}</span>
+                    </td>
+                    <td style={{ maxWidth: '380px', color: 'var(--grey-800)', lineHeight: '1.5' }}>
+                      {inq.message}
+                    </td>
+                    <td className="text-muted" style={{ whiteSpace: 'nowrap' }}>
+                      {new Date(inq.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

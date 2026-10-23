@@ -101,170 +101,198 @@ export function AdminPaymentsTab({ onNotify }) {
   });
 
   return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>Payments & Transaction Ledger</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Comprehensive financial transaction tracking (payments table) for manual UPI, bank transfers, COD collections, and refunds.
-          </p>
-        </div>
-      </div>
-
+    <div className="admin-tab-content">
       {/* Financial KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '24px' }}>
-        <div style={{ background: '#FFF', padding: '20px', borderRadius: '10px', border: '1px solid #EBEBEB', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>Total Captured Revenue</span>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#2E7D32', marginTop: '6px' }}>
+      <div className="admin-kpi-grid">
+        <div className="kpi-card">
+          <div className="kpi-header">
+            <span className="kpi-label">Total Captured Revenue</span>
+            <CreditCard size={20} className="kpi-icon" />
+          </div>
+          <strong className="kpi-val" style={{ color: 'var(--color-success, #2E7D5B)' }}>
             {formatPrice(summary.totalCaptured)}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: '#888' }}>Verified & deposited funds</span>
+          </strong>
+          <span className="kpi-change positive">Verified & deposited funds</span>
         </div>
 
-        <div style={{ background: '#FFF', padding: '20px', borderRadius: '10px', border: '1px solid #EBEBEB', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>Pending / In-Transit (COD)</span>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#E65100', marginTop: '6px' }}>
+        <div className="kpi-card">
+          <div className="kpi-header">
+            <span className="kpi-label">Pending / In-Transit (COD)</span>
+            <RotateCcw size={20} className="kpi-icon" />
+          </div>
+          <strong className="kpi-val" style={{ color: '#E65100' }}>
             {formatPrice(summary.totalPending)}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: '#888' }}>Awaiting delivery or bank confirmation</span>
+          </strong>
+          <span className="kpi-change" style={{ color: '#E65100' }}>
+            Awaiting delivery or bank confirmation
+          </span>
         </div>
 
-        <div style={{ background: '#FFF', padding: '20px', borderRadius: '10px', border: '1px solid #EBEBEB', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-          <span style={{ fontSize: '0.82rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>Refunded Payments</span>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#C62828', marginTop: '6px' }}>
+        <div className="kpi-card">
+          <div className="kpi-header">
+            <span className="kpi-label">Refunded Payments</span>
+            <AlertCircle size={20} className="kpi-icon" />
+          </div>
+          <strong className="kpi-val" style={{ color: '#B3261E' }}>
             {formatPrice(summary.totalRefunded)}
-          </div>
-          <span style={{ fontSize: '0.75rem', color: '#888' }}>Customer returns & reversals</span>
+          </strong>
+          <span className="kpi-change negative">Customer returns & reversals</span>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '18px', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="Search by order #, UTR / txn ref, customer..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ flexGrow: 1, minWidth: '260px', padding: '9px 14px', borderRadius: '6px', border: '1px solid #DDD', fontSize: '0.9rem' }}
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ padding: '9px 14px', borderRadius: '6px', border: '1px solid #DDD', fontSize: '0.9rem', background: '#FFF' }}
-        >
-          <option value="all">All Payment Statuses</option>
-          <option value="captured">Captured (Paid)</option>
-          <option value="created">Created (Pending)</option>
-          <option value="authorized">Authorized (COD)</option>
-          <option value="refunded">Refunded</option>
-          <option value="failed">Failed</option>
-        </select>
-      </div>
+      {/* Main Table Card */}
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>Payments & Transaction Ledger</h3>
+            <p className="table-card-sub">
+              Financial transaction tracking (<code>payments</code> table) for UPI, cards, COD collections, and refunds
+            </p>
+          </div>
+        </div>
 
-      {/* Payments Table */}
-      <div className="table-card" style={{ background: '#FFF', borderRadius: '8px', border: '1px solid #ECECEC', overflow: 'hidden' }}>
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EAEAEA', fontSize: '0.85rem' }}>
-              <th style={{ padding: '14px' }}>Txn ID</th>
-              <th style={{ padding: '14px' }}>Order #</th>
-              <th style={{ padding: '14px' }}>Customer</th>
-              <th style={{ padding: '14px' }}>Amount</th>
-              <th style={{ padding: '14px' }}>Method</th>
-              <th style={{ padding: '14px' }}>Txn Reference / UTR</th>
-              <th style={{ padding: '14px' }}>Status</th>
-              <th style={{ padding: '14px', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPayments.length === 0 ? (
+        {/* Filter and Search Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by order #, UTR / txn ref, customer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="admin-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Payment Statuses</option>
+            <option value="captured">Captured (Paid)</option>
+            <option value="created">Created (Pending)</option>
+            <option value="authorized">Authorized (COD)</option>
+            <option value="refunded">Refunded</option>
+            <option value="failed">Failed</option>
+          </select>
+          {(search || statusFilter !== 'all') && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('all');
+              }}
+            >
+              Reset
+            </button>
+          )}
+          <span className="admin-filter-count">
+            Showing {filteredPayments.length} of {payments.length}
+          </span>
+        </div>
+
+        {/* Payments Table */}
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={8} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
-                  {isLoading ? 'Loading transaction records...' : 'No payment records found matching the criteria.'}
-                </td>
+                <th>Txn ID</th>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Txn Reference / UTR</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
-            ) : (
-              filteredPayments.map((p) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
-                  <td style={{ padding: '12px 14px', fontFamily: 'monospace', color: '#888' }}>#{p.id}</td>
-                  <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 600 }}>{p.order_number}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong>{p.customer_name || 'Guest Checkout'}</strong>
-                    {p.customer_phone && <span style={{ display: 'block', fontSize: '0.78rem', color: '#777' }}>{p.customer_phone}</span>}
-                  </td>
-                  <td style={{ padding: '12px 14px', fontWeight: 600 }}>{formatPrice(p.amount)}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ textTransform: 'uppercase', fontSize: '0.8rem', padding: '3px 8px', borderRadius: '4px', background: '#F0F0F0', fontWeight: 500 }}>
-                      {p.method}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontSize: '0.85rem', color: p.gateway_payment_id ? '#1565C0' : '#AAA' }}>
-                    {p.gateway_payment_id || 'Pending Ref'}
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        fontSize: '0.78rem',
-                        fontWeight: 600,
-                        background:
-                          p.status === 'captured'
-                            ? '#E8F5E9'
-                            : p.status === 'refunded'
-                            ? '#FFEBEE'
-                            : '#FFF3E0',
-                        color:
-                          p.status === 'captured'
-                            ? '#2E7D32'
-                            : p.status === 'refunded'
-                            ? '#C62828'
-                            : '#E65100',
-                      }}
-                    >
-                      {p.status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                    {p.status !== 'captured' && p.status !== 'refunded' && (
-                      <Button
-                        variant="gold"
-                        size="sm"
-                        style={{ fontSize: '0.78rem', padding: '5px 10px' }}
-                        onClick={() => {
-                          setVerifyModalPayment(p);
-                          setTxnRef(p.gateway_payment_id || `UPI-${Date.now().toString().slice(-6)}`);
-                        }}
-                      >
-                        Verify & Capture
-                      </Button>
-                    )}
-                    {p.status === 'captured' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRefundModalPayment(p);
-                          setRefundRef(`REF-${Date.now().toString().slice(-6)}`);
-                        }}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #FFCDD2',
-                          borderRadius: '4px',
-                          color: '#C62828',
-                          padding: '4px 8px',
-                          fontSize: '0.78rem',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Issue Refund
-                      </button>
-                    )}
+            </thead>
+            <tbody>
+              {filteredPayments.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading transaction records...' : 'No payment records found matching the criteria.'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredPayments.map((p) => (
+                  <tr key={p.id}>
+                    <td className="font-mono text-muted">#{p.id}</td>
+                    <td className="font-mono font-semibold">{p.order_number}</td>
+                    <td>
+                      <strong>{p.customer_name || 'Guest Checkout'}</strong>
+                      {p.customer_phone && <div style={{ fontSize: '0.78rem', color: 'var(--grey-500)' }}>{p.customer_phone}</div>}
+                    </td>
+                    <td className="font-semibold">{formatPrice(p.amount)}</td>
+                    <td>
+                      <span className="badge-count" style={{ textTransform: 'uppercase' }}>
+                        {p.method}
+                      </span>
+                    </td>
+                    <td className="font-mono" style={{ fontSize: '0.85rem', color: p.gateway_payment_id ? 'var(--color-maroon)' : 'var(--grey-400)' }}>
+                      {p.gateway_payment_id || 'Pending Ref'}
+                    </td>
+                    <td>
+                      <span
+                        className="stock-pill"
+                        style={{
+                          background:
+                            p.status === 'captured'
+                              ? '#E8F5EE'
+                              : p.status === 'refunded'
+                              ? '#FDEDED'
+                              : '#FFF3E0',
+                          color:
+                            p.status === 'captured'
+                              ? '#2E7D5B'
+                              : p.status === 'refunded'
+                              ? '#B3261E'
+                              : '#E65100',
+                        }}
+                      >
+                        {p.status ? p.status.toUpperCase() : 'PENDING'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '6px' }}>
+                        {p.status !== 'captured' && (
+                          <button
+                            type="button"
+                            className="btn-edit"
+                            onClick={() => {
+                              setVerifyModalPayment(p);
+                              setTxnRef(p.gateway_payment_id || '');
+                              setVerifyNote(p.notes || '');
+                            }}
+                            title="Verify and capture payment"
+                          >
+                            <CheckCircle2 size={13} />
+                            Capture
+                          </button>
+                        )}
+                        {p.status === 'captured' && (
+                          <button
+                            type="button"
+                            className="btn-delete"
+                            onClick={() => {
+                              setRefundModalPayment(p);
+                              setRefundRef('');
+                              setRefundReason('');
+                            }}
+                            title="Issue payment refund"
+                          >
+                            <RotateCcw size={13} />
+                            Refund
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Verify Payment Modal */}

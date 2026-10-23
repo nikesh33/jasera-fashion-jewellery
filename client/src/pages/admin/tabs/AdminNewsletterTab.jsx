@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Download, UserCheck, CheckCircle } from 'lucide-react';
+import { Mail, Download, Search, RotateCcw } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { api } from '../../../lib/api';
 
 export function AdminNewsletterTab({ onNotify }) {
   const [subscribers, setSubscribers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   const loadSubscribers = async () => {
     setIsLoading(true);
@@ -39,57 +40,99 @@ export function AdminNewsletterTab({ onNotify }) {
     document.body.removeChild(link);
   };
 
-  return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>Newsletter Subscribers</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Audience members who subscribed to boutique drop notifications (<code>newsletter_subscribers</code> table).
-          </p>
-        </div>
-        <Button variant="gold" size="sm" icon={Download} onClick={handleExportCSV} disabled={subscribers.length === 0}>
-          Export CSV ({subscribers.length})
-        </Button>
-      </div>
+  const filtered = subscribers.filter(
+    (s) => !search || s.email?.toLowerCase().includes(search.toLowerCase())
+  );
 
-      <div className="table-card" style={{ background: '#FFF', borderRadius: '8px', border: '1px solid #ECECEC', overflow: 'hidden' }}>
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EAEAEA', fontSize: '0.85rem' }}>
-              <th style={{ padding: '14px' }}>Subscriber ID</th>
-              <th style={{ padding: '14px' }}>Email Address</th>
-              <th style={{ padding: '14px' }}>Status</th>
-              <th style={{ padding: '14px' }}>Subscribed On</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subscribers.length === 0 ? (
+  return (
+    <div className="admin-tab-content">
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>Newsletter Subscribers</h3>
+            <p className="table-card-sub">
+              Patrons subscribed to boutique drop alerts and promotions (<code>newsletter_subscribers</code> table)
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Download}
+            onClick={handleExportCSV}
+            disabled={subscribers.length === 0}
+          >
+            Export CSV ({subscribers.length})
+          </Button>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Filter by subscriber email address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {search && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => setSearch('')}
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+          <span className="admin-filter-count">
+            Showing {filtered.length} of {subscribers.length}
+          </span>
+        </div>
+
+        {/* Table */}
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
-                  {isLoading ? 'Loading subscribers...' : 'No subscribers recorded yet.'}
-                </td>
+                <th>ID</th>
+                <th>Email Address</th>
+                <th>Subscription Status</th>
+                <th>Subscribed On</th>
               </tr>
-            ) : (
-              subscribers.map((sub) => (
-                <tr key={sub.id} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
-                  <td style={{ padding: '12px 14px', color: '#888' }}>#{sub.id}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong style={{ color: '#1F1F1F' }}>{sub.email}</strong>
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ padding: '3px 8px', borderRadius: '12px', background: '#E8F5E9', color: '#2E7D32', fontSize: '0.78rem', fontWeight: 600 }}>
-                      Active Subscriber
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px', color: '#888' }}>
-                    {new Date(sub.subscribed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading subscribers...' : 'No subscribers recorded yet.'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((sub) => (
+                  <tr key={sub.id}>
+                    <td className="font-mono text-muted">#{sub.id}</td>
+                    <td>
+                      <strong style={{ color: 'var(--color-charcoal)' }}>{sub.email}</strong>
+                    </td>
+                    <td>
+                      <span className="stock-pill">Active Subscriber</span>
+                    </td>
+                    <td className="text-muted">
+                      {new Date(sub.subscribed_at).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

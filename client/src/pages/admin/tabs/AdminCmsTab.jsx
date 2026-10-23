@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Edit2, CheckCircle, ExternalLink } from 'lucide-react';
+import { FileText, Edit2, ExternalLink, Search, RotateCcw } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { api } from '../../../lib/api';
 
@@ -15,6 +15,8 @@ export function AdminCmsTab({ onNotify }) {
     seo_description: '',
   });
   const [saving, setSaving] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadCmsPages = async () => {
     setIsLoading(true);
@@ -62,125 +64,186 @@ export function AdminCmsTab({ onNotify }) {
     }
   };
 
+  const filteredPages = pages.filter((p) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      p.title?.toLowerCase().includes(q) ||
+      p.slug?.toLowerCase().includes(q) ||
+      p.seo_description?.toLowerCase().includes(q) ||
+      p.content?.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>CMS Pages & Policy Manager</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Dynamically edit policy content and static pages (<code>cms_pages</code> table) without touching codebase.
-          </p>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-        {pages.map((page) => (
-          <div
-            key={page.id}
-            style={{
-              background: '#FFF',
-              borderRadius: '10px',
-              border: '1px solid #ECECEC',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', color: '#D4AF37', fontWeight: 600, textTransform: 'uppercase' }}>
-                  /{page.slug}
-                </span>
-                <a
-                  href={`/pages/${page.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#888', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.8rem', textDecoration: 'none' }}
-                >
-                  <ExternalLink size={13} /> View
-                </a>
-              </div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '1.2rem', color: '#1F1F1F' }}>{page.title}</h3>
-              <p style={{ margin: '0 0 16px', color: '#666', fontSize: '0.85rem' }}>
-                {page.seo_description || 'Live published boutique page.'}
-              </p>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              icon={Edit2}
-              style={{ width: '100%' }}
-              onClick={() => handleOpenEdit(page)}
-            >
-              Edit Page Content
-            </Button>
+    <div className="admin-tab-content">
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>CMS Pages & Policy Manager</h3>
+            <p className="table-card-sub">
+              Manage dynamic brand policies, terms, shipping guides, and institutional boutique pages.
+            </p>
           </div>
-        ))}
+        </div>
+
+        {/* Filter Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by page title, URL slug or keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {searchQuery && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => setSearchQuery('')}
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+
+          <span className="admin-filter-count">
+            Showing {filteredPages.length} of {pages.length}
+          </span>
+        </div>
+
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Page Title & URL</th>
+                <th>SEO Meta Summary</th>
+                <th>Content Length</th>
+                <th>Last Updated</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPages.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading CMS pages...' : 'No CMS pages match your search.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredPages.map((page) => (
+                  <tr key={page.id}>
+                    <td>
+                      <strong style={{ fontSize: '0.92rem', color: 'var(--color-charcoal, #1a1a1a)' }}>
+                        {page.title}
+                      </strong>
+                      <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-maroon, #6B1E2C)', fontFamily: 'monospace', marginTop: '2px' }}>
+                        /pages/{page.slug}
+                      </span>
+                    </td>
+                    <td style={{ maxWidth: '320px' }}>
+                      <span style={{ fontSize: '0.84rem', color: 'var(--grey-600, #666)' }}>
+                        {page.seo_description || 'Live published storefront page.'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge-count">
+                        {(page.content || '').length} characters
+                      </span>
+                    </td>
+                    <td style={{ color: '#888', fontSize: '0.84rem' }}>
+                      {page.updated_at ? new Date(page.updated_at).toLocaleDateString('en-IN') : 'Live'}
+                    </td>
+                    <td className="actions-cell" style={{ textAlign: 'right' }}>
+                      <a
+                        href={`/pages/${page.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-edit"
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <ExternalLink size={13} /> View
+                      </a>
+                      <button
+                        type="button"
+                        className="btn-edit"
+                        onClick={() => handleOpenEdit(page)}
+                      >
+                        <Edit2 size={13} /> Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* CMS Edit Modal */}
       {editingPage && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#FFF', borderRadius: '12px', width: '100%', maxWidth: '720px', padding: '28px', maxHeight: '88vh', overflowY: 'auto' }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem' }}>Edit CMS Page: {editingPage.title}</h3>
-            <p style={{ margin: '0 0 20px', color: '#666', fontSize: '0.85rem' }}>
-              Changes to this content will immediately update <code>/pages/{editingPage.slug}</code> on the storefront.
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#FFF', borderRadius: '10px', width: '100%', maxWidth: '720px', padding: '28px', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', fontFamily: 'var(--font-heading, serif)' }}>
+              Edit CMS Page: {editingPage.title}
+            </h3>
+            <p className="table-card-sub" style={{ marginBottom: '16px' }}>
+              Changes to this page will update <code>/pages/{editingPage.slug}</code> instantly across the storefront.
             </p>
 
             <form onSubmit={handleSave}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px', marginBottom: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Page Title</label>
+              <div className="form-grid" style={{ marginBottom: '14px' }}>
+                <div className="form-group">
+                  <label>Page Title</label>
                   <input
                     type="text"
                     required
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>URL Slug</label>
+                <div className="form-group">
+                  <label>URL Slug</label>
                   <input
                     type="text"
                     required
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC', fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'monospace' }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>SEO Meta Description</label>
+              <div className="form-group" style={{ marginBottom: '14px' }}>
+                <label>SEO Meta Summary Description</label>
                 <input
                   type="text"
                   placeholder="Summary for Google and search engines..."
                   value={form.seo_description}
                   onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                 />
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Page Content (HTML supported)</label>
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label>Page Content (HTML Supported)</label>
                 <textarea
                   rows={10}
                   required
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #CCC', fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: '1.5' }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid var(--grey-300, #ccc)', fontFamily: 'monospace', fontSize: '0.86rem', lineHeight: '1.5' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <Button variant="outline" type="button" onClick={() => setEditingPage(null)}>
+              <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
+                <Button variant="outline" size="sm" type="button" onClick={() => setEditingPage(null)}>
                   Cancel
                 </Button>
-                <Button variant="gold" type="submit" disabled={saving}>
+                <Button variant="primary" size="sm" type="submit" disabled={saving}>
                   {saving ? 'Publishing...' : 'Save & Publish Page'}
                 </Button>
               </div>

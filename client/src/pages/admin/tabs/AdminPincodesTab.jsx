@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, X, Search, RotateCcw } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { api } from '../../../lib/api';
 
@@ -8,7 +8,7 @@ export function AdminPincodesTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
-  const [notification, setNotification] = useState(null); // { message: '', type: 'success' | 'error' }
+  const [notification, setNotification] = useState(null);
   const [pincodeToDelete, setPincodeToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -82,7 +82,6 @@ export function AdminPincodesTab({ onNotify }) {
 
     try {
       await api.delete(`/pincodes/admin/${code}`);
-      // Optimistically remove from list immediately
       setPincodes((prev) => prev.filter((p) => p.pincode !== code));
       notify(`Pincode ${code} removed from serviceability database`, 'success');
       setPincodeToDelete(null);
@@ -103,36 +102,12 @@ export function AdminPincodesTab({ onNotify }) {
   );
 
   return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>Pincode Serviceability & COD Rules</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Manage regional courier delivery zones and COD limits (<code>pincode_serviceability</code> table).
-          </p>
-        </div>
-        <Button variant="gold" size="sm" icon={Plus} onClick={() => setShowModal(true)}>
-          Add Serviceable Pin Code
-        </Button>
-      </div>
-
+    <div className="admin-tab-content">
       {/* In-tab Notification Toast */}
       {notification && (
         <div
-          style={{
-            padding: '12px 16px',
-            marginBottom: '16px',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: notification.type === 'error' ? '#FFEBEE' : '#E8F5E9',
-            border: `1px solid ${notification.type === 'error' ? '#EF9A9A' : '#A5D6A7'}`,
-            color: notification.type === 'error' ? '#C62828' : '#2E7D32',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-          }}
+          className={`admin-alert ${notification.type === 'error' ? 'admin-alert-error' : 'admin-alert-success'}`}
+          style={{ justifyContent: 'space-between' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {notification.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle size={18} />}
@@ -142,80 +117,125 @@ export function AdminPincodesTab({ onNotify }) {
             type="button"
             onClick={() => setNotification(null)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: '4px' }}
-            title="Dismiss notification"
           >
             <X size={16} />
           </button>
         </div>
       )}
 
-      <div style={{ marginBottom: '16px' }}>
-        <input
-          type="text"
-          placeholder="Search by 6-digit pin code, city, or state..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ width: '100%', maxWidth: '380px', padding: '9px 14px', borderRadius: '6px', border: '1px solid #DDD', fontSize: '0.9rem' }}
-        />
-      </div>
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>Pincode Serviceability & COD Rules</h3>
+            <p className="table-card-sub">
+              Regional courier delivery zones and COD limits (<code>pincode_serviceability</code> table)
+            </p>
+          </div>
+          <Button variant="primary" size="sm" icon={Plus} onClick={() => setShowModal(true)}>
+            Add Serviceable Pin Code
+          </Button>
+        </div>
 
-      <div className="table-card" style={{ background: '#FFF', borderRadius: '8px', border: '1px solid #ECECEC', overflow: 'hidden' }}>
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EAEAEA', fontSize: '0.85rem' }}>
-              <th style={{ padding: '14px' }}>PIN Code</th>
-              <th style={{ padding: '14px' }}>City & State</th>
-              <th style={{ padding: '14px' }}>Est. Transit Days</th>
-              <th style={{ padding: '14px' }}>COD Available</th>
-              <th style={{ padding: '14px' }}>Serviceable Status</th>
-              <th style={{ padding: '14px', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
+        {/* Filter Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by 6-digit pin code, city, or state..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {search && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => setSearch('')}
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+          <span className="admin-filter-count">
+            Showing {filtered.length} of {pincodes.length}
+          </span>
+        </div>
+
+        {/* Table */}
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
-                  {isLoading ? 'Loading pincodes...' : 'No pincodes found.'}
-                </td>
+                <th>PIN Code</th>
+                <th>City & State</th>
+                <th>Est. Transit Days</th>
+                <th>COD Available</th>
+                <th>Serviceable Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
-            ) : (
-              filtered.map((item) => (
-                <tr key={item.pincode} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
-                  <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 600, color: '#1565C0' }}>
-                    {item.pincode}
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong>{item.city}</strong>, <span style={{ color: '#666' }}>{item.state}</span>
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>{item.estimated_days || 3} Days</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ padding: '3px 8px', borderRadius: '4px', background: item.cod_available ? '#E8F5E9' : '#FFEBEE', color: item.cod_available ? '#2E7D32' : '#C62828', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {item.cod_available ? 'COD ENABLED' : 'PREPAID ONLY'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ padding: '3px 8px', borderRadius: '4px', background: item.is_serviceable ? '#E8F5E9' : '#FFF3E0', color: item.is_serviceable ? '#2E7D32' : '#E65100', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {item.is_serviceable ? 'ACTIVE' : 'SUSPENDED'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      onClick={() => setPincodeToDelete(item.pincode)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#C62828' }}
-                      title={`Delete pincode ${item.pincode}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading pincodes...' : 'No pincodes found.'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((item) => (
+                  <tr key={item.pincode}>
+                    <td className="font-mono" style={{ fontWeight: 600, color: 'var(--color-maroon)' }}>
+                      {item.pincode}
+                    </td>
+                    <td>
+                      <strong style={{ color: 'var(--color-charcoal)' }}>{item.city}</strong>,{' '}
+                      <span className="text-muted">{item.state}</span>
+                    </td>
+                    <td>{item.estimated_days || 3} Days</td>
+                    <td>
+                      <span
+                        className="stock-pill"
+                        style={{
+                          background: item.cod_available ? '#E8F5EE' : '#FDEDED',
+                          color: item.cod_available ? '#2E7D5B' : '#B3261E',
+                        }}
+                      >
+                        {item.cod_available ? 'COD ENABLED' : 'PREPAID ONLY'}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className="stock-pill"
+                        style={{
+                          background: item.is_serviceable ? '#E8F5EE' : '#FFF3E0',
+                          color: item.is_serviceable ? '#2E7D5B' : '#E65100',
+                        }}
+                      >
+                        {item.is_serviceable ? 'ACTIVE' : 'SUSPENDED'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => setPincodeToDelete(item.pincode)}
+                        title={`Delete pincode ${item.pincode}`}
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Delete Confirmation Modal (Replaces flaky window.confirm) */}
+      {/* Delete Confirmation Modal */}
       {pincodeToDelete && (
         <div
           style={{
@@ -293,7 +313,6 @@ export function AdminPincodesTab({ onNotify }) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  transition: 'background 0.2s ease',
                 }}
               >
                 {isDeleting ? 'Deleting...' : 'Delete Pincode'}
@@ -307,7 +326,9 @@ export function AdminPincodesTab({ onNotify }) {
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
           <div style={{ background: '#FFF', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.25rem' }}>Configure Serviceable Pincode</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.25rem', fontFamily: 'var(--font-heading)', color: 'var(--color-charcoal)' }}>
+              Configure Serviceable Pincode
+            </h3>
 
             <form onSubmit={handleSave}>
               <div style={{ marginBottom: '14px' }}>
@@ -377,7 +398,7 @@ export function AdminPincodesTab({ onNotify }) {
                 <Button variant="outline" type="button" onClick={() => setShowModal(false)}>
                   Cancel
                 </Button>
-                <Button variant="gold" type="submit">
+                <Button variant="primary" type="submit">
                   Save Pincode
                 </Button>
               </div>

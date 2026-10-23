@@ -153,6 +153,13 @@
   flex-wrap: wrap;
 }
 
+.admin-tab-pane,
+.admin-tab-content {
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.25s ease;
+}
+
 /* Table Card */
 .admin-table-card {
   background-color: #FFFFFF;
@@ -160,6 +167,7 @@
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
 }
 
 .table-card-header {
@@ -178,6 +186,37 @@
   font-size: var(--text-h3);
   color: var(--color-charcoal);
   margin: 0;
+}
+
+.table-card-header p,
+.table-card-sub {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: var(--grey-600);
+  font-weight: 400;
+}
+
+.admin-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.admin-card-item {
+  background-color: #FFFFFF;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.admin-card-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-antique-gold);
 }
 
 /* Inline Add Form */

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, History, CheckCircle, Percent } from 'lucide-react';
+import { Plus, Edit2, Trash2, History, Search, RotateCcw } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { api } from '../../../lib/api';
 
@@ -10,6 +10,10 @@ export function AdminCouponsTab({ onNotify }) {
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [usageHistoryModal, setUsageHistoryModal] = useState(null);
   const [usageRecords, setUsageRecords] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const [form, setForm] = useState({
     code: '',
@@ -92,18 +96,18 @@ export function AdminCouponsTab({ onNotify }) {
     }
   };
 
-  const handleDelete = async (id, code) => {
-    if (!window.confirm(`Delete coupon "${code}"?`)) return;
+  const executeDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await api.delete(`/coupons/admin/${id}`);
-      onNotify?.('Coupon deleted from database', 'success');
+      await api.delete(`/coupons/admin/${deleteConfirm.id}`);
+      onNotify?.(`Coupon "${deleteConfirm.code}" deleted successfully`, 'success');
+      setDeleteConfirm(null);
       loadCoupons();
     } catch (err) {
       onNotify?.(err.message || 'Failed to delete coupon', 'error');
     }
   };
 
-  // View usage history from coupon_usage table (Item #9)
   const handleViewUsage = async (coupon) => {
     setUsageHistoryModal(coupon);
     try {
@@ -118,192 +122,247 @@ export function AdminCouponsTab({ onNotify }) {
     }
   };
 
-  return (
-    <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 className="panel-heading" style={{ margin: 0 }}>Coupons & Privilege Codes</h2>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
-            Manage discount codes (coupons table) and track customer redemption records (coupon_usage table).
-          </p>
-        </div>
-        <Button variant="gold" size="sm" icon={Plus} onClick={handleOpenCreate}>
-          Create Coupon
-        </Button>
-      </div>
+  const filteredCoupons = coupons.filter((c) => {
+    const q = searchQuery.toLowerCase().trim();
+    const matchSearch =
+      !q ||
+      c.code?.toLowerCase().includes(q) ||
+      c.description?.toLowerCase().includes(q);
+    const matchStatus =
+      statusFilter === 'all' ||
+      (c.status || 'active') === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
-      <div className="table-card" style={{ background: '#FFF', borderRadius: '8px', border: '1px solid #ECECEC', overflow: 'hidden' }}>
-        <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EAEAEA', fontSize: '0.85rem' }}>
-              <th style={{ padding: '14px' }}>Coupon Code</th>
-              <th style={{ padding: '14px' }}>Type & Value</th>
-              <th style={{ padding: '14px' }}>Min Order</th>
-              <th style={{ padding: '14px' }}>Max Discount</th>
-              <th style={{ padding: '14px' }}>Usage / Cap</th>
-              <th style={{ padding: '14px' }}>Status</th>
-              <th style={{ padding: '14px', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coupons.length === 0 ? (
+  return (
+    <div className="admin-tab-content">
+      <div className="admin-table-card">
+        <div className="table-card-header">
+          <div>
+            <h3>Coupons & Privilege Codes</h3>
+            <p className="table-card-sub">
+              Manage promotional discount codes and track customer redemptions from the coupon registry.
+            </p>
+          </div>
+          <Button variant="primary" size="sm" icon={Plus} onClick={handleOpenCreate}>
+            Create Coupon
+          </Button>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="admin-filter-bar">
+          <div className="admin-search-input-wrap">
+            <Search size={15} className="admin-search-icon" />
+            <input
+              type="text"
+              className="admin-search-input"
+              placeholder="Search by coupon code or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <select
+            className="admin-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          {(searchQuery || statusFilter !== 'all') && (
+            <button
+              type="button"
+              className="admin-filter-reset"
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+              }}
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+
+          <span className="admin-filter-count">
+            Showing {filteredCoupons.length} of {coupons.length}
+          </span>
+        </div>
+
+        <div className="admin-table-responsive">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
-                  {isLoading ? 'Loading coupons...' : 'No coupons found. Click "Create Coupon" to add promotional codes.'}
-                </td>
+                <th>Coupon Code</th>
+                <th>Type & Value</th>
+                <th>Min Order</th>
+                <th>Max Discount</th>
+                <th>Usage / Cap</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
-            ) : (
-              coupons.map((c) => (
-                <tr key={c.id} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong style={{ fontFamily: 'monospace', fontSize: '1rem', color: '#8E2800', background: '#FFF3E0', padding: '3px 8px', borderRadius: '4px' }}>
-                      {c.code}
-                    </strong>
-                    {c.description && <p style={{ margin: '3px 0 0', color: '#777', fontSize: '0.8rem' }}>{c.description}</p>}
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <strong>{c.type === 'percentage' ? `${c.value}% OFF` : `₹${c.value} FLAT`}</strong>
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>₹{c.min_order_amount || 0}</td>
-                  <td style={{ padding: '12px 14px' }}>{c.max_discount ? `₹${c.max_discount}` : 'No limit'}</td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ fontWeight: 600 }}>{c.total_used || 0} used</span>
-                    {c.total_usage_cap && <span style={{ color: '#888' }}> / {c.total_usage_cap}</span>}
-                  </td>
-                  <td style={{ padding: '12px 14px' }}>
-                    <span style={{ padding: '3px 8px', borderRadius: '4px', background: c.status === 'active' ? '#E8F5E9' : '#FFEBEE', color: c.status === 'active' ? '#2E7D32' : '#C62828', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleViewUsage(c)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#1976D2', marginRight: '6px' }}
-                      title="View usage history (coupon_usage)"
-                    >
-                      <History size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(c)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#555', marginRight: '6px' }}
-                      title="Edit coupon"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(c.id, c.code)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#C62828' }}
-                      title="Delete coupon"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            </thead>
+            <tbody>
+              {filteredCoupons.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: '#888' }}>
+                    {isLoading ? 'Loading coupons...' : 'No coupons match your filter criteria.'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredCoupons.map((c) => (
+                  <tr key={c.id}>
+                    <td>
+                      <span className="badge-count" style={{ background: '#FFF3E0', color: '#8E2800', fontFamily: 'monospace', fontSize: '0.88rem', letterSpacing: '0.05em', padding: '4px 8px' }}>
+                        {c.code}
+                      </span>
+                      {c.description && <p style={{ margin: '4px 0 0', color: '#777', fontSize: '0.8rem' }}>{c.description}</p>}
+                    </td>
+                    <td>
+                      <strong>{c.type === 'percentage' ? `${c.value}% OFF` : `₹${c.value} FLAT`}</strong>
+                    </td>
+                    <td>₹{c.min_order_amount || 0}</td>
+                    <td>{c.max_discount ? `₹${c.max_discount}` : 'No limit'}</td>
+                    <td>
+                      <span style={{ fontWeight: 600 }}>{c.total_used || 0} used</span>
+                      {c.total_usage_cap && <span style={{ color: '#888' }}> / {c.total_usage_cap}</span>}
+                    </td>
+                    <td>
+                      <span
+                        className="stock-pill"
+                        style={{
+                          background: c.status === 'active' ? '#E8F5E9' : '#FFEBEE',
+                          color: c.status === 'active' ? '#2E7D32' : '#C62828',
+                        }}
+                      >
+                        {c.status?.toUpperCase() || 'ACTIVE'}
+                      </span>
+                    </td>
+                    <td className="actions-cell" style={{ textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        className="btn-edit"
+                        onClick={() => handleViewUsage(c)}
+                        title="View usage history"
+                      >
+                        <History size={14} /> Usage
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-edit"
+                        onClick={() => handleOpenEdit(c)}
+                        title="Edit coupon"
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => setDeleteConfirm(c)}
+                        title="Delete coupon"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Coupon Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#FFF', borderRadius: '12px', width: '100%', maxWidth: '500px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.25rem' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#FFF', borderRadius: '10px', width: '100%', maxWidth: '520px', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.2rem', fontFamily: 'var(--font-heading, serif)', color: 'var(--color-charcoal, #1a1a1a)' }}>
               {editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}
             </h3>
 
             <form onSubmit={handleSave}>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Coupon Code *</label>
+              <div className="form-group" style={{ marginBottom: '14px' }}>
+                <label>Coupon Code *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. FESTIVE20"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC', fontFamily: 'monospace' }}
+                  style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}
                 />
               </div>
 
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Description</label>
+              <div className="form-group" style={{ marginBottom: '14px' }}>
+                <label>Description</label>
                 <input
                   type="text"
                   placeholder="e.g. 20% discount on festive orders"
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Discount Type</label>
+              <div className="form-grid" style={{ marginBottom: '14px' }}>
+                <div className="form-group">
+                  <label>Discount Type</label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   >
                     <option value="percentage">Percentage (%)</option>
                     <option value="flat">Flat Amount (₹)</option>
                   </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Value ({form.type === 'percentage' ? '%' : '₹'})</label>
+                <div className="form-group">
+                  <label>Value ({form.type === 'percentage' ? '%' : '₹'})</label>
                   <input
                     type="number"
                     step="0.01"
                     required
                     value={form.value}
                     onChange={(e) => setForm({ ...form, value: parseFloat(e.target.value) || 0 })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Min Order (₹)</label>
+              <div className="form-grid" style={{ marginBottom: '14px' }}>
+                <div className="form-group">
+                  <label>Min Order (₹)</label>
                   <input
                     type="number"
                     value={form.min_order_amount}
                     onChange={(e) => setForm({ ...form, min_order_amount: parseFloat(e.target.value) || 0 })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Max Discount Cap (₹)</label>
+                <div className="form-group">
+                  <label>Max Discount Cap (₹)</label>
                   <input
                     type="number"
                     placeholder="Optional"
                     value={form.max_discount}
                     onChange={(e) => setForm({ ...form, max_discount: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Total Usage Cap</label>
+              <div className="form-grid" style={{ marginBottom: '20px' }}>
+                <div className="form-group">
+                  <label>Total Usage Cap</label>
                   <input
                     type="number"
                     placeholder="Unlimited"
                     value={form.total_usage_cap}
                     onChange={(e) => setForm({ ...form, total_usage_cap: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Status</label>
+                <div className="form-group">
+                  <label>Status</label>
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -311,11 +370,11 @@ export function AdminCouponsTab({ onNotify }) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <Button variant="outline" type="button" onClick={() => setShowModal(false)}>
+              <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
+                <Button variant="outline" size="sm" type="button" onClick={() => setShowModal(false)}>
                   Cancel
                 </Button>
-                <Button variant="gold" type="submit">
+                <Button variant="primary" size="sm" type="submit">
                   {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                 </Button>
               </div>
@@ -324,42 +383,64 @@ export function AdminCouponsTab({ onNotify }) {
         </div>
       )}
 
-      {/* Coupon Usage Modal (Item #9: coupon_usage table) */}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#FFF', borderRadius: '10px', width: '100%', maxWidth: '420px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.15rem', color: '#C62828' }}>Delete Coupon?</h3>
+            <p style={{ margin: '0 0 20px', color: '#666', fontSize: '0.88rem' }}>
+              Are you sure you want to delete coupon <strong style={{ fontFamily: 'monospace' }}>{deleteConfirm.code}</strong>? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(null)}>
+                Cancel
+              </Button>
+              <Button variant="danger" size="sm" onClick={executeDelete}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Coupon Usage Modal */}
       {usageHistoryModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#FFF', borderRadius: '12px', width: '100%', maxWidth: '640px', padding: '24px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem' }}>
-              Redemption History: <span style={{ fontFamily: 'monospace', color: '#D4AF37' }}>{usageHistoryModal.code}</span>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#FFF', borderRadius: '10px', width: '100%', maxWidth: '640px', padding: '24px', maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', fontFamily: 'var(--font-heading, serif)' }}>
+              Redemption History: <span style={{ fontFamily: 'monospace', color: 'var(--color-maroon, #6B1E2C)' }}>{usageHistoryModal.code}</span>
             </h3>
-            <p style={{ margin: '0 0 16px', color: '#666', fontSize: '0.85rem' }}>
-              Verified redemption audit records from the <code>coupon_usage</code> table.
+            <p className="table-card-sub" style={{ marginBottom: '16px' }}>
+              Verified customer redemption audit records for this coupon.
             </p>
 
             {usageRecords.length === 0 ? (
-              <p style={{ color: '#888', fontStyle: 'italic', padding: '20px 0', textAlign: 'center' }}>
+              <p style={{ color: '#888', fontStyle: 'italic', padding: '24px 0', textAlign: 'center' }}>
                 No customers have redeemed this coupon yet.
               </p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
-                <thead>
-                  <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #EEE' }}>
-                    <th style={{ padding: '10px' }}>Order #</th>
-                    <th style={{ padding: '10px' }}>Customer</th>
-                    <th style={{ padding: '10px' }}>Discount Saved</th>
-                    <th style={{ padding: '10px' }}>Used On</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usageRecords.map((u) => (
-                    <tr key={u.id} style={{ borderBottom: '1px solid #F2F2F2' }}>
-                      <td style={{ padding: '10px', fontFamily: 'monospace' }}>{u.order_number || `#${u.order_id}`}</td>
-                      <td style={{ padding: '10px' }}>{u.customer_name || u.customer_email || `User #${u.user_id}`}</td>
-                      <td style={{ padding: '10px', fontWeight: 600, color: '#2E7D32' }}>₹{u.discount_amount}</td>
-                      <td style={{ padding: '10px', color: '#888' }}>{new Date(u.used_at).toLocaleDateString('en-IN')}</td>
+              <div className="admin-table-responsive">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Order #</th>
+                      <th>Customer</th>
+                      <th>Discount Saved</th>
+                      <th>Used On</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {usageRecords.map((u) => (
+                      <tr key={u.id}>
+                        <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{u.order_number || `#${u.order_id}`}</td>
+                        <td>{u.customer_name || u.customer_email || `User #${u.user_id}`}</td>
+                        <td style={{ fontWeight: 600, color: '#2E7D32' }}>₹{u.discount_amount}</td>
+                        <td style={{ color: '#888' }}>{new Date(u.used_at).toLocaleDateString('en-IN')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
