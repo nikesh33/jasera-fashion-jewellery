@@ -1,4 +1,6 @@
 import { getPool } from '../config/db.js';
+import { logAdminAction } from '../utils/auditLogger.js';
+import { recordInventoryTransaction } from '../utils/inventoryLogger.js';
 
 export async function getDashboardStats(req, res) {
   const pool = getPool();
@@ -135,6 +137,7 @@ export async function updateOrderStatus(req, res) {
         [order.id]
       );
       for (const item of items) {
+        let variantId = item.variant_id;
         if (item.variant_id) {
           await conn.query(
             `UPDATE product_variants SET stock = stock + ? WHERE id = ?`,
@@ -145,6 +148,23 @@ export async function updateOrderStatus(req, res) {
             `UPDATE product_variants SET stock = stock + ? WHERE product_id = ?`,
             [item.quantity, item.product_id]
           );
+          const [v] = await conn.query(
+            `SELECT id FROM product_variants WHERE product_id = ? ORDER BY is_default DESC LIMIT 1`,
+            [item.product_id]
+          );
+          if (v.length > 0) variantId = v[0].id;
+        }
+
+        if (variantId) {
+          await recordInventoryTransaction({
+            variantId,
+            quantityChange: item.quantity,
+            reason: 'return',
+            referenceId: order.id,
+            note: `Order cancelled by Admin: ${note || 'Admin cancellation'}`,
+            actorId: req.user?.id || 1,
+            conn,
+          });
         }
       }
     }
@@ -174,12 +194,26 @@ export async function updateOrderStatus(req, res) {
       queryParams
     );
 
+    const adminActorId = req.user?.id || 1;
+
     // Record in history
     await conn.query(
-      `INSERT INTO order_status_history (order_id, status, note, actor_type, actor_id)
-       VALUES (?, ?, ?, 'admin', ?)`,
-      [order.id, status, note || `Status updated from ${prevStatus} to ${status} by store admin`, req.user?.id || null]
+      `INSERT INTO order_status_history (order_id, status, note, actor_type, actor_id, created_at)
+       VALUES (?, ?, ?, 'admin', ?, NOW())`,
+      [order.id, status, note || `Status updated from ${prevStatus} to ${status} by store admin`, adminActorId]
     );
+
+    // Record in admin_audit_log
+    await logAdminAction({
+      adminId: adminActorId,
+      action: 'update_order_status',
+      targetType: 'orders',
+      targetId: order.id,
+      beforeData: { fulfilment_status: prevStatus },
+      afterData: { fulfilment_status: status, note },
+      ipAddress: req.ip,
+      conn,
+    });
 
     await conn.commit();
 

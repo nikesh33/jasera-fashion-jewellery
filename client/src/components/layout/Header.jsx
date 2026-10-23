@@ -31,36 +31,22 @@ export function Header() {
   const { openSearch } = useUIStore();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
-  const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
   const userMenuRef = useRef(null);
-  const navDropdownRef = useRef(null);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Close user menu and nav dropdown on outside click
+  // Close user menu on outside click
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
-      if (
-        navDropdownRef.current &&
-        !navDropdownRef.current.contains(event.target)
-      ) {
-        setIsNavDropdownOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  // Close dropdown on route change
-  useEffect(() => {
-    setIsNavDropdownOpen(false);
-    setIsMobileNavOpen(false);
-  }, [location.pathname]);
 
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
@@ -87,48 +73,13 @@ export function Header() {
   };
 
   const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(() => {
-    return (
-      sessionStorage.getItem("jasera_dismiss_announcement") === "true" ||
-      sessionStorage.getItem("suvarna_dismiss_announcement") === "true"
-    );
+    return sessionStorage.getItem("suvarna_dismiss_announcement") === "true";
   });
 
   const handleDismissAnnouncement = () => {
     setIsAnnouncementDismissed(true);
-    sessionStorage.setItem("jasera_dismiss_announcement", "true");
+    sessionStorage.setItem("suvarna_dismiss_announcement", "true");
   };
-
-  // Rotating Announcement Slides for Mobile Single-Line Ticker
-  const announcementSlides = [
-    { id: 1, text: "Free Shipping on orders above ₹999", link: null },
-    { id: 2, text: "Track Order", link: "/track-order" },
-    { id: 3, text: "Need Help? Chat with us", link: "/contact" },
-  ];
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % announcementSlides.length);
-    }, 3500);
-    return () => clearInterval(slideInterval);
-  }, [announcementSlides.length]);
-
-  // Build unified navigation items: 'All', dynamic categories from DB, and 'About'
-  const allNavItems = [
-    { label: "All", path: "/shop" },
-    ...categories.map((cat) => ({
-      label: cat.name,
-      path: `/shop?category=${cat.slug}`,
-      id: cat.id,
-    })),
-    { label: "About", path: "/about" },
-  ];
-
-  // Responsive rule: If more than 3 items, show first 3 directly and rest in 'More ▾' dropdown
-  const visibleNavItems =
-    allNavItems.length > 3 ? allNavItems.slice(0, 3) : allNavItems;
-  const dropdownNavItems =
-    allNavItems.length > 3 ? allNavItems.slice(3) : [];
 
   return (
     <header className="site-header">
@@ -138,103 +89,47 @@ export function Header() {
           className={`announcement-bar ${isAdminRoute ? "admin-announcement" : ""}`}
         >
           <div className="announcement-content">
-            {/* Desktop View: Clean single row */}
-            <div className="announcement-desktop-view">
-              {isAdminRoute ? (
-                <>
-                  <div className="announcement-promo">
-                    <span className="announcement-text">
-                      JASSERA - Management Portal
-                    </span>
-                  </div>
-                  <div className="announcement-right-group">
-                    <div className="announcement-links">
-                      <Link to="/" target="_blank" rel="noopener noreferrer">
-                        View Customer Storefront ↗
-                      </Link>
-                    </div>
-                    <button
-                      type="button"
-                      className="announcement-dismiss-btn"
-                      onClick={handleDismissAnnouncement}
-                      aria-label="Dismiss announcement"
-                      title="Dismiss"
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="announcement-promo">
-                    <span className="announcement-text">
-                      Free Shipping on orders above ₹999
-                    </span>
-                  </div>
-                  <div className="announcement-right-group">
-                    <div className="announcement-links">
-                      <Link to="/track-order">Track Order</Link>
-                      <span className="announcement-divider">|</span>
-                      <Link to="/contact">Need Help? Chat with us</Link>
-                    </div>
-                    <button
-                      type="button"
-                      className="announcement-dismiss-btn"
-                      onClick={handleDismissAnnouncement}
-                      aria-label="Dismiss announcement"
-                      title="Dismiss"
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Mobile Ticker View: Exactly ONE single line auto-sliding ticker */}
-            <div className="announcement-mobile-ticker">
-              <div className="announcement-ticker-track" key={currentSlide}>
-                {isAdminRoute ? (
-                  currentSlide % 2 === 0 ? (
-                    <span className="ticker-item">JASSERA - Management Portal</span>
-                  ) : (
-                    <Link
-                      to="/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ticker-item ticker-link"
-                    >
-                      View Customer Storefront ↗
-                    </Link>
-                  )
-                ) : (
-                  <>
-                    {announcementSlides[currentSlide].link ? (
-                      <Link
-                        to={announcementSlides[currentSlide].link}
-                        className="ticker-item ticker-link"
-                      >
-                        {announcementSlides[currentSlide].text}
-                        <ArrowUpRight size={12} className="ticker-icon" />
-                      </Link>
-                    ) : (
-                      <span className="ticker-item">
-                        {announcementSlides[currentSlide].text}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <button
-                type="button"
-                className="announcement-dismiss-btn mobile-ticker-dismiss"
-                onClick={handleDismissAnnouncement}
-                aria-label="Dismiss announcement"
-                title="Dismiss"
-              >
-                <X size={14} />
-              </button>
-            </div>
+            {isAdminRoute ? (
+              <>
+                <span className="announcement-text">
+                  JASERA - Management Portal
+                </span>
+                <div className="announcement-links">
+                  <Link to="/" target="_blank" rel="noopener noreferrer">
+                    View Customer Storefront ↗
+                  </Link>
+                  <button
+                    type="button"
+                    className="announcement-dismiss-btn"
+                    onClick={handleDismissAnnouncement}
+                    aria-label="Dismiss announcement"
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="announcement-text">
+                  Free Shipping on orders above ₹999
+                </span>
+                <div className="announcement-links">
+                  <Link to="/track-order">Track Order</Link>
+                  <span className="announcement-divider">|</span>
+                  <Link to="/contact">Need Help? Chat with us</Link>
+                  <button
+                    type="button"
+                    className="announcement-dismiss-btn"
+                    onClick={handleDismissAnnouncement}
+                    aria-label="Dismiss announcement"
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -242,94 +137,24 @@ export function Header() {
       {/* 2. Main Navigation Bar */}
       <div className="header-main">
         <div className="header-main-container">
-          {/* Left Group: Mobile Menu Button + Official Brand Logo */}
-          <div className="header-left-group">
-            <button
-              className="mobile-menu-toggle"
-              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-              aria-label="Toggle navigation menu"
-            >
-              {isMobileNavOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+          {/* Mobile Menu Button */}
+          <button
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileNavOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
 
-            {/* Brand Logo with Official Emblem Image */}
-            <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
-              <img
-                src="/images/jassera-logo.jpg"
-                alt="Jassera Jewellery & Accessories"
-                className="brand-logo-img"
-              />
-              <div className="brand-logo-text-wrap">
-                <span className="brand-logo-title">JASSERA</span>
-                <span className="brand-logo-subtitle">
-                  {isAdminRoute ? "MANAGEMENT" : "JEWELLERY & ACCESSORIES"}
-                </span>
-              </div>
-            </Link>
-          </div>
+          {/* Brand Logo */}
+          <Link to={isAdminRoute ? "/admin" : "/"} className="brand-logo-link">
+            <span className="brand-logo-title">JASERA</span>
+            <span className="brand-logo-subtitle">
+              {isAdminRoute ? "MANAGEMENT" : "AESTHETIC JEWELLERY"}
+            </span>
+          </Link>
 
-          {/* Center Group: Desktop Navigation inside Navbar with 3-item limit + Dropdown */}
-          {!isAdminRoute && (
-            <nav className="navbar-center-nav">
-              <ul className="navbar-nav-list">
-                {visibleNavItems.map((item) => (
-                  <li key={item.path} className="navbar-nav-item">
-                    <Link to={item.path} className="navbar-nav-link">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-
-                {dropdownNavItems.length > 0 && (
-                  <li
-                    className={`navbar-nav-item navbar-dropdown-wrapper ${
-                      isNavDropdownOpen ? "open" : ""
-                    }`}
-                    ref={navDropdownRef}
-                    onMouseEnter={() => setIsNavDropdownOpen(true)}
-                    onMouseLeave={() => setIsNavDropdownOpen(false)}
-                  >
-                    <button
-                      type="button"
-                      className={`navbar-nav-link navbar-dropdown-trigger ${
-                        isNavDropdownOpen ? "active" : ""
-                      }`}
-                      onClick={() => setIsNavDropdownOpen((prev) => !prev)}
-                      aria-expanded={isNavDropdownOpen}
-                      aria-label="More categories"
-                    >
-                      <span>More</span>
-                      <ChevronDown
-                        size={14}
-                        className={`navbar-dropdown-chevron ${
-                          isNavDropdownOpen ? "open" : ""
-                        }`}
-                      />
-                    </button>
-
-                    <div
-                      className={`navbar-dropdown-menu ${
-                        isNavDropdownOpen ? "show" : ""
-                      }`}
-                      onClick={() => setIsNavDropdownOpen(false)}
-                    >
-                      {dropdownNavItems.map((item) => (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className="navbar-dropdown-link"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </li>
-                )}
-              </ul>
-            </nav>
-          )}
-
-          {/* Right Group: Action Icons */}
+          {/* Action Icons */}
           <div className="header-actions">
             {isAdminRoute ? (
               <>
@@ -467,7 +292,7 @@ export function Header() {
                       ) : (
                         <>
                           <div className="dropdown-prompt">
-                            <p>Welcome to Jassera</p>
+                            <p>Welcome to Jasera Jewels</p>
                             <Link to="/login" className="dropdown-login-btn">
                               Sign In
                             </Link>
@@ -504,7 +329,34 @@ export function Header() {
         </div>
       </div>
 
-      {/* 3. Mobile Drawer Navigation */}
+      {/* 3. Category Navigation Bar (Customers only - Hidden on Admin routes) */}
+      {!isAdminRoute && (
+        <nav className="desktop-nav">
+          <div className="container">
+            <ul className="nav-list">
+              <li className="nav-item">
+                <Link to="/shop" className="nav-link">
+                  All
+                </Link>
+              </li>
+              {categories.map((cat) => (
+                <li key={cat.id} className="nav-item">
+                  <Link to={`/shop?category=${cat.slug}`} className="nav-link">
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+              <li className="nav-item">
+                <Link to="/about" className="nav-link">
+                  About
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      )}
+
+      {/* 4. Mobile Drawer Navigation */}
       {isMobileNavOpen && (
         <div
           className="mobile-nav-overlay"
@@ -515,16 +367,9 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mobile-nav-header">
-              <div className="mobile-logo-wrap">
-                <img
-                  src="/images/jassera-logo.jpg"
-                  alt="Jassera"
-                  className="mobile-logo-img"
-                />
-                <span className="brand-logo-title" style={{ fontSize: "1.2rem" }}>
-                  {isAdminRoute ? "JASSERA ADMIN" : "JASSERA"}
-                </span>
-              </div>
+              <span className="brand-logo-title" style={{ fontSize: "1.3rem" }}>
+                {isAdminRoute ? "JASERA ADMIN" : "JASERA"}
+              </span>
               <button
                 className="close-mobile-nav"
                 onClick={() => setIsMobileNavOpen(false)}

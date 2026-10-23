@@ -1,11 +1,20 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { customerLogin, adminLogin, register, getProfile } from '../controllers/auth.controller.js';
+import {
+  customerLogin,
+  adminLogin,
+  register,
+  getProfile,
+  refreshTokenHandler,
+  logout,
+  sendOtp,
+  verifyOtp,
+} from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
-// Rate limiter for authentication endpoints (15 attempts per 15 mins to block brute-force)
+// Rate limiter for authentication endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 15 : 500,
@@ -21,6 +30,12 @@ const authLimiter = rateLimit({
 router.post('/login', authLimiter, customerLogin);
 router.post('/register', authLimiter, register);
 router.get('/profile', authenticate, getProfile);
+router.post('/refresh', refreshTokenHandler);
+router.post('/logout', logout);
+
+// OTP Verification endpoints (using otp_codes table)
+router.post('/send-otp', authLimiter, sendOtp);
+router.post('/verify-otp', authLimiter, verifyOtp);
 
 // Separate Store Administrator authentication route
 router.post('/admin/login', authLimiter, adminLogin);

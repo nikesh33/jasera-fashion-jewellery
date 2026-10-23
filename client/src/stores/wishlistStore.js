@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '../lib/api';
 
 const LOCAL_WISHLIST_KEY = 'suvarna_wishlist';
 
@@ -22,6 +23,19 @@ const saveLocalWishlist = (items) => {
 export const useWishlistStore = create((set, get) => ({
   items: loadLocalWishlist(),
 
+  // Sync from MySQL wishlists table on login (Item #26)
+  syncFromServer: async () => {
+    try {
+      const res = await api.get('/wishlist');
+      if (res?.data?.wishlist) {
+        saveLocalWishlist(res.data.wishlist);
+        set({ items: res.data.wishlist });
+      }
+    } catch (e) {
+      console.warn('Wishlist server sync warning:', e.message);
+    }
+  },
+
   toggleItem: (product) => {
     const items = get().items;
     const exists = items.some((item) => item.id === product.id);
@@ -30,20 +44,32 @@ export const useWishlistStore = create((set, get) => ({
     if (exists) {
       updated = items.filter((item) => item.id !== product.id);
     } else {
-      updated = [...items, {
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        selling_price: product.selling_price,
-        mrp: product.mrp,
-        primary_image: product.primary_image || (product.images && product.images[0]?.url),
-        material: product.material,
-        addedAt: new Date().toISOString(),
-      }];
+      updated = [
+        ...items,
+        {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          selling_price: product.selling_price,
+          mrp: product.mrp,
+          primary_image: product.primary_image || (product.images && product.images[0]?.url),
+          material: product.material,
+          addedAt: new Date().toISOString(),
+        },
+      ];
     }
 
     saveLocalWishlist(updated);
     set({ items: updated });
+
+    // Sync to database if customer is authenticated (Item #26: wishlists table)
+    const token = localStorage.getItem('suvarna_token');
+    if (token) {
+      api.post('/wishlist/toggle', { productId: product.id }).catch((e) => {
+        console.warn('Server wishlist toggle error:', e.message);
+      });
+    }
+
     return !exists;
   },
 
@@ -55,6 +81,11 @@ export const useWishlistStore = create((set, get) => ({
     const updated = get().items.filter((item) => item.id !== productId);
     saveLocalWishlist(updated);
     set({ items: updated });
+
+    const token = localStorage.getItem('suvarna_token');
+    if (token) {
+      api.delete(`/wishlist/${productId}`).catch(() => {});
+    }
   },
 
   clearWishlist: () => {

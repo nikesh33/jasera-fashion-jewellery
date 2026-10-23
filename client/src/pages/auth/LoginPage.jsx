@@ -15,8 +15,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const searchParams = new URLSearchParams(location.search);
-  const from = location.state?.from?.pathname || searchParams.get('redirect');
+  const from = location.state?.from?.pathname;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,13 +40,8 @@ export function LoginPage() {
   return (
     <div className="auth-page">
       <Link to="/" className="brand-logo-link auth-brand-logo">
-        <img
-          src="/images/jassera-logo.jpg"
-          alt="Jassera Jewellery & Accessories"
-          className="auth-logo-img"
-        />
-        <span className="brand-logo-title">JASSERA</span>
-        <span className="brand-logo-subtitle">JEWELLERY & ACCESSORIES</span>
+        <span className="brand-logo-title">JASERA</span>
+        <span className="brand-logo-subtitle">AESTHETIC JEWELLERY</span>
       </Link>
 
       <div className="auth-card">

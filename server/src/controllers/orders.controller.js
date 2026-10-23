@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { getPool } from '../config/db.js';
 import config from '../config/index.js';
+import { recordInventoryTransaction } from '../utils/inventoryLogger.js';
+import { recordPaymentTransaction } from './payments.controller.js';
 
 // Helper to get or create Razorpay instance
 function getRazorpayInstance() {
@@ -30,7 +32,6 @@ export async function createOrder(req, res) {
     pincode: rawAddr.pincode || rawAddr.postalCode || rawAddr.postal_code,
     addressLine1: rawAddr.addressLine1 || rawAddr.address_line_1 || rawAddr.address,
     addressLine2: rawAddr.addressLine2 || rawAddr.address_line_2 || '',
-    landmark: rawAddr.landmark || '',
     city: rawAddr.city,
     state: rawAddr.state,
   };
@@ -89,7 +90,8 @@ export async function createOrder(req, res) {
       const [prodRows] = await conn.query(
         `SELECT
           p.id, p.name, p.slug, p.selling_price, p.status,
-          pv.id as variant_id, pv.size, pv.price_override, pv.stock
+          pv.id as variant_id, pv.size, pv.price_override, pv.stock,
+          (SELECT url FROM product_images WHERE product_id = p.id ORDER BY display_order ASC LIMIT 1) as primary_image
          FROM products p
          LEFT JOIN product_variants pv ON pv.product_id = p.id AND (pv.id = ? OR ? IS NULL)
          WHERE p.id = ? AND p.status = 'active'`,
@@ -125,6 +127,7 @@ export async function createOrder(req, res) {
         variantId: pData.variant_id || null,
         productName: pData.name,
         variantSize: pData.size || 'Standard Free Size',
+        productImage: pData.primary_image || item.image || item.primary_image || null,
         quantity,
         unitPrice,
         lineTotal,
@@ -170,27 +173,9 @@ export async function createOrder(req, res) {
 
     // 4. Create Order Number & determine payment initial status
     const orderNumber = `SUV-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-    let userId = req.user ? req.user.id : null;
+    const userId = req.user ? req.user.id : null;
     const guestEmail = (address.email || (req.user ? req.user.email : '') || '').toLowerCase().trim();
     const guestPhone = (address.phone || (req.user ? req.user.phone : '') || '').trim();
-
-    // If not authenticated via token, check if customer with this email or phone already exists in users table
-    if (!userId && (guestEmail || guestPhone)) {
-      try {
-        const [existingUsers] = await conn.query(
-          `SELECT id FROM users 
-           WHERE (email = ? AND email IS NOT NULL AND email != '') 
-              OR (phone = ? AND phone IS NOT NULL AND phone != '') 
-           LIMIT 1`,
-          [guestEmail, guestPhone]
-        );
-        if (existingUsers.length > 0) {
-          userId = existingUsers[0].id;
-        }
-      } catch (findErr) {
-        console.warn('Non-critical: error checking existing user by email/phone:', findErr.message);
-      }
-    }
 
     // Non-COD payments start as 'pending' - never marked as paid without verification!
     const initialPaymentStatus = selectedPayment === 'cod' ? 'pending_cod' : 'pending';
@@ -227,19 +212,20 @@ export async function createOrder(req, res) {
 
     const insertedOrderId = orderRes.insertId;
 
-    // 5. Insert order items & safely deduct inventory
+    // 5. Insert order items & safely deduct inventory & log transactions
     for (const item of validatedItems) {
       await conn.query(
         `INSERT INTO order_items (
           order_id, product_id, variant_id, product_name,
-          variant_info, quantity, unit_price, total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          variant_info, product_image, quantity, unit_price, total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           insertedOrderId,
           item.productId,
           item.variantId,
           item.productName,
           `Size: ${item.variantSize}`,
+          item.productImage,
           item.quantity,
           item.unitPrice,
           item.lineTotal,
@@ -247,6 +233,7 @@ export async function createOrder(req, res) {
       );
 
       // Decrement inventory stock atomically
+      let targetVariantId = item.variantId;
       if (item.variantId) {
         await conn.query(
           `UPDATE product_variants SET stock = stock - ? WHERE id = ? AND stock >= ?`,
@@ -257,62 +244,56 @@ export async function createOrder(req, res) {
           `UPDATE product_variants SET stock = stock - ? WHERE product_id = ? AND stock >= ?`,
           [item.quantity, item.productId, item.quantity]
         );
+        // Find default variant ID for ledger logging
+        const [vRow] = await conn.query(
+          `SELECT id FROM product_variants WHERE product_id = ? ORDER BY is_default DESC LIMIT 1`,
+          [item.productId]
+        );
+        if (vRow.length > 0) targetVariantId = vRow[0].id;
+      }
+
+      // Record in inventory_transactions table
+      if (targetVariantId) {
+        await recordInventoryTransaction({
+          variantId: targetVariantId,
+          quantityChange: -item.quantity,
+          reason: 'sale',
+          referenceId: insertedOrderId,
+          note: `Customer order ${orderNumber} placed`,
+          actorId: userId,
+          conn,
+        });
       }
     }
+
+    // 5b. Record coupon usage if applied
+    if (appliedCouponId) {
+      await conn.query(
+        `INSERT INTO coupon_usage (coupon_id, user_id, order_id, used_at) VALUES (?, ?, ?, NOW())`,
+        [appliedCouponId, userId, insertedOrderId]
+      );
+      await conn.query(
+        `UPDATE coupons SET total_used = total_used + 1 WHERE id = ?`,
+        [appliedCouponId]
+      );
+    }
+
+    // 5c. Record manual/gateway payment ledger in payments table
+    await recordPaymentTransaction({
+      orderId: insertedOrderId,
+      amount: finalTotal,
+      method: selectedPayment,
+      gateway: 'manual',
+      status: selectedPayment === 'cod' ? 'authorized' : 'created',
+      conn,
+    });
 
     // 6. Record order status history
     await conn.query(
-      `INSERT INTO order_status_history (order_id, status, note, actor_type, actor_id)
-       VALUES (?, 'placed', 'Order placed by customer', 'customer', ?)`,
+      `INSERT INTO order_status_history (order_id, status, note, actor_type, actor_id, created_at)
+       VALUES (?, 'placed', 'Order placed by customer', 'customer', ?, NOW())`,
       [insertedOrderId, userId]
     );
-
-    // Auto-save delivery address into MySQL addresses table for all orders (registered, matched, or guest)
-    try {
-      let shouldInsert = true;
-      if (userId) {
-        const [matchingAddr] = await conn.query(
-          `SELECT id FROM addresses WHERE user_id = ? AND pincode = ? AND address_line1 = ? LIMIT 1`,
-          [userId, address.pincode, address.addressLine1]
-        );
-        if (matchingAddr.length > 0) {
-          shouldInsert = false;
-        }
-      }
-
-      if (shouldInsert) {
-        let isDefault = 0;
-        if (userId) {
-          const [cntRows] = await conn.query(
-            `SELECT COUNT(*) as count FROM addresses WHERE user_id = ?`,
-            [userId]
-          );
-          isDefault = (cntRows[0]?.count || 0) === 0 ? 1 : 0;
-        }
-
-        await conn.query(
-          `INSERT INTO addresses (
-            user_id, full_name, phone, pincode,
-            address_line1, address_line2, landmark,
-            city, state, address_type, is_default
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'home', ?)`,
-          [
-            userId || null,
-            address.fullName,
-            address.phone,
-            address.pincode,
-            address.addressLine1,
-            address.addressLine2 || null,
-            address.landmark || null,
-            address.city,
-            address.state,
-            isDefault,
-          ]
-        );
-      }
-    } catch (addrErr) {
-      console.error('Non-critical: Failed to auto-save address to addresses table:', addrErr);
-    }
 
     // 7. Check Razorpay payment integration
     let razorpayOrderData = null;

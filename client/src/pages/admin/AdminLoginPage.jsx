@@ -50,27 +50,17 @@ export function AdminLoginPage() {
           padding: '36px 32px',
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <Link to="/" className="brand-logo-link auth-brand-logo" style={{ marginBottom: '14px' }}>
-            <img
-              src="/images/jassera-logo.jpg"
-              alt="Jassera Jewellery & Accessories"
-              className="auth-logo-img"
-              style={{ width: '60px', height: '60px' }}
-            />
-            <span className="brand-logo-title" style={{ fontSize: '1.6rem' }}>JASSERA</span>
-            <span className="brand-logo-subtitle" style={{ fontSize: '0.62rem' }}>MANAGEMENT PORTAL</span>
-          </Link>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h1
             style={{
               fontFamily: 'var(--font-heading)',
-              fontSize: '1.4rem',
+              fontSize: '1.75rem',
               color: 'var(--color-maroon)',
               margin: '0 0 6px',
               fontWeight: 700,
             }}
           >
-            Admin Sign In
+            Admin Login
           </h1>
         </div>
 
@@ -97,7 +87,7 @@ export function AdminLoginPage() {
             icon={Mail}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@jassera.com"
+            placeholder="admin@jasera.com"
             autoFocus
           />
           <Input

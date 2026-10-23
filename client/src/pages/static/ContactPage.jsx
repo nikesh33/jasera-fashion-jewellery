@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Calendar, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Phone, Mail, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { api } from '../../lib/api';
 import './ContactPage.css';
 
 export function ContactPage() {
@@ -9,87 +10,147 @@ export function ContactPage() {
     name: '',
     email: '',
     phone: '',
-    service: 'Bridal Consultation',
+    service: 'Boutique Inquiry',
     date: '',
     message: '',
   });
+  const [storeSettings, setStoreSettings] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    api
+      .get('/settings')
+      .then((res) => {
+        if (res?.data?.settings) {
+          setStoreSettings(res.data.settings);
+        }
+      })
+      .catch((err) => console.warn('Could not load settings:', err.message));
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const subject = `${form.service}${form.date ? ` (Date: ${form.date})` : ''}`;
+      const message = form.message || `Customer inquiry regarding ${form.service}. Preferred date: ${form.date || 'Flexible'}.`;
+
+      await api.post('/contact', {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject,
+        message,
+      });
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Contact submission error:', err);
+      setErrorMessage(err.message || 'Failed to submit inquiry. Please try again or reach us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="contact-page container">
       <div className="contact-header text-center">
-        <span className="section-eyebrow">PATRON CONCIERGE</span>
-        <h1 className="contact-title">Book A Private Salon Consultation</h1>
+        <span className="section-eyebrow">CUSTOMER CONCIERGE</span>
+        <h1 className="contact-title">Get In Touch With Jasera</h1>
         <p className="contact-subtitle">
-          Experience our private bridal suites and view rare heirloom collections with our senior jewellery historians.
+          Have a question about our viral jhumkas, shipping timelines, or custom orders? Send us a message and our team will get back to you swiftly.
         </p>
       </div>
 
       <div className="contact-grid">
         {/* Salon Details */}
         <div className="salon-info-card">
-          <h2 className="salon-name">The Mumbai Flagship Salon</h2>
-          <span className="salon-tag">By Appointment Only</span>
+          <h2 className="salon-name">The Jasera Boutique Studio</h2>
+          <span className="salon-tag">Handcrafted With Care</span>
 
           <div className="salon-contact-list">
             <div className="contact-item">
               <MapPin className="contact-ic" size={20} />
               <div>
-                <strong>Flagship Address</strong>
-                <span>Jassera Studio, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
+                <strong>Boutique Studio</strong>
+                <span>Jasera Design Studio, 14 Karigar Lane, Zaveri Bazaar, Mumbai 400002</span>
               </div>
             </div>
 
             <div className="contact-item">
               <Phone className="contact-ic" size={20} />
               <div>
-                <strong>Direct Concierge Hotline</strong>
-                <span>+91 22 2847 9000 / +91 98200 12345</span>
+                <strong>Concierge & WhatsApp Support</strong>
+                <span>{storeSettings?.support_phone || '+91 98200 12345'}</span>
               </div>
             </div>
 
             <div className="contact-item">
               <Mail className="contact-ic" size={20} />
               <div>
-                <strong>Private Salon Inquiries</strong>
-                <span>concierge@jasserajewels.com</span>
+                <strong>Support & Order Queries</strong>
+                <span>{storeSettings?.support_email || 'support@jasera.in'}</span>
               </div>
             </div>
 
             <div className="contact-item">
               <Clock className="contact-ic" size={20} />
               <div>
-                <strong>Salon Hours</strong>
-                <span>Monday – Saturday: 10:30 AM – 7:30 PM (IST)</span>
+                <strong>Customer Care Hours</strong>
+                <span>Monday – Saturday: 10:00 AM – 7:30 PM (IST)</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Appointment Form */}
+        {/* Appointment / Inquiry Form */}
         <div className="appointment-form-card">
           {submitted ? (
             <div className="appointment-success">
               <CheckCircle size={48} color="var(--color-success)" />
-              <h3>Consultation Request Received</h3>
+              <h3>Message Received Successfully</h3>
               <p>
-                Our private concierge will contact you within 2 business hours to confirm your private salon appointment.
+                Thank you, <strong>{form.name}</strong>! Your inquiry has been saved to our boutique database. Our team will contact you within 2 business hours.
               </p>
+              <Button
+                variant="outline"
+                size="md"
+                style={{ marginTop: '20px' }}
+                onClick={() => {
+                  setSubmitted(false);
+                  setForm({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    service: 'Boutique Inquiry',
+                    date: '',
+                    message: '',
+                  });
+                }}
+              >
+                Send Another Message
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="appointment-form">
-              <h3 className="form-card-title">Schedule Your Private Appointment</h3>
+              <h3 className="form-card-title">Send An Inquiry</h3>
+
+              {errorMessage && (
+                <div style={{ padding: '12px', background: '#ffebee', color: '#c62828', borderRadius: '6px', fontSize: '0.9rem' }}>
+                  {errorMessage}
+                </div>
+              )}
+
               <Input
-                label="Patron Name"
+                label="Your Name"
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Radhika Singhania"
+                placeholder="e.g. Radhika Sharma"
               />
               <div className="form-grid-2">
                 <Input
@@ -98,7 +159,7 @@ export function ContactPage() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="patron@example.com"
+                  placeholder="name@example.com"
                 />
                 <Input
                   label="Phone Number"
@@ -110,29 +171,33 @@ export function ContactPage() {
               </div>
 
               <div className="input-field">
-                <label className="input-label">Type of Consultation</label>
+                <label className="input-label">Topic / Service</label>
                 <select
                   className="input-control"
                   value={form.service}
                   onChange={(e) => setForm({ ...form, service: e.target.value })}
                 >
-                  <option value="Bridal Consultation">Royal Bridal Trousseau Consultation</option>
-                  <option value="Heirloom Restoration">Heirloom Restoration & Re-stringing</option>
-                  <option value="Custom Bespoke Commission">Custom Bespoke Jadau Commission</option>
-                  <option value="Virtual Video Salon">Private Virtual Video Salon</option>
+                  <option value="Order & Delivery Inquiry">Order Status & Delivery Timeline</option>
+                  <option value="Bridal Jewellery Inquiry">Bridal & Festive Curation</option>
+                  <option value="Wholesale & Bulk Orders">Bulk / Return Gifting Inquiry</option>
+                  <option value="Product Care & Return">Product Quality & Returns</option>
                 </select>
               </div>
 
-              <Input
-                label="Preferred Date"
-                type="date"
-                required
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
+              <div className="input-field">
+                <label className="input-label">Message (Optional)</label>
+                <textarea
+                  className="input-control"
+                  rows={3}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="Tell us what you're looking for or your order number..."
+                  style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+              </div>
 
-              <Button variant="primary" size="lg" fullWidth type="submit">
-                Request Private Appointment
+              <Button variant="primary" size="lg" fullWidth type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending Message...' : 'Submit Inquiry'}
               </Button>
             </form>
           )}

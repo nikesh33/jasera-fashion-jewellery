@@ -17,6 +17,9 @@ export function authenticate(req, res, next) {
   next();
 }
 
+export const authenticateToken = authenticate;
+export const optionalAuth = optionalAuthenticate;
+
 export function optionalAuthenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {

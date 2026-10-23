@@ -24,13 +24,33 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Menu,
-  Image as ImageIcon,
+  CreditCard,
+  Image,
+  Sparkles,
+  Tag,
+  Star,
+  FileText,
+  Settings,
+  Shield,
+  Inbox,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Pagination } from "../../components/ui/Pagination";
 import { formatPrice } from "../../lib/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { api } from "../../lib/api";
+import { AdminBannersTab } from "./tabs/AdminBannersTab";
+import { AdminCollectionsTab } from "./tabs/AdminCollectionsTab";
+import { AdminCouponsTab } from "./tabs/AdminCouponsTab";
+import { AdminPaymentsTab } from "./tabs/AdminPaymentsTab";
+import { AdminInquiriesTab } from "./tabs/AdminInquiriesTab";
+import { AdminNewsletterTab } from "./tabs/AdminNewsletterTab";
+import { AdminReturnsTab } from "./tabs/AdminReturnsTab";
+import { AdminReviewsTab } from "./tabs/AdminReviewsTab";
+import { AdminPincodesTab } from "./tabs/AdminPincodesTab";
+import { AdminSettingsTab } from "./tabs/AdminSettingsTab";
+import { AdminCmsTab } from "./tabs/AdminCmsTab";
+import { AdminAuditTab } from "./tabs/AdminAuditTab";
 import "./AdminDashboard.css";
 
 export function AdminDashboard() {
@@ -94,6 +114,10 @@ export function AdminDashboard() {
     description: "",
     image_url: "",
     status: "active",
+    parent_id: "",
+    seo_title: "",
+    seo_description: "",
+    display_order: 0,
   });
 
   // Product Modal / Form
@@ -104,30 +128,18 @@ export function AdminDashboard() {
     category_id: "",
     selling_price: "",
     mrp: "",
+    cost_price: "",
     material: "Oxidised Silver",
     occasion: "Daily & Festive",
     stock: 20,
+    dimensions: "",
+    weight_grams: "",
+    care_guide: "",
+    tags: "",
     image_url: "",
     short_description: "",
     status: "active",
   });
-
-  // Banner Modal / Form
-  const [banners, setBanners] = useState([]);
-  const [showBannerModal, setShowBannerModal] = useState(false);
-  const [editingBanner, setEditingBanner] = useState(null);
-  const [bannerForm, setBannerForm] = useState({
-    title: "",
-    subtitle: "",
-    imageUrl: "",
-    mobileImageUrl: "",
-    linkUrl: "/shop",
-    position: "hero",
-    displayOrder: 1,
-    status: "active",
-  });
-  const [bannerSearch, setBannerSearch] = useState("");
-  const [bannerPositionFilter, setBannerPositionFilter] = useState("all");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -135,12 +147,11 @@ export function AdminDashboard() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [statsRes, catRes, prodRes, ordRes, banRes] = await Promise.all([
+      const [statsRes, catRes, prodRes, ordRes] = await Promise.all([
         api.get("/admin/stats").catch(() => null),
         api.get("/categories/admin").catch(() => api.get("/categories")),
         api.get("/products?limit=150").catch(() => null),
         api.get("/admin/orders").catch(() => null),
-        api.get("/banners/all").catch(() => null),
       ]);
 
       if (statsRes?.data?.stats) setStats(statsRes.data.stats);
@@ -155,7 +166,6 @@ export function AdminDashboard() {
       }
       if (prodRes?.data?.products) setProducts(prodRes.data.products);
       if (ordRes?.data?.orders) setOrders(ordRes.data.orders);
-      if (banRes?.data?.banners) setBanners(banRes.data.banners);
     } catch (err) {
       console.error("Failed to load admin data:", err);
       setErrorMessage("Failed to load database records.");
@@ -195,6 +205,10 @@ export function AdminDashboard() {
       description: "",
       image_url: "",
       status: "active",
+      parent_id: "",
+      seo_title: "",
+      seo_description: "",
+      display_order: 0,
     });
     setShowCategoryModal(true);
   };
@@ -207,6 +221,10 @@ export function AdminDashboard() {
       description: cat.description || "",
       image_url: cat.image_url || "",
       status: cat.status || "active",
+      parent_id: cat.parent_id || "",
+      seo_title: cat.seo_title || "",
+      seo_description: cat.seo_description || "",
+      display_order: cat.display_order !== undefined ? cat.display_order : 0,
     });
     setShowCategoryModal(true);
   };
@@ -237,6 +255,10 @@ export function AdminDashboard() {
           categoryForm.image_url.trim() ||
           "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80",
         status: categoryForm.status || "active",
+        parent_id: categoryForm.parent_id ? Number(categoryForm.parent_id) : null,
+        seo_title: categoryForm.seo_title?.trim() || null,
+        seo_description: categoryForm.seo_description?.trim() || null,
+        display_order: Number(categoryForm.display_order) || 0,
       };
 
       if (editingCategory) {
@@ -280,9 +302,14 @@ export function AdminDashboard() {
       category_id: categories[0]?.id || "",
       selling_price: "",
       mrp: "",
+      cost_price: "",
       material: "Oxidised Silver",
       occasion: "Daily & Festive",
       stock: 20,
+      dimensions: "",
+      weight_grams: "",
+      care_guide: "",
+      tags: "",
       image_url: "",
       short_description: "",
       status: "active",
@@ -297,9 +324,20 @@ export function AdminDashboard() {
       category_id: prod.category_id || categories[0]?.id || "",
       selling_price: prod.selling_price || "",
       mrp: prod.mrp || "",
+      cost_price: prod.cost_price || "",
       material: prod.material || "Oxidised Silver",
       occasion: prod.occasion || "Daily & Festive",
       stock: prod.stock !== undefined ? prod.stock : 20,
+      dimensions: prod.dimensions || "",
+      weight_grams: prod.weight_grams || "",
+      care_guide: prod.care_guide || "",
+      tags: prod.tags
+        ? typeof prod.tags === "string"
+          ? prod.tags
+          : Array.isArray(prod.tags)
+            ? prod.tags.join(", ")
+            : ""
+        : "",
       image_url: prod.primary_image || "",
       short_description: prod.short_description || "",
       status: prod.status || "active",
@@ -343,9 +381,16 @@ export function AdminDashboard() {
             ? productForm.mrp
             : price * 1.5,
         ),
+        cost_price: productForm.cost_price ? Number(productForm.cost_price) : null,
         material: productForm.material,
         occasion: productForm.occasion,
         stock: stockUnits,
+        dimensions: productForm.dimensions?.trim() || null,
+        weight_grams: productForm.weight_grams ? Number(productForm.weight_grams) : null,
+        care_guide: productForm.care_guide?.trim() || null,
+        tags: productForm.tags
+          ? productForm.tags.split(",").map((t) => t.trim()).filter(Boolean)
+          : null,
         image_url:
           productForm.image_url.trim() ||
           "https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80",
@@ -409,89 +454,6 @@ export function AdminDashboard() {
       await loadDashboardData();
     } catch (err) {
       notifyError(err.message || "Failed to update order status");
-    }
-  };
-
-  // ---------------- BANNER MANAGEMENT ----------------
-
-  const handleOpenAddBanner = () => {
-    setEditingBanner(null);
-    setBannerForm({
-      title: "",
-      subtitle: "",
-      imageUrl: "",
-      mobileImageUrl: "",
-      linkUrl: "/shop",
-      position: "hero",
-      displayOrder: banners.length + 1,
-      status: "active",
-    });
-    setShowBannerModal(true);
-  };
-
-  const handleOpenEditBanner = (b) => {
-    setEditingBanner(b);
-    setBannerForm({
-      title: b.title || "",
-      subtitle: b.subtitle || "",
-      imageUrl: b.imageUrl || b.image_url || "",
-      mobileImageUrl: b.mobileImageUrl || b.mobile_image_url || "",
-      linkUrl: b.linkUrl || b.link_url || "/shop",
-      position: b.position || "hero",
-      displayOrder: b.displayOrder ?? b.display_order ?? 1,
-      status: b.status || "active",
-    });
-    setShowBannerModal(true);
-  };
-
-  const handleSaveBanner = async (e) => {
-    e.preventDefault();
-    if (!bannerForm.imageUrl.trim()) {
-      notifyError("Banner image URL is required");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      if (editingBanner) {
-        await api.put(`/banners/${editingBanner.id}`, bannerForm);
-        notifySuccess(`Banner updated successfully in database!`);
-      } else {
-        await api.post("/banners", bannerForm);
-        notifySuccess(`New banner added to database successfully!`);
-      }
-      setShowBannerModal(false);
-      setEditingBanner(null);
-      await loadDashboardData();
-    } catch (err) {
-      notifyError(err.message || "Failed to save banner");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteBanner = async (bannerId, title) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to permanently delete banner "${title || bannerId}" from database?`
-      )
-    )
-      return;
-    try {
-      await api.delete(`/banners/${bannerId}`);
-      notifySuccess(`Banner deleted from database.`);
-      await loadDashboardData();
-    } catch (err) {
-      notifyError(err.message || "Failed to delete banner");
-    }
-  };
-
-  const handleToggleBannerStatus = async (bannerId) => {
-    try {
-      const res = await api.patch(`/banners/${bannerId}/status`);
-      notifySuccess(res?.message || "Banner status updated.");
-      await loadDashboardData();
-    } catch (err) {
-      notifyError(err.message || "Failed to update banner status");
     }
   };
 
@@ -659,7 +621,7 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Admin Tabs (Desktop) */}
+      {/* Admin Tabs */}
       <div className="admin-tabs">
         <button
           className={`admin-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
@@ -670,28 +632,6 @@ export function AdminDashboard() {
             style={{ marginRight: "6px", verticalAlign: "middle" }}
           />
           Overview
-        </button>
-
-        <button
-          className={`admin-tab-btn ${activeTab === "categories" ? "is-active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          <Layers
-            size={16}
-            style={{ marginRight: "6px", verticalAlign: "middle" }}
-          />
-          Categories ({categories.length})
-        </button>
-
-        <button
-          className={`admin-tab-btn ${activeTab === "products" ? "is-active" : ""}`}
-          onClick={() => setActiveTab("products")}
-        >
-          <Package
-            size={16}
-            style={{ marginRight: "6px", verticalAlign: "middle" }}
-          />
-          Catalogue ({products.length})
         </button>
 
         <button
@@ -706,14 +646,157 @@ export function AdminDashboard() {
         </button>
 
         <button
-          className={`admin-tab-btn ${activeTab === "banners" ? "is-active" : ""}`}
-          onClick={() => setActiveTab("banners")}
+          className={`admin-tab-btn ${activeTab === "products" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("products")}
         >
-          <ImageIcon
+          <Package
             size={16}
             style={{ marginRight: "6px", verticalAlign: "middle" }}
           />
-          Banners ({banners.length})
+          Catalogue ({products.length})
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "categories" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Layers
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Categories ({categories.length})
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "payments" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("payments")}
+        >
+          <CreditCard
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Payments
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "banners" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("banners")}
+        >
+          <Image
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Banners
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "collections" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("collections")}
+        >
+          <Sparkles
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Collections
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "coupons" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("coupons")}
+        >
+          <Tag
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Coupons
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "returns" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("returns")}
+        >
+          <RotateCcw
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Returns
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "reviews" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("reviews")}
+        >
+          <Star
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Reviews
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "pincodes" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("pincodes")}
+        >
+          <MapPin
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Pincodes
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "inquiries" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("inquiries")}
+        >
+          <Mail
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Inquiries
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "newsletter" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("newsletter")}
+        >
+          <Inbox
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Subscribers
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "cms" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("cms")}
+        >
+          <FileText
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          CMS Pages
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "settings" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("settings")}
+        >
+          <Settings
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Settings
+        </button>
+
+        <button
+          className={`admin-tab-btn ${activeTab === "audit" ? "is-active" : ""}`}
+          onClick={() => setActiveTab("audit")}
+        >
+          <Shield
+            size={16}
+            style={{ marginRight: "6px", verticalAlign: "middle" }}
+          />
+          Audit Trail
         </button>
       </div>
 
@@ -923,6 +1006,69 @@ export function AdminDashboard() {
                       <option value="active">Active (Visible on store)</option>
                       <option value="inactive">Inactive (Hidden)</option>
                     </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Parent Category (Hierarchy)</label>
+                    <select
+                      value={categoryForm.parent_id}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          parent_id: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">None (Top Level Category)</option>
+                      {categories
+                        .filter((c) => !editingCategory || c.id !== editingCategory.id)
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Display Order</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={categoryForm.display_order}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          display_order: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>SEO Meta Title</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Handcrafted Silver Jhumkas | Jasera"
+                      value={categoryForm.seo_title}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          seo_title: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>SEO Meta Description</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Explore royal oxidised silver jhumkas..."
+                      value={categoryForm.seo_description}
+                      onChange={(e) =>
+                        setCategoryForm({
+                          ...categoryForm,
+                          seo_description: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div className="form-group" style={{ gridColumn: "span 2" }}>
                     <label>Short Description</label>
@@ -1255,6 +1401,66 @@ export function AdminDashboard() {
                     />
                   </div>
 
+                  <div className="form-group">
+                    <label>Cost Price (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="Internal cost e.g. 250"
+                      value={productForm.cost_price}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          cost_price: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Weight (grams)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 18"
+                      value={productForm.weight_grams}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          weight_grams: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Dimensions</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 4.5 cm x 2.2 cm"
+                      value={productForm.dimensions}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          dimensions: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. festive, bridal, trending, silver"
+                      value={productForm.tags}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          tags: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
                   <div className="form-group" style={{ gridColumn: "span 2" }}>
                     <label>Product Photo Image URL</label>
                     <input
@@ -1265,6 +1471,21 @@ export function AdminDashboard() {
                         setProductForm({
                           ...productForm,
                           image_url: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: "span 2" }}>
+                    <label>Care Guide & Storage Tips</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Keep away from water and perfume. Store in a zip-lock pouch."
+                      value={productForm.care_guide}
+                      onChange={(e) =>
+                        setProductForm({
+                          ...productForm,
+                          care_guide: e.target.value,
                         })
                       }
                     />
@@ -1792,298 +2013,19 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* TAB 5: BANNERS (DYNAMIC DATABASE BANNERS) */}
-      {activeTab === "banners" && (
-        <div className="admin-tab-content">
-          <div className="admin-card">
-            <div className="admin-card-header">
-              <div>
-                <h3 className="admin-card-title">Homepage & Promotional Banners</h3>
-                <p className="admin-card-desc">
-                  Manage dynamic banners stored in MySQL database (<code>suvarna.banners</code>). Displayed live on the storefront.
-                </p>
-              </div>
-              <Button
-                variant="primary"
-                size="sm"
-                icon={Plus}
-                onClick={handleOpenAddBanner}
-              >
-                Add New Banner
-              </Button>
-            </div>
-
-            {/* Banner Form Modal */}
-            {showBannerModal && (
-              <form onSubmit={handleSaveBanner} className="admin-inline-form">
-                <h4>
-                  {editingBanner
-                    ? `Edit Banner (ID: ${editingBanner.id})`
-                    : "Add New Banner to Database"}
-                </h4>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Banner Image URL *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="/images/jassera-hero-banner.jpg or https://..."
-                      value={bannerForm.imageUrl}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, imageUrl: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Target Link URL</label>
-                    <input
-                      type="text"
-                      placeholder="/shop or /collections"
-                      value={bannerForm.linkUrl}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, linkUrl: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Banner Title / Tag</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. STATEMENT BRACELET"
-                      value={bannerForm.title}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, title: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Subtitle / Caption</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Traditional Charm with a Modern Touch"
-                      value={bannerForm.subtitle}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, subtitle: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Placement Position</label>
-                    <select
-                      value={bannerForm.position}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, position: e.target.value })
-                      }
-                    >
-                      <option value="hero">Hero Showcase (Homepage Main)</option>
-                      <option value="promo">Boutique Promo / Story</option>
-                      <option value="feature">Feature Collection</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Display Priority / Order</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={bannerForm.displayOrder}
-                      onChange={(e) =>
-                        setBannerForm({
-                          ...bannerForm,
-                          displayOrder: parseInt(e.target.value, 10) || 1,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Status</label>
-                    <select
-                      value={bannerForm.status}
-                      onChange={(e) =>
-                        setBannerForm({ ...bannerForm, status: e.target.value })
-                      }
-                    >
-                      <option value="active">Active (Visible on Storefront)</option>
-                      <option value="inactive">Inactive (Hidden)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {bannerForm.imageUrl && (
-                  <div style={{ marginTop: "12px", marginBottom: "16px" }}>
-                    <label style={{ display: "block", fontSize: "0.82rem", color: "var(--grey-600)", marginBottom: "6px" }}>
-                      Image Preview:
-                    </label>
-                    <img
-                      src={bannerForm.imageUrl}
-                      alt="Banner Preview"
-                      style={{
-                        maxHeight: "140px",
-                        maxWidth: "100%",
-                        borderRadius: "8px",
-                        border: "1px solid var(--grey-300)",
-                        objectFit: "cover",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
-
-                <div className="form-actions">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Saving to Database..." : "Save Banner"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowBannerModal(false);
-                      setEditingBanner(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {/* Banners List */}
-            {banners.length === 0 ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "var(--grey-600)" }}>
-                <ImageIcon size={36} style={{ margin: "0 auto 12px", display: "block", color: "var(--color-antique-gold)" }} />
-                <p>No banners found in database table <code>suvarna.banners</code>.</p>
-                <Button variant="primary" size="sm" onClick={handleOpenAddBanner}>
-                  Add Your First Banner
-                </Button>
-              </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "18px", marginTop: "16px" }}>
-                {banners.map((b) => (
-                  <div
-                    key={b.id}
-                    style={{
-                      border: "1px solid var(--grey-300)",
-                      borderRadius: "10px",
-                      overflow: "hidden",
-                      backgroundColor: "#FFFFFF",
-                      display: "flex",
-                      flexDirection: "column",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    <div style={{ position: "relative", height: "160px", backgroundColor: "#f5f5f5" }}>
-                      <img
-                        src={b.imageUrl || b.image_url}
-                        alt={b.title || "Banner"}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        onError={(e) => {
-                          e.target.src = "/images/jassera-hero-banner.jpg";
-                        }}
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "10px",
-                          left: "10px",
-                          backgroundColor: b.position === "hero" ? "var(--color-maroon)" : "var(--color-charcoal)",
-                          color: "#FFFFFF",
-                          padding: "3px 8px",
-                          borderRadius: "4px",
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        {b.position}
-                      </span>
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "10px",
-                          right: "10px",
-                          backgroundColor: b.status === "active" ? "#E8F5E9" : "#FFEBEE",
-                          color: b.status === "active" ? "#2E7D32" : "#C62828",
-                          padding: "3px 8px",
-                          borderRadius: "4px",
-                          fontSize: "0.72rem",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {b.status === "active" ? "Live" : "Hidden"}
-                      </span>
-                    </div>
-
-                    <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                      <strong style={{ fontSize: "0.98rem", color: "var(--color-charcoal)", marginBottom: "4px" }}>
-                        {b.title || "Untitled Banner"}
-                      </strong>
-                      <p style={{ fontSize: "0.82rem", color: "var(--grey-600)", margin: "0 0 10px", lineHeight: "1.4" }}>
-                        {b.subtitle || "No subtitle provided"}
-                      </p>
-
-                      <div style={{ fontSize: "0.78rem", color: "var(--grey-500)", marginBottom: "14px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                        <span><strong>Link:</strong> {b.linkUrl || b.link_url || "/shop"}</span>
-                        <span><strong>Display Order:</strong> #{b.displayOrder ?? b.display_order ?? 1}</span>
-                      </div>
-
-                      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--grey-200)", paddingTop: "10px" }}>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleBannerStatus(b.id)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: b.status === "active" ? "#C62828" : "#2E7D32",
-                            fontSize: "0.82rem",
-                            cursor: "pointer",
-                            fontWeight: 600,
-                            padding: 0,
-                          }}
-                        >
-                          {b.status === "active" ? "Deactivate" : "Activate"}
-                        </button>
-
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            icon={Edit2}
-                            onClick={() => handleOpenEditBanner(b)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            icon={Trash2}
-                            onClick={() => handleDeleteBanner(b.id, b.title)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Dynamic Module Tabs */}
+      {activeTab === "payments" && <AdminPaymentsTab />}
+      {activeTab === "banners" && <AdminBannersTab />}
+      {activeTab === "collections" && <AdminCollectionsTab />}
+      {activeTab === "coupons" && <AdminCouponsTab />}
+      {activeTab === "returns" && <AdminReturnsTab />}
+      {activeTab === "reviews" && <AdminReviewsTab />}
+      {activeTab === "pincodes" && <AdminPincodesTab />}
+      {activeTab === "inquiries" && <AdminInquiriesTab />}
+      {activeTab === "newsletter" && <AdminNewsletterTab />}
+      {activeTab === "cms" && <AdminCmsTab />}
+      {activeTab === "settings" && <AdminSettingsTab />}
+      {activeTab === "audit" && <AdminAuditTab />}
     </div>
   );
 }

@@ -140,7 +140,7 @@ export function CartPage() {
                 <Tag size={16} className="coupon-tag-icon" />
                 <input
                   type="text"
-                  placeholder="Promo Code (e.g. JASSERA10)"
+                  placeholder="Promo Code (e.g. JASERA10)"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value)}
                   className="coupon-input"

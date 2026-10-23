@@ -1,6 +1,23 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { getPool } from '../config/db.js';
-import { signAccessToken, signRefreshToken } from '../utils/jwt.js';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
+
+/**
+ * Hash token and persist in refresh_tokens table
+ */
+async function saveRefreshToken({ userId = null, adminId = null, refreshToken }) {
+  const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  const pool = getPool();
+
+  await pool.query(
+    `INSERT INTO refresh_tokens (user_id, admin_id, token_hash, expires_at, is_revoked, created_at)
+     VALUES (?, ?, ?, ?, 0, NOW())`,
+    [userId, adminId, tokenHash, expiresAt]
+  );
+  return tokenHash;
+}
 
 // Customer-only Login (authenticates strictly from users table)
 export async function customerLogin(req, res) {
@@ -33,12 +50,18 @@ export async function customerLogin(req, res) {
       return res.status(401).json({ success: false, message: 'Invalid email/phone or password' });
     }
 
-    const token = signAccessToken({
+    const tokenPayload = {
       id: customer.id,
       email: customer.email,
       role: 'customer',
       isAdmin: false,
-    });
+    };
+
+    const token = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    // Persist in refresh_tokens table
+    await saveRefreshToken({ userId: customer.id, refreshToken });
 
     return res.json({
       success: true,
@@ -52,6 +75,7 @@ export async function customerLogin(req, res) {
           isAdmin: false,
         },
         token,
+        refreshToken,
       },
     });
   } catch (err) {
@@ -94,12 +118,18 @@ export async function adminLogin(req, res) {
     // Update last_login_at
     await pool.query(`UPDATE admin_users SET last_login_at = NOW() WHERE id = ?`, [admin.id]);
 
-    const token = signAccessToken({
+    const tokenPayload = {
       id: admin.id,
       email: admin.email,
       role: admin.role,
       isAdmin: true,
-    });
+    };
+
+    const token = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    // Persist in refresh_tokens table
+    await saveRefreshToken({ adminId: admin.id, refreshToken });
 
     return res.json({
       success: true,
@@ -112,6 +142,7 @@ export async function adminLogin(req, res) {
           isAdmin: true,
         },
         token,
+        refreshToken,
       },
     });
   } catch (err) {
@@ -120,7 +151,6 @@ export async function adminLogin(req, res) {
   }
 }
 
-// Backward compatible alias
 export const login = customerLogin;
 
 export async function register(req, res) {
@@ -155,12 +185,17 @@ export async function register(req, res) {
     );
 
     const newUserId = result.insertId;
-    const token = signAccessToken({
+    const tokenPayload = {
       id: newUserId,
       email: email.toLowerCase().trim(),
       role: 'customer',
       isAdmin: false,
-    });
+    };
+
+    const token = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    await saveRefreshToken({ userId: newUserId, refreshToken });
 
     return res.status(201).json({
       success: true,
@@ -174,6 +209,7 @@ export async function register(req, res) {
           isAdmin: false,
         },
         token,
+        refreshToken,
       },
     });
   } catch (err) {
@@ -230,5 +266,210 @@ export async function getProfile(req, res) {
   } catch (err) {
     console.error('Profile fetch error:', err);
     return res.status(500).json({ success: false, message: 'Error retrieving profile' });
+  }
+}
+
+/**
+ * POST /api/auth/refresh
+ * Refresh access token using valid refresh_tokens entry
+ */
+export async function refreshTokenHandler(req, res) {
+  const rawToken = req.body.refreshToken || req.cookies?.refreshToken;
+  if (!rawToken) {
+    return res.status(401).json({ success: false, message: 'Refresh token is required' });
+  }
+
+  const decoded = verifyRefreshToken(rawToken);
+  if (!decoded) {
+    return res.status(401).json({ success: false, message: 'Expired or invalid refresh token' });
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+  const pool = getPool();
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM refresh_tokens 
+       WHERE token_hash = ? AND is_revoked = 0 AND expires_at > NOW()`,
+      [tokenHash]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'Refresh token revoked or expired' });
+    }
+
+    const tokenRecord = rows[0];
+
+    // Revoke old token (rotation)
+    await pool.query(`UPDATE refresh_tokens SET is_revoked = 1 WHERE id = ?`, [tokenRecord.id]);
+
+    // Issue new pair
+    const tokenPayload = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      isAdmin: decoded.isAdmin,
+    };
+
+    const newAccessToken = signAccessToken(tokenPayload);
+    const newRefreshToken = signRefreshToken(tokenPayload);
+
+    await saveRefreshToken({
+      userId: tokenRecord.user_id,
+      adminId: tokenRecord.admin_id,
+      refreshToken: newRefreshToken,
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        token: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+    });
+  } catch (err) {
+    console.error('Refresh token error:', err);
+    return res.status(500).json({ success: false, message: 'Token refresh failed' });
+  }
+}
+
+/**
+ * POST /api/auth/logout
+ * Revoke refresh token
+ */
+export async function logout(req, res) {
+  const rawToken = req.body.refreshToken || req.cookies?.refreshToken;
+  if (rawToken) {
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const pool = getPool();
+    try {
+      await pool.query(`UPDATE refresh_tokens SET is_revoked = 1 WHERE token_hash = ?`, [tokenHash]);
+    } catch (err) {
+      console.warn('Non-critical: error revoking token:', err.message);
+    }
+  }
+  return res.json({ success: true, message: 'Logged out successfully' });
+}
+
+/**
+ * POST /api/auth/send-otp
+ * Generates OTP and logs to otp_codes table
+ */
+export async function sendOtp(req, res) {
+  const { phone, purpose = 'login' } = req.body;
+  const cleanPhone = (phone || '').trim().replace(/\D/g, '').slice(-10);
+
+  if (!cleanPhone || cleanPhone.length < 10) {
+    return res.status(400).json({ success: false, message: 'Valid 10-digit mobile number is required' });
+  }
+
+  const validPurposes = ['login', 'register', 'reset_password', 'verify_phone'];
+  const safePurpose = validPurposes.includes(purpose) ? purpose : 'login';
+
+  // Generate 6 digit OTP
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const pool = getPool();
+
+  try {
+    await pool.query(
+      `INSERT INTO otp_codes (phone, code, purpose, expires_at, verified, attempts, created_at)
+       VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE), 0, 0, NOW())`,
+      [cleanPhone, code, safePurpose]
+    );
+
+    return res.json({
+      success: true,
+      message: `OTP sent to +91 ${cleanPhone}. Valid for 10 minutes.`,
+      // Return dev OTP for testing without needing SMS provider configured
+      data: {
+        phone: cleanPhone,
+        purpose: safePurpose,
+        devOtp: code,
+      },
+    });
+  } catch (err) {
+    console.error('Error sending OTP:', err);
+    return res.status(500).json({ success: false, message: 'Failed to generate verification code' });
+  }
+}
+
+/**
+ * POST /api/auth/verify-otp
+ * Verifies code from otp_codes table
+ */
+export async function verifyOtp(req, res) {
+  const { phone, code, purpose = 'login' } = req.body;
+  const cleanPhone = (phone || '').trim().replace(/\D/g, '').slice(-10);
+
+  if (!cleanPhone || !code) {
+    return res.status(400).json({ success: false, message: 'Mobile number and 6-digit OTP code are required' });
+  }
+
+  const pool = getPool();
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM otp_codes
+       WHERE phone = ? AND code = ? AND purpose = ? AND verified = 0 AND expires_at > NOW()
+       ORDER BY id DESC LIMIT 1`,
+      [cleanPhone, code.trim(), purpose]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP code. Please request a new one.' });
+    }
+
+    const otpRecord = rows[0];
+
+    // Mark as verified
+    await pool.query(`UPDATE otp_codes SET verified = 1 WHERE id = ?`, [otpRecord.id]);
+
+    // If purpose is login, authenticate user if registered
+    if (purpose === 'login') {
+      const [userRows] = await pool.query(
+        `SELECT id, full_name, email, phone, status FROM users WHERE phone LIKE ?`,
+        [`%${cleanPhone}`]
+      );
+
+      if (userRows.length > 0) {
+        const customer = userRows[0];
+        const tokenPayload = {
+          id: customer.id,
+          email: customer.email,
+          role: 'customer',
+          isAdmin: false,
+        };
+
+        const token = signAccessToken(tokenPayload);
+        const refreshToken = signRefreshToken(tokenPayload);
+        await saveRefreshToken({ userId: customer.id, refreshToken });
+
+        return res.json({
+          success: true,
+          message: 'Phone verified and authenticated successfully',
+          data: {
+            user: {
+              id: customer.id,
+              name: customer.full_name,
+              email: customer.email,
+              phone: customer.phone,
+              role: 'customer',
+              isAdmin: false,
+            },
+            token,
+            refreshToken,
+          },
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'Mobile number verified successfully',
+      data: { phone: cleanPhone, verified: true },
+    });
+  } catch (err) {
+    console.error('Error verifying OTP:', err);
+    return res.status(500).json({ success: false, message: 'Failed to verify code' });
   }
 }

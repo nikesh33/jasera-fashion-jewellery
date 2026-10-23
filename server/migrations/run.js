@@ -1,15 +1,24 @@
-import { getPool } from '../src/config/db.js';
-import dotenv from 'dotenv';
-dotenv.config();
+import dotenv from "dotenv";
+import mysql from "mysql2/promise";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.resolve(__dirname, "../.env"),
+});
 
 const SCHEMA = `
 
 -- ========================================
--- Suvarna Jewellery E-Commerce Database
+-- Jasera Jewellery E-Commerce Database
+-- MySQL 5.5.22-compatible variant
 -- ========================================
 
-CREATE DATABASE IF NOT EXISTS suvarna CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE suvarna;
+CREATE DATABASE IF NOT EXISTS jasera CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE jasera;
 
 -- ----------------------------------------
 -- Users (customers)
@@ -27,9 +36,9 @@ CREATE TABLE IF NOT EXISTS users (
   wedding_anniversary DATE DEFAULT NULL,
   status ENUM('active','blacklisted') DEFAULT 'active',
   blacklist_reason VARCHAR(500) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_users_email (email),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  INDEX idx_users_email (email(191)),
   INDEX idx_users_phone (phone)
 ) ENGINE=InnoDB;
 
@@ -45,12 +54,12 @@ CREATE TABLE IF NOT EXISTS admin_users (
   totp_secret VARCHAR(64) DEFAULT NULL,
   is_active TINYINT(1) DEFAULT 1,
   last_login_at TIMESTAMP NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Categories (self-referencing for subcategories)
+-- Categories
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS categories (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -63,15 +72,15 @@ CREATE TABLE IF NOT EXISTS categories (
   seo_title VARCHAR(200) DEFAULT NULL,
   seo_description VARCHAR(500) DEFAULT NULL,
   status ENUM('active','inactive') DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
   INDEX idx_categories_slug (slug),
   INDEX idx_categories_parent (parent_id)
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Collections (curated groups)
+-- Collections
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS collections (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -82,8 +91,8 @@ CREATE TABLE IF NOT EXISTS collections (
   publish_from TIMESTAMP NULL,
   publish_to TIMESTAMP NULL,
   status ENUM('active','draft','archived') DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
@@ -115,19 +124,19 @@ CREATE TABLE IF NOT EXISTS products (
   review_count INT DEFAULT 0,
   units_sold INT DEFAULT 0,
   status ENUM('active','draft','archived') DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
   FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE SET NULL,
   INDEX idx_products_slug (slug),
   INDEX idx_products_category (category_id),
   INDEX idx_products_status (status),
   INDEX idx_products_price (selling_price),
-  FULLTEXT INDEX idx_products_search (name, short_description, tags)
+  INDEX idx_products_search (name(100))
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Product Variants (size, material, colour)
+-- Product Variants
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS product_variants (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -143,7 +152,7 @@ CREATE TABLE IF NOT EXISTS product_variants (
   weight_grams DECIMAL(8,2) DEFAULT NULL,
   dimensions VARCHAR(100) DEFAULT NULL,
   is_default TINYINT(1) DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   INDEX idx_variants_product (product_id),
   INDEX idx_variants_sku (sku)
@@ -160,14 +169,14 @@ CREATE TABLE IF NOT EXISTS product_images (
   alt_text VARCHAR(300) DEFAULT NULL,
   display_order INT DEFAULT 0,
   type ENUM('front','side','lifestyle','detail','packaging','video') DEFAULT 'front',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL,
   INDEX idx_images_product (product_id)
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Collection ↔ Products (M2M)
+-- Collection ↔ Products
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS collection_products (
   collection_id INT UNSIGNED NOT NULL,
@@ -186,14 +195,14 @@ CREATE TABLE IF NOT EXISTS reviews (
   product_id INT UNSIGNED NOT NULL,
   user_id INT UNSIGNED NOT NULL,
   order_id INT UNSIGNED DEFAULT NULL,
-  rating TINYINT UNSIGNED NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  rating TINYINT UNSIGNED NOT NULL,
   title VARCHAR(200) DEFAULT NULL,
   body TEXT DEFAULT NULL,
   status ENUM('pending','approved','rejected','flagged') DEFAULT 'pending',
   admin_reply TEXT DEFAULT NULL,
   admin_replied_at TIMESTAMP NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_reviews_product (product_id),
@@ -207,7 +216,7 @@ CREATE TABLE IF NOT EXISTS review_photos (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   review_id INT UNSIGNED NOT NULL,
   url VARCHAR(500) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -218,8 +227,8 @@ CREATE TABLE IF NOT EXISTS carts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED DEFAULT NULL,
   session_id VARCHAR(64) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_carts_user (user_id),
   INDEX idx_carts_session (session_id)
@@ -234,8 +243,8 @@ CREATE TABLE IF NOT EXISTS cart_items (
   product_id INT UNSIGNED NOT NULL,
   variant_id INT UNSIGNED DEFAULT NULL,
   quantity INT UNSIGNED NOT NULL DEFAULT 1,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL,
@@ -251,7 +260,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
   product_id INT UNSIGNED NOT NULL,
   variant_id INT UNSIGNED DEFAULT NULL,
   note VARCHAR(500) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   UNIQUE KEY uk_wishlist_user_product (user_id, product_id, variant_id)
@@ -262,7 +271,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS addresses (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id INT UNSIGNED DEFAULT NULL,
+  user_id INT UNSIGNED NOT NULL,
   full_name VARCHAR(100) NOT NULL,
   phone VARCHAR(15) NOT NULL,
   pincode VARCHAR(6) NOT NULL,
@@ -273,8 +282,8 @@ CREATE TABLE IF NOT EXISTS addresses (
   state VARCHAR(100) NOT NULL,
   address_type ENUM('home','work','other') DEFAULT 'home',
   is_default TINYINT(1) DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_addresses_user (user_id)
 ) ENGINE=InnoDB;
@@ -290,8 +299,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   value DECIMAL(10,2) NOT NULL,
   min_order_amount DECIMAL(10,2) DEFAULT 0,
   max_discount DECIMAL(10,2) DEFAULT NULL,
-  applicable_categories JSON DEFAULT NULL,
-  applicable_products JSON DEFAULT NULL,
+  applicable_categories LONGTEXT DEFAULT NULL,
+  applicable_products LONGTEXT DEFAULT NULL,
   valid_from TIMESTAMP NULL,
   valid_to TIMESTAMP NULL,
   total_usage_cap INT DEFAULT NULL,
@@ -299,8 +308,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   first_order_only TINYINT(1) DEFAULT 0,
   total_used INT DEFAULT 0,
   status ENUM('draft','active','paused','expired') DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   INDEX idx_coupons_code (code),
   INDEX idx_coupons_status (status)
 ) ENGINE=InnoDB;
@@ -326,7 +335,7 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id INT UNSIGNED DEFAULT NULL,
   guest_email VARCHAR(255) DEFAULT NULL,
   guest_phone VARCHAR(15) DEFAULT NULL,
-  shipping_address JSON NOT NULL,
+  shipping_address LONGTEXT NOT NULL,
   subtotal DECIMAL(10,2) NOT NULL,
   discount DECIMAL(10,2) DEFAULT 0.00,
   shipping_fee DECIMAL(10,2) DEFAULT 0.00,
@@ -381,7 +390,7 @@ CREATE TABLE IF NOT EXISTS order_items (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Order Status History (timeline)
+-- Order Status History
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS order_status_history (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -390,7 +399,7 @@ CREATE TABLE IF NOT EXISTS order_status_history (
   note VARCHAR(500) DEFAULT NULL,
   actor_type ENUM('system','customer','admin') DEFAULT 'system',
   actor_id INT UNSIGNED DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   INDEX idx_status_history_order (order_id)
 ) ENGINE=InnoDB;
@@ -411,8 +420,8 @@ CREATE TABLE IF NOT EXISTS payments (
   method VARCHAR(50) DEFAULT NULL,
   error_code VARCHAR(50) DEFAULT NULL,
   error_message VARCHAR(500) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   INDEX idx_payments_order (order_id),
   INDEX idx_payments_gateway (gateway_order_id)
@@ -431,8 +440,8 @@ CREATE TABLE IF NOT EXISTS return_requests (
   refund_method VARCHAR(50) DEFAULT NULL,
   refund_amount DECIMAL(10,2) DEFAULT NULL,
   admin_note VARCHAR(500) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_returns_order (order_id)
@@ -449,8 +458,8 @@ CREATE TABLE IF NOT EXISTS cms_pages (
   seo_title VARCHAR(200) DEFAULT NULL,
   seo_description VARCHAR(500) DEFAULT NULL,
   status ENUM('published','draft') DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
@@ -468,12 +477,12 @@ CREATE TABLE IF NOT EXISTS banners (
   publish_to TIMESTAMP NULL,
   position ENUM('hero','feature','promo') DEFAULT 'hero',
   status ENUM('active','inactive') DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
--- Store Settings (key-value)
+-- Store Settings
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS store_settings (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -485,30 +494,32 @@ CREATE TABLE IF NOT EXISTS store_settings (
 
 -- ----------------------------------------
 -- OTP Codes
+-- (expires_at is DATETIME to avoid MySQL 5.5 multi-auto-TIMESTAMP rule)
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS otp_codes (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   phone VARCHAR(15) NOT NULL,
   code VARCHAR(6) NOT NULL,
   purpose ENUM('register','login','reset_password','verify_phone') NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
+  expires_at DATETIME NOT NULL,
   verified TINYINT(1) DEFAULT 0,
   attempts INT DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_otp_phone (phone)
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------
 -- Refresh Tokens
+-- (expires_at is DATETIME, same reason)
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED DEFAULT NULL,
   admin_id INT UNSIGNED DEFAULT NULL,
   token_hash VARCHAR(255) NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
+  expires_at DATETIME NOT NULL,
   is_revoked TINYINT(1) DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_refresh_user (user_id),
   INDEX idx_refresh_admin (admin_id)
@@ -523,10 +534,10 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
   action VARCHAR(100) NOT NULL,
   target_type VARCHAR(50) DEFAULT NULL,
   target_id INT UNSIGNED DEFAULT NULL,
-  before_data JSON DEFAULT NULL,
-  after_data JSON DEFAULT NULL,
+  before_data LONGTEXT DEFAULT NULL,
+  after_data LONGTEXT DEFAULT NULL,
   ip_address VARCHAR(45) DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE,
   INDEX idx_audit_admin (admin_id),
   INDEX idx_audit_target (target_type, target_id)
@@ -578,7 +589,7 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
   reference_id INT UNSIGNED DEFAULT NULL,
   note VARCHAR(500) DEFAULT NULL,
   actor_id INT UNSIGNED DEFAULT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
   INDEX idx_inv_tx_variant (variant_id)
 ) ENGINE=InnoDB;
@@ -586,49 +597,53 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
 `;
 
 async function runMigrations() {
-  console.log('🔄 Running Suvarna database migrations...');
-  
-  // Create database if not exists
+  console.log("🔄 Running Suvarna database migrations...");
+
   const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3306', 10),
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'suvarna',
-    multipleStatements: true,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    connectTimeout: 10000,
+    waitForConnections: true,
+    connectionLimit: 5,
   });
 
   try {
-    const cleanSchema = SCHEMA.replace(/--.*$/gm, '').trim();
-    const statements = cleanSchema.split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+    const [[ver]] = await pool.query("SELECT VERSION() AS v");
+    console.log(`   DB version: ${ver.v}`);
+
+    const cleanSchema = SCHEMA.replace(/--.*$/gm, "").trim();
+    const statements = cleanSchema
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
     for (const stmt of statements) {
-      if (stmt.toLowerCase().startsWith('use ') || stmt.toLowerCase().startsWith('create database ')) {
+      if (
+        stmt.toLowerCase().startsWith("use ") ||
+        stmt.toLowerCase().startsWith("create database ")
+      ) {
         continue;
       }
       try {
         await pool.query(stmt);
       } catch (err) {
-        // Ignore "already exists" errors
-        if (!err.message.includes('already exists')) {
-          console.error(`⚠️  Error executing: ${stmt.substring(0, 80)}...`);
-          console.error(`   ${err.message}`);
-        }
+        console.error(` Error executing SQL: ${stmt.substring(0, 80)}...`);
+        console.error("Error Code:", err.code);
+        console.error("Error Message:", err.message);
+        throw err;
       }
     }
-    
-    console.log('✅ Database migrations completed successfully!');
+
+    console.log("✅ Database migrations completed successfully!");
   } catch (err) {
-    console.error('❌ Migration failed:', err.message);
+    console.error("❌ Migration failed:", err.message);
     process.exit(1);
   } finally {
     await pool.end();
   }
 }
-
-// Import mysql here for the migration runner
-import mysql from 'mysql2/promise';
 
 runMigrations();

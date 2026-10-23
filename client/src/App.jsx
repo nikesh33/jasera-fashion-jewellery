@@ -14,6 +14,7 @@ import { AccountPage } from './pages/account/AccountPage';
 import { AboutPage } from './pages/static/AboutPage';
 import { ContactPage } from './pages/static/ContactPage';
 import { TrackOrderPage } from './pages/static/TrackOrderPage';
+import { CmsPage } from './pages/static/CmsPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
 import { ProtectedAdminRoute } from './components/auth/ProtectedAdminRoute';
@@ -51,6 +52,10 @@ export function App() {
           <Route path="about" element={<AboutPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="track-order" element={<TrackOrderPage />} />
+          <Route path="shipping-policy" element={<CmsPage slugOverride="shipping-and-returns" />} />
+          <Route path="privacy-policy" element={<CmsPage slugOverride="privacy-policy" />} />
+          <Route path="terms" element={<CmsPage slugOverride="terms-and-conditions" />} />
+          <Route path="pages/:slug" element={<CmsPage />} />
           <Route
             path="admin"
             element={

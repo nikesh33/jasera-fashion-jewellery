@@ -1,6 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, ShieldCheck, HeartHandshake, Star, PackageCheck, Zap, Check } from 'lucide-react';
+import {
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  HeartHandshake,
+  Star,
+  PackageCheck,
+  ChevronLeft,
+  ChevronRight,
+  Gem,
+} from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ProductCard } from '../../components/shop/ProductCard';
 import { api } from '../../lib/api';
@@ -11,20 +21,38 @@ export function HomePage() {
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [banners, setBanners] = useState([]);
-  const [heroIndex, setHeroIndex] = useState(0);
+  const [collections, setCollections] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const slideTimerRef = useRef(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [catRes, prodRes, bannerRes] = await Promise.all([
+        const [catRes, prodRes, bannerRes, collRes, revRes] = await Promise.allSettled([
           api.get('/categories'),
           api.get('/products?limit=8'),
-          api.get('/banners').catch(() => null),
+          api.get('/banners?position=hero'),
+          api.get('/collections'),
+          api.get('/reviews?limit=3'),
         ]);
-        if (catRes?.data?.categories) setCategories(catRes.data.categories);
-        if (prodRes?.data?.products) setFeaturedProducts(prodRes.data.products);
-        if (bannerRes?.data?.banners) setBanners(bannerRes.data.banners);
+
+        if (catRes.status === 'fulfilled' && catRes.value?.data?.categories) {
+          setCategories(catRes.value.data.categories);
+        }
+        if (prodRes.status === 'fulfilled' && prodRes.value?.data?.products) {
+          setFeaturedProducts(prodRes.value.data.products);
+        }
+        if (bannerRes.status === 'fulfilled' && bannerRes.value?.data?.banners?.length > 0) {
+          setBanners(bannerRes.value.data.banners);
+        }
+        if (collRes.status === 'fulfilled' && collRes.value?.data?.collections) {
+          setCollections(collRes.value.data.collections);
+        }
+        if (revRes.status === 'fulfilled' && revRes.value?.data?.reviews?.length > 0) {
+          setReviews(revRes.value.data.reviews);
+        }
       } catch (err) {
         console.error('Error fetching homepage data:', err);
       } finally {
@@ -34,127 +62,146 @@ export function HomePage() {
     loadData();
   }, []);
 
-  const heroBanners = banners.filter((b) => b.position === 'hero');
-  const promoBanner = banners.find((b) => b.position === 'promo' || b.position === 'feature');
-
-  // Auto-rotate hero banners if more than 1 exist
+  // Auto-play Banner Carousel
   useEffect(() => {
-    if (heroBanners.length <= 1) return;
-    const interval = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % heroBanners.length);
-    }, 5500);
-    return () => clearInterval(interval);
-  }, [heroBanners.length]);
+    if (banners.length <= 1) return;
 
-  const currentHero = heroBanners[heroIndex] || heroBanners[0] || {
-    title: 'STATEMENT BRACELET',
-    subtitle: 'Traditional Charm with a Modern Touch',
-    imageUrl: '/images/jassera-hero-banner.jpg',
+    slideTimerRef.current = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % banners.length);
+    }, 5500);
+
+    return () => {
+      if (slideTimerRef.current) clearInterval(slideTimerRef.current);
+    };
+  }, [banners.length]);
+
+  const handlePrevSlide = () => {
+    if (banners.length <= 1) return;
+    setCurrentSlide((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+  };
+
+  const handleNextSlide = () => {
+    if (banners.length <= 1) return;
+    setCurrentSlide((prev) => (prev + 1) % banners.length);
+  };
+
+  const activeBanner = banners[currentSlide] || {
+    title: 'Trendy Handcrafted Jewellery For Every Aesthetic',
+    subtitle: 'From viral Instagram jhumkas & oxidised silver to anti-tarnish waterproof daily wear jewellery crafted to turn heads.',
+    imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=85',
     linkUrl: '/shop',
   };
 
   return (
     <div className="home-page">
-      {/* 1. Hero Section */}
-      <section className="hero-section">
-        <div className="container hero-container">
-          <div className="hero-content">
-            <span className="hero-eyebrow">
-              <Sparkles size={16} /> AESTHETIC JEWELLERY • SIGNATURE DROPS
-            </span>
-            <h1 className="hero-title">
-              Trendy Handcrafted Jewellery For Every Aesthetic
-            </h1>
-            <p className="hero-subtitle">
-              From viral Instagram statement bracelets & jhumkas to anti-tarnish waterproof daily wear jewellery crafted to turn heads.
-            </p>
-
-            {/* Quality Feature Chips matching the Statement Bracelet poster */}
-            <div className="hero-feature-chips">
-              <span className="hero-chip">Elegant Design</span>
-              <span className="hero-chip">Lightweight & Comfortable</span>
-              <span className="hero-chip">Premium Quality Beads</span>
-              <span className="hero-chip">Perfect for Every Occasion</span>
-            </div>
-
-            <div className="hero-actions">
-              <Button
-                variant="gold"
-                size="lg"
-                icon={ArrowRight}
-                onClick={() => navigate('/shop')}
-              >
-                Shop Trending Drops
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="hero-secondary-btn"
-                onClick={() => navigate('/shop')}
-              >
-                Explore Statement Pieces
-              </Button>
-            </div>
-          </div>
-
-          {/* Model Visual Showcase Card */}
-          <div className="hero-visual-col">
+      {/* 1. Multi-Banner Carousel (Database Driven) */}
+      <section
+        className="hero-section hero-carousel-container"
+        onMouseEnter={() => slideTimerRef.current && clearInterval(slideTimerRef.current)}
+        onMouseLeave={() => {
+          if (banners.length > 1) {
+            slideTimerRef.current = setInterval(() => {
+              setCurrentSlide((prev) => (prev + 1) % banners.length);
+            }, 5500);
+          }
+        }}
+      >
+        {banners.length > 0 ? (
+          banners.map((b, idx) => (
             <div
-              className="hero-visual-card"
-              style={{ cursor: currentHero.linkUrl ? 'pointer' : 'default', position: 'relative' }}
-              onClick={() => {
-                if (currentHero.linkUrl) navigate(currentHero.linkUrl);
+              key={b.id || idx}
+              className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
+              style={{
+                backgroundImage: `url(${b.imageUrl || b.image_url})`,
               }}
             >
-              <img
-                src={currentHero.imageUrl || '/images/jassera-hero-banner.jpg'}
-                alt={currentHero.title || 'Jassera Jewellery'}
-                className="hero-model-img"
-              />
-              <div className="hero-floating-glass-badge">
-                <span className="glass-badge-tag">{currentHero.title || 'STATEMENT BRACELET'}</span>
-                <span className="glass-badge-subtitle">
-                  {currentHero.subtitle || 'Traditional Charm with a Modern Touch'}
+              <div className="hero-overlay" />
+              <div className="container hero-content">
+                <span className="hero-eyebrow">
+                  <Sparkles size={16} /> AESTHETIC JEWELLERY
                 </span>
-              </div>
-
-              {/* Dots indicator when multiple hero banners are in database */}
-              {heroBanners.length > 1 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '12px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    display: 'flex',
-                    gap: '6px',
-                    zIndex: 10,
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {heroBanners.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      aria-label={`Slide ${idx + 1}`}
-                      onClick={() => setHeroIndex(idx)}
-                      style={{
-                        width: heroIndex === idx ? '22px' : '8px',
-                        height: '8px',
-                        borderRadius: '4px',
-                        backgroundColor: heroIndex === idx ? 'var(--color-antique-gold, #dfb972)' : 'rgba(255,255,255,0.6)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        padding: 0,
-                      }}
-                    />
-                  ))}
+                <h1 className="hero-title">{b.title}</h1>
+                <p className="hero-subtitle">{b.subtitle}</p>
+                <div className="hero-actions">
+                  <Button
+                    variant="gold"
+                    size="lg"
+                    icon={ArrowRight}
+                    onClick={() => navigate(b.linkUrl || b.link_url || '/shop')}
+                  >
+                    Shop Collection
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="hero-secondary-btn"
+                    onClick={() => navigate('/shop?category=jhumkas')}
+                  >
+                    Explore Best Sellers
+                  </Button>
                 </div>
-              )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div
+            className="hero-slide active"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=85')`,
+            }}
+          >
+            <div className="hero-overlay" />
+            <div className="container hero-content">
+              <span className="hero-eyebrow">
+                <Sparkles size={16} /> AESTHETIC JEWELLERY
+              </span>
+              <h1 className="hero-title">Trendy Handcrafted Jewellery For Every Aesthetic</h1>
+              <p className="hero-subtitle">
+                From viral Instagram jhumkas & oxidised silver to anti-tarnish waterproof daily wear jewellery crafted to turn heads.
+              </p>
+              <div className="hero-actions">
+                <Button variant="gold" size="lg" icon={ArrowRight} onClick={() => navigate('/shop')}>
+                  Shop Trending Drops
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Carousel Navigation Arrows */}
+        {banners.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="hero-carousel-arrow hero-arrow-left"
+              onClick={handlePrevSlide}
+              aria-label="Previous Banner"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              type="button"
+              className="hero-carousel-arrow hero-arrow-right"
+              onClick={handleNextSlide}
+              aria-label="Next Banner"
+            >
+              <ChevronRight size={24} />
+            </button>
+
+            {/* Carousel Dot Indicators */}
+            <div className="hero-carousel-dots">
+              {banners.map((_, dotIdx) => (
+                <button
+                  key={dotIdx}
+                  type="button"
+                  className={`hero-dot ${dotIdx === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(dotIdx)}
+                  aria-label={`Go to slide ${dotIdx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {/* 2. Value Proposition Strip */}
@@ -184,7 +231,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 3. Category Showcase (100% Database Driven) */}
+      {/* 3. Category Showcase (Database Driven) */}
       <section className="section-categories">
         <div className="container">
           <div className="section-header text-center">
@@ -202,22 +249,23 @@ export function HomePage() {
 
           <div className="category-grid">
             {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/shop?category=${cat.slug}`}
-                className="category-card"
-              >
+              <Link key={cat.id} to={`/shop?category=${cat.slug}`} className="category-card">
                 <div className="category-img-wrap">
                   <img
-                    src={cat.image_url || 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=600&q=80'}
+                    src={cat.image_url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80'}
                     alt={cat.name}
-                    loading="lazy"
+                    className="category-img"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80';
+                    }}
                   />
-                  <div className="category-overlay" />
+                  <div className="category-overlay">
+                    <span className="category-view-text">Explore {cat.name}</span>
+                  </div>
                 </div>
-                <div className="category-info">
-                  <h3 className="category-title">{cat.name}</h3>
-                  <span className="category-count">{cat.item_count || 1} Designs</span>
+                <div className="category-meta">
+                  <h3 className="category-name">{cat.name}</h3>
+                  <span className="category-count">{cat.item_count || 0} Designs</span>
                 </div>
               </Link>
             ))}
@@ -225,7 +273,52 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 4. Featured Products (Trending On Instagram) */}
+      {/* 4. Curated Collections Section (collections & collection_products) */}
+      {collections.length > 0 && (
+        <section className="section-collections-hub">
+          <div className="container">
+            <div className="section-header text-center">
+              <span className="section-eyebrow">ROYAL HERITAGE CURATIONS</span>
+              <h2 className="section-title">Exclusive Collections</h2>
+              <p style={{ color: 'var(--grey-600)', fontSize: '0.95rem', marginTop: '6px' }}>
+                Handpicked suites themed after India's historic palaces and regal dynasties.
+              </p>
+              <div className="ornament-divider">
+                <span className="ornament-line" />
+                <span className="ornament-diamond">◆</span>
+                <span className="ornament-line" />
+              </div>
+            </div>
+
+            <div className="collections-curated-grid">
+              {collections.map((col) => (
+                <div key={col.id} className="collection-curated-card">
+                  <div className="collection-card-image-wrap">
+                    <img
+                      src={col.hero_image_url || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80'}
+                      alt={col.name}
+                      className="collection-card-img"
+                    />
+                    <div className="collection-card-gradient" />
+                    <div className="collection-card-badge">
+                      <Gem size={14} /> Curated Suite
+                    </div>
+                  </div>
+                  <div className="collection-card-body">
+                    <h3 className="collection-card-title">{col.name}</h3>
+                    <p className="collection-card-desc">{col.description}</p>
+                    <Link to={`/shop?collection=${col.slug}`} className="collection-card-cta">
+                      View Collection <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 5. Featured Products (Trending Drops) */}
       <section className="section-featured">
         <div className="container">
           <div className="section-header-flex">
@@ -234,7 +327,7 @@ export function HomePage() {
               <h2 className="section-title">Trending On Instagram</h2>
             </div>
             <Link to="/shop" className="view-all-link">
-              View Collections <ArrowRight size={16} />
+              View All Catalogue <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -246,59 +339,49 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 5. The Boutique Story Banner */}
+      {/* 6. The Boutique Story Banner */}
       <section className="heritage-story-banner">
         <div className="container heritage-story-grid">
           <div className="heritage-image-wrapper">
             <img
-              src={promoBanner?.imageUrl || "/images/jassera-logo.jpg"}
-              alt={promoBanner?.title || "Jassera Jewellery & Accessories Emblem"}
+              src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80"
+              alt="Handcrafted boutique jewellery"
               className="heritage-main-img"
-              style={{ objectFit: 'contain', padding: '16px', background: '#FFFFFF', borderRadius: '24px' }}
             />
             <div className="heritage-floating-badge">
               <span className="badge-years">100%</span>
-              <span className="badge-caption">Little details, big moments</span>
+              <span className="badge-caption">Handcrafted With Love</span>
             </div>
           </div>
 
           <div className="heritage-text-content">
-            <span className="section-eyebrow">
-              {promoBanner?.title ? promoBanner.title.toUpperCase() : "HANDCRAFTED WITH CARE"}
-            </span>
-            <h2 className="heritage-title">
-              {promoBanner?.subtitle || "The Art of Statement Jewellery"}
-            </h2>
+            <span className="section-eyebrow">HANDCRAFTED WITH CARE</span>
+            <h2 className="heritage-title">The Art of Statement Jewellery</h2>
             <p className="heritage-desc">
-              At Jassera, we believe beautiful jewellery shouldn't cost a fortune. Every statement bracelet, jhumka, earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
+              At Jasera, we believe beautiful jewellery shouldn't cost a fortune. Every jhumka, statement earring, and choker is curated to take you effortlessly from college campuses and office desks to festive weddings and weekend dates.
             </p>
             <div className="heritage-points">
               <div className="point-item">
-                <span className="point-bullet"><Check size={14} /></span>
+                <span className="point-bullet">✓</span>
                 <span>Lightweight oxidised silver jhumkas with comfortable ear hooks</span>
               </div>
               <div className="point-item">
-                <span className="point-bullet"><Check size={14} /></span>
+                <span className="point-bullet">✓</span>
                 <span>Anti-tarnish, water-resistant daily wear stainless steel & brass</span>
               </div>
               <div className="point-item">
-                <span className="point-bullet"><Check size={14} /></span>
+                <span className="point-bullet">✓</span>
                 <span>Pocket-friendly luxury designed for aesthetic Instagram unboxings</span>
               </div>
             </div>
-            <Button
-              variant="primary"
-              size="md"
-              icon={ArrowRight}
-              onClick={() => navigate('/shop')}
-            >
+            <Button variant="primary" size="md" icon={ArrowRight} onClick={() => navigate('/shop')}>
               Shop All Jewellery
             </Button>
           </div>
         </div>
       </section>
 
-      {/* 6. Customer Testimonials */}
+      {/* 7. Customer Testimonials (Dynamic reviews integration) */}
       <section className="section-testimonials">
         <div className="container">
           <div className="section-header text-center">
@@ -307,50 +390,75 @@ export function HomePage() {
           </div>
 
           <div className="testimonials-grid">
-            <div className="testimonial-card">
-              <div className="rating-stars">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
-                ))}
-              </div>
-              <p className="testimonial-quote">
-                “The Peacock Chandbali Jhumkas are so lightweight and gorgeous! Got so many compliments during college ethnic day. Definitely ordering more!”
-              </p>
-              <div className="testimonial-author">
-                <strong>Aarchana Sharma</strong>
-                <span>Mumbai • Verified Buyer</span>
-              </div>
-            </div>
+            {reviews.length > 0 ? (
+              reviews.map((rev) => (
+                <div key={rev.id} className="testimonial-card">
+                  <div className="rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        fill={i < rev.rating ? 'var(--color-antique-gold)' : 'none'}
+                        color="var(--color-antique-gold)"
+                      />
+                    ))}
+                  </div>
+                  {rev.title && <strong style={{ display: 'block', margin: '8px 0 4px', fontSize: '1rem' }}>{rev.title}</strong>}
+                  <p className="testimonial-quote">“{rev.body}”</p>
+                  <div className="testimonial-author">
+                    <strong>{rev.customer_name || 'Verified Patron'}</strong>
+                    <span>{rev.product_name ? `${rev.product_name} • ` : ''}Verified Buyer</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="testimonial-card">
+                  <div className="rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
+                    ))}
+                  </div>
+                  <p className="testimonial-quote">
+                    “The Peacock Chandbali Jhumkas are so lightweight and gorgeous! Got so many compliments during college ethnic day. Definitely ordering more!”
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Aarchana Sharma</strong>
+                    <span>Mumbai • Verified Buyer</span>
+                  </div>
+                </div>
 
-            <div className="testimonial-card">
-              <div className="rating-stars">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
-                ))}
-              </div>
-              <p className="testimonial-quote">
-                “Ordered the anti-tarnish clover necklace and it hasn't lost its shine even after wearing it to work every day. The cute packaging made my day!”
-              </p>
-              <div className="testimonial-author">
-                <strong>Ananya Nair</strong>
-                <span>Bengaluru • Verified Buyer</span>
-              </div>
-            </div>
+                <div className="testimonial-card">
+                  <div className="rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
+                    ))}
+                  </div>
+                  <p className="testimonial-quote">
+                    “Ordered the anti-tarnish clover necklace and it hasn't lost its shine even after wearing it to work every day. The cute packaging made my day!”
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Ananya Nair</strong>
+                    <span>Bengaluru • Verified Buyer</span>
+                  </div>
+                </div>
 
-            <div className="testimonial-card">
-              <div className="rating-stars">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
-                ))}
-              </div>
-              <p className="testimonial-quote">
-                “Discovered this page through Instagram reels and took a chance. Delivered in 3 days with express tracking. The Afghan choker is stunning!”
-              </p>
-              <div className="testimonial-author">
-                <strong>Riya Sen</strong>
-                <span>Kolkata • Verified Buyer</span>
-              </div>
-            </div>
+                <div className="testimonial-card">
+                  <div className="rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill="var(--color-antique-gold)" color="var(--color-antique-gold)" />
+                    ))}
+                  </div>
+                  <p className="testimonial-quote">
+                    “Discovered this page through Instagram reels and took a chance. Delivered in 3 days with express tracking. The Afghan choker is stunning!”
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Riya Sen</strong>
+                    <span>Kolkata • Verified Buyer</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
