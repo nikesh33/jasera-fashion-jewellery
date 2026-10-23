@@ -134,3 +134,34 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* CMS Content Typography */
+.cms-html-content h2,
+.cms-html-content h3 {
+  font-family: var(--font-heading);
+  color: var(--color-charcoal);
+  margin: 28px 0 12px;
+}
+
+.cms-html-content p {
+  margin-bottom: 16px;
+  line-height: 1.8;
+  color: #333333;
+}
+
+.cms-html-content ul,
+.cms-html-content ol {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.cms-html-content li {
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.cms-html-content a {
+  color: var(--color-burgundy, #5c1a2b);
+  text-decoration: underline;
+}
+
