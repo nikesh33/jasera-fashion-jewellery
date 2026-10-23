@@ -22,6 +22,34 @@ import { useUIStore } from "../../stores/uiStore";
 import { api } from "../../lib/api";
 import "./Header.css";
 
+const ANNOUNCEMENT_ITEMS = [
+  {
+    text: "Free Pan-India Delivery on orders above ₹499",
+    linkText: "Shop Collection",
+    linkUrl: "/shop",
+  },
+  {
+    text: "Handcrafted Statement Jewellery & Accessories",
+    linkText: "Explore Jhumkas",
+    linkUrl: "/shop?category=jhumkas",
+  },
+  {
+    text: "Special Welcome Offer: Flat 10% Off with code JASSERA10",
+    linkText: "Claim Discount",
+    linkUrl: "/shop",
+  },
+  {
+    text: "Need Custom Styling Advice or Gifting Assistance?",
+    linkText: "WhatsApp Concierge",
+    linkUrl: "/contact",
+  },
+  {
+    text: "Express BlueDart & Delhivery Tracking",
+    linkText: "Track Parcel",
+    linkUrl: "/track-order",
+  },
+];
+
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,22 +59,65 @@ export function Header() {
   const { openSearch } = useUIStore();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const [categories, setCategories] = useState([]);
   const userMenuRef = useRef(null);
+  const navDropdownRef = useRef(null);
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Close user menu on outside click
+  // Rotating Announcement Timer
+  useEffect(() => {
+    if (isAdminRoute) return;
+    const interval = setInterval(() => {
+      setAnnouncementIndex((prev) => (prev + 1) % ANNOUNCEMENT_ITEMS.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isAdminRoute]);
+
+  const activeAnnouncement = isAdminRoute
+    ? {
+        text: "JASSERA - Management Portal",
+        linkText: "View Customer Storefront ↗",
+        linkUrl: "/",
+      }
+    : ANNOUNCEMENT_ITEMS[announcementIndex];
+
+  // Close menus on outside click & escape key
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
+      if (
+        navDropdownRef.current &&
+        !navDropdownRef.current.contains(event.target)
+      ) {
+        setIsNavDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsUserMenuOpen(false);
+        setIsNavDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
+
+  // Close menus on route change
+  useEffect(() => {
+    setIsNavDropdownOpen(false);
+    setIsMobileNavOpen(false);
+    setIsUserMenuOpen(false);
+  }, [location.pathname, location.search]);
 
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
@@ -81,54 +152,59 @@ export function Header() {
     sessionStorage.setItem("suvarna_dismiss_announcement", "true");
   };
 
+  // If categories are more than 1, show first 1 and put remaining in dropdown on click
+  const visibleCategories = categories.slice(0, 1);
+  const overflowCategories = categories.slice(1);
+  const hasMoreCategories = overflowCategories.length > 0;
+
   return (
     <header className="site-header">
-      {/* 1. Announcement Bar */}
+      {/* 1. Announcement Bar with Left Dismiss and Centered Rotating Ticker */}
       {!isAnnouncementDismissed && (
         <div
           className={`announcement-bar ${isAdminRoute ? "admin-announcement" : ""}`}
         >
           <div className="announcement-content">
-            {isAdminRoute ? (
-              <>
+            {/* Left-aligned close button in responsive & desktop */}
+            <button
+              type="button"
+              className="announcement-dismiss-btn announcement-dismiss-left"
+              onClick={handleDismissAnnouncement}
+              aria-label="Dismiss announcement"
+              title="Dismiss announcement"
+            >
+              <X size={14} />
+            </button>
+
+            {/* Centered Announcement Message + Rotating Action Link */}
+            <div className="announcement-ticker-wrap">
+              <div key={announcementIndex} className="announcement-ticker-slide">
                 <span className="announcement-text">
-                  JASSERA - Management Portal
+                  {activeAnnouncement.text}
                 </span>
-                <div className="announcement-links">
-                  <Link to="/" target="_blank" rel="noopener noreferrer">
-                    View Customer Storefront ↗
-                  </Link>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="announcement-text">
-                  Free Shipping on orders above ₹999
-                </span>
-                <div className="announcement-links">
-                  <Link to="/track-order">Track Order</Link>
-                  <span className="announcement-divider">|</span>
-                  <Link to="/contact">Need Help? Chat with us</Link>
-                  <button
-                    type="button"
-                    className="announcement-dismiss-btn"
-                    onClick={handleDismissAnnouncement}
-                    aria-label="Dismiss announcement"
-                    title="Dismiss"
-                  >
-                    <X size={15} />
-                  </button>
-                </div>
-              </>
+                {activeAnnouncement.linkUrl && (
+                  <>
+                    <span className="announcement-bullet">•</span>
+                    <Link
+                      to={activeAnnouncement.linkUrl}
+                      className="announcement-link-action"
+                      target={isAdminRoute ? "_blank" : undefined}
+                      rel={isAdminRoute ? "noopener noreferrer" : undefined}
+                    >
+                      {activeAnnouncement.linkText}
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop right utility links (hidden on mobile to guarantee perfect centering & zero overflow) */}
+            {!isAdminRoute && (
+              <div className="announcement-right-links d-none-mobile">
+                <Link to="/track-order">Track Order</Link>
+                <span className="announcement-divider">|</span>
+                <Link to="/contact">Need Help?</Link>
+              </div>
             )}
           </div>
         </div>
@@ -160,6 +236,88 @@ export function Header() {
               </span>
             </div>
           </Link>
+
+          {/* Desktop Inline Navigation centered in Navbar */}
+          {!isAdminRoute && (
+            <nav className="desktop-nav-inline" aria-label="Main Navigation">
+              <ul className="nav-inline-list">
+                <li className="nav-inline-item">
+                  <Link to="/shop" className="nav-inline-link">
+                    Shop
+                  </Link>
+                </li>
+
+                {visibleCategories.map((cat) => (
+                  <li key={cat.id} className="nav-inline-item">
+                    <Link
+                      to={`/shop?category=${cat.slug}`}
+                      className="nav-inline-link"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
+
+                {/* If more than 1 category, collapse remaining into click dropdown */}
+                {hasMoreCategories && (
+                  <li
+                    className="nav-inline-item nav-inline-dropdown"
+                    ref={navDropdownRef}
+                  >
+                    <button
+                      type="button"
+                      className={`nav-inline-dropdown-btn ${isNavDropdownOpen ? "is-active" : ""}`}
+                      onClick={() => setIsNavDropdownOpen((prev) => !prev)}
+                      aria-expanded={isNavDropdownOpen}
+                      aria-haspopup="true"
+                    >
+                      <span>More</span>
+                      <ChevronDown
+                        size={13}
+                        className={`dropdown-chevron ${isNavDropdownOpen ? "is-rotated" : ""}`}
+                      />
+                    </button>
+
+                    {isNavDropdownOpen && (
+                      <div
+                        className="nav-dropdown-menu"
+                        onClick={() => setIsNavDropdownOpen(false)}
+                      >
+                        <div className="nav-dropdown-header">Categories</div>
+                        {overflowCategories.map((cat) => (
+                          <Link
+                            key={cat.id}
+                            to={`/shop?category=${cat.slug}`}
+                            className="nav-dropdown-item"
+                          >
+                            <span>{cat.name}</span>
+                          </Link>
+                        ))}
+                        <div className="nav-dropdown-divider" />
+                        <Link
+                          to="/shop"
+                          className="nav-dropdown-item nav-dropdown-item-all"
+                        >
+                          <span>View All Jewellery →</span>
+                        </Link>
+                      </div>
+                    )}
+                  </li>
+                )}
+
+                <li className="nav-inline-item">
+                  <Link to="/about" className="nav-inline-link">
+                    About
+                  </Link>
+                </li>
+                <li className="nav-inline-item">
+                  <Link to="/contact" className="nav-inline-link">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          )}
 
           {/* Action Icons */}
           <div className="header-actions">
@@ -336,34 +494,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* 3. Category Navigation Bar (Customers only - Hidden on Admin routes) */}
-      {!isAdminRoute && (
-        <nav className="desktop-nav">
-          <div className="container">
-            <ul className="nav-list">
-              <li className="nav-item">
-                <Link to="/shop" className="nav-link">
-                  All
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id} className="nav-item">
-                  <Link to={`/shop?category=${cat.slug}`} className="nav-link">
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-              <li className="nav-item">
-                <Link to="/about" className="nav-link">
-                  About
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      )}
-
-      {/* 4. Mobile Drawer Navigation */}
+      {/* Mobile Drawer Navigation */}
       {isMobileNavOpen && (
         <div
           className="mobile-nav-overlay"
