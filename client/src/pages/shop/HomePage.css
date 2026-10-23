@@ -488,31 +488,73 @@
 .category-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(31, 31, 31, 0.8) 0%, rgba(31, 31, 31, 0.2) 60%, transparent 100%);
-}
-
-.category-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--space-6);
-  color: #FFFFFF;
+  background: rgba(18, 14, 16, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  transition: background 0.3s ease;
   z-index: 2;
 }
 
-.category-title {
-  font-family: var(--font-heading);
-  font-size: var(--text-h3);
-  color: var(--color-ivory);
-  margin-bottom: 2px;
+.category-card:hover .category-overlay {
+  background: rgba(18, 14, 16, 0.42);
+}
+
+.category-view-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(18, 14, 16, 0.88);
+  color: #FFFFFF !important;
+  border: 1.5px solid #D4AF37;
+  border-radius: 30px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.category-card:hover .category-view-text {
+  background: var(--color-maroon, #6B1E2C);
+  color: #FFFFFF !important;
+  border-color: #FFDF73;
+  transform: scale(1.06);
+  box-shadow: 0 6px 24px rgba(107, 30, 44, 0.6);
+}
+
+.category-meta {
+  padding: 14px 10px 10px;
+  text-align: center;
+  background: #FFFFFF;
+  border-top: 1px solid var(--grey-200, #ECECEC);
+}
+
+.category-name {
+  font-family: var(--font-heading, serif);
+  font-size: 1.15rem;
+  color: var(--color-charcoal, #1f1f1f);
+  margin: 0 0 3px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.category-card:hover .category-name {
+  color: var(--color-maroon, #6B1E2C);
 }
 
 .category-count {
-  font-size: var(--text-caption);
-  color: var(--color-antique-gold-light);
-  letter-spacing: 0.05em;
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-antique-gold-dark, #8A6D3B);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* 4. Featured Section */

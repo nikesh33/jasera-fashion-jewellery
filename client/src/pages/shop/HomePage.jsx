@@ -124,7 +124,8 @@ export function HomePage() {
                 <div className="container hero-slide-grid">
                   <div className="hero-content">
                     <span className="hero-eyebrow">
-                      <Sparkles size={16} /> AESTHETIC JEWELLERY
+                      {/* <Sparkles size={16} />  */}
+                      AESTHETIC JEWELLERY
                     </span>
                     <h1 className="hero-title">{b.title}</h1>
                     <p className="hero-subtitle">{b.subtitle}</p>
@@ -172,7 +173,7 @@ export function HomePage() {
             <div className="hero-overlay" />
             <div className="container hero-content">
               <span className="hero-eyebrow">
-                <Sparkles size={16} /> AESTHETIC JEWELLERY
+                AESTHETIC JEWELLERY
               </span>
               <h1 className="hero-title">Trendy Handcrafted Jewellery For Every Aesthetic</h1>
               <p className="hero-subtitle">
@@ -229,14 +230,14 @@ export function HomePage() {
           <div className="value-pill">
             <ShieldCheck className="value-icon" size={24} />
             <div>
-              <strong>Anti-Tarnish & Waterproof</strong>
+              <strong>Waterproof</strong>
               <span>Long-lasting everyday finish</span>
             </div>
           </div>
           <div className="value-pill">
             <PackageCheck className="value-icon" size={24} />
             <div>
-              <strong>Pan-India Express Delivery</strong>
+              <strong>Pan-India Delivery</strong>
               <span>Live tracking right to your doorstep</span>
             </div>
           </div>
@@ -244,7 +245,7 @@ export function HomePage() {
             <HeartHandshake className="value-icon" size={24} />
             <div>
               <strong>100% Skin-Friendly</strong>
-              <span>Lead & nickel free hypoallergenic</span>
+              <span>Lead and nickel free hypoallergenic</span>
             </div>
           </div>
         </div>
@@ -254,11 +255,11 @@ export function HomePage() {
       <section className="section-categories">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-eyebrow">CURATED SILHOUETTES</span>
+            <span className="section-eyebrow"></span>
             <h2 className="section-title">Shop By Category</h2>
-            <p style={{ color: 'var(--grey-600)', fontSize: '0.95rem', marginTop: '6px' }}>
-              Explore our handcrafted collections updated live from the boutique catalogue.
-            </p>
+            {/* <p style={{ color: 'var(--grey-600)', fontSize: '0.95rem', marginTop: '6px' }}>
+              Explore our collections.
+            </p> */}
             <div className="ornament-divider">
               <span className="ornament-line" />
               <span className="ornament-diamond">◆</span>
@@ -279,7 +280,9 @@ export function HomePage() {
                     }}
                   />
                   <div className="category-overlay">
-                    <span className="category-view-text">Explore {cat.name}</span>
+                    <span className="category-view-text">
+                      Explore {cat.name} <ArrowRight size={13} />
+                    </span>
                   </div>
                 </div>
                 <div className="category-meta">
