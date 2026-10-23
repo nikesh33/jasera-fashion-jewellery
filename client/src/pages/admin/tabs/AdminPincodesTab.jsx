@@ -43,7 +43,10 @@ export function AdminPincodesTab({ onNotify }) {
     }
 
     try {
-      await api.post('/pincodes/admin', form);
+      await api.post('/pincodes/admin', {
+        ...form,
+        estimated_days: form.estimated_days || form.estimated_delivery_days || 3,
+      });
       onNotify?.(`Pincode ${form.pincode} configured successfully!`, 'success');
       setShowModal(false);
       setForm({
@@ -52,6 +55,7 @@ export function AdminPincodesTab({ onNotify }) {
         state: '',
         is_serviceable: 1,
         cod_available: 1,
+        estimated_days: 3,
         estimated_delivery_days: 3,
       });
       loadPincodes();
@@ -60,10 +64,11 @@ export function AdminPincodesTab({ onNotify }) {
     }
   };
 
-  const handleDelete = async (id, code) => {
+  const handleDelete = async (code) => {
+    if (!code) return;
     if (!window.confirm(`Delete pincode ${code} from serviceability database?`)) return;
     try {
-      await api.delete(`/pincodes/admin/${id}`);
+      await api.delete(`/pincodes/admin/${code}`);
       onNotify?.(`Pincode ${code} removed`, 'success');
       loadPincodes();
     } catch (err) {
@@ -124,14 +129,14 @@ export function AdminPincodesTab({ onNotify }) {
               </tr>
             ) : (
               filtered.map((item) => (
-                <tr key={item.id} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
+                <tr key={item.pincode} style={{ borderBottom: '1px solid #F2F2F2', fontSize: '0.88rem' }}>
                   <td style={{ padding: '12px 14px', fontFamily: 'monospace', fontWeight: 600, color: '#1565C0' }}>
                     {item.pincode}
                   </td>
                   <td style={{ padding: '12px 14px' }}>
                     <strong>{item.city}</strong>, <span style={{ color: '#666' }}>{item.state}</span>
                   </td>
-                  <td style={{ padding: '12px 14px' }}>{item.estimated_delivery_days} Days</td>
+                  <td style={{ padding: '12px 14px' }}>{item.estimated_days || item.estimated_delivery_days || 3} Days</td>
                   <td style={{ padding: '12px 14px' }}>
                     <span style={{ padding: '3px 8px', borderRadius: '4px', background: item.cod_available ? '#E8F5E9' : '#FFEBEE', color: item.cod_available ? '#2E7D32' : '#C62828', fontSize: '0.78rem', fontWeight: 600 }}>
                       {item.cod_available ? 'COD ENABLED' : 'PREPAID ONLY'}
@@ -145,7 +150,7 @@ export function AdminPincodesTab({ onNotify }) {
                   <td style={{ padding: '12px 14px', textAlign: 'right' }}>
                     <button
                       type="button"
-                      onClick={() => handleDelete(item.id, item.pincode)}
+                      onClick={() => handleDelete(item.pincode)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#C62828' }}
                       title="Delete pincode rule"
                     >
