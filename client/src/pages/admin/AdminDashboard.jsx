@@ -6,7 +6,6 @@ import {
   ShoppingBag,
   Layers,
   Plus,
-  ArrowUpRight,
   Trash2,
   Edit2,
   X,
@@ -621,30 +620,7 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Admin Header with Brand Logo */}
-      <div className="admin-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <img
-            src="/images/jassera-logo.jpg"
-            alt="Jassera Jewellery"
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              border: '1.5px solid rgba(197, 162, 98, 0.5)',
-              objectFit: 'cover',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
-            }}
-          />
-          <div>
-            <span className="admin-eyebrow">JASSERA MANAGEMENT PORTAL</span>
-            <h1 className="admin-title">Boutique Administration</h1>
-          </div>
-        </div>
-        <Link to="/" target="_blank" rel="noopener noreferrer" className="view-storefront-btn">
-          View Storefront <ArrowUpRight size={14} />
-        </Link>
-      </div>
+
 
       {/* Admin Tabs */}
       <div className="admin-tabs">
