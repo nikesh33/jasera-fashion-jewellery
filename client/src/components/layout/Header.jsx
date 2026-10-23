@@ -22,7 +22,7 @@ import { useUIStore } from "../../stores/uiStore";
 import { api } from "../../lib/api";
 import "./Header.css";
 
-const ANNOUNCEMENT_ITEMS = [
+const FALLBACK_ANNOUNCEMENTS = [
   {
     text: "Free Pan-India Delivery on orders above ₹499",
     linkText: "Shop Collection",
@@ -38,16 +38,6 @@ const ANNOUNCEMENT_ITEMS = [
     linkText: "Claim Discount",
     linkUrl: "/shop",
   },
-  {
-    text: "Need Custom Styling Advice or Gifting Assistance?",
-    linkText: "WhatsApp Concierge",
-    linkUrl: "/contact",
-  },
-  {
-    text: "Express BlueDart & Delhivery Tracking",
-    linkText: "Track Parcel",
-    linkUrl: "/track-order",
-  },
 ];
 
 export function Header() {
@@ -61,6 +51,7 @@ export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(true);
+  const [announcements, setAnnouncements] = useState(FALLBACK_ANNOUNCEMENTS);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const [categories, setCategories] = useState([]);
   const userMenuRef = useRef(null);
@@ -68,14 +59,31 @@ export function Header() {
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
+  // Fetch dynamic announcements from database
+  useEffect(() => {
+    if (!isAdminRoute) {
+      api
+        .get("/announcements")
+        .then((res) => {
+          const list = res?.announcements || res?.data?.announcements;
+          if (list?.length > 0) {
+            setAnnouncements(list);
+          }
+        })
+        .catch((err) =>
+          console.warn("Could not load dynamic announcements from database:", err),
+        );
+    }
+  }, [isAdminRoute]);
+
   // Rotating Announcement Timer
   useEffect(() => {
-    if (isAdminRoute) return;
+    if (isAdminRoute || announcements.length <= 1) return;
     const interval = setInterval(() => {
-      setAnnouncementIndex((prev) => (prev + 1) % ANNOUNCEMENT_ITEMS.length);
+      setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [isAdminRoute]);
+  }, [isAdminRoute, announcements.length]);
 
   const activeAnnouncement = isAdminRoute
     ? {
@@ -83,7 +91,7 @@ export function Header() {
         linkText: "View Customer Storefront ↗",
         linkUrl: "/",
       }
-    : ANNOUNCEMENT_ITEMS[announcementIndex];
+    : announcements[announcementIndex] || announcements[0] || {};
 
   // Close menus on outside click & escape key
   useEffect(() => {

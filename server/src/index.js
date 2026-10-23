@@ -23,6 +23,7 @@ import returnsRoutes from "./routes/returns.routes.js";
 import reviewsRoutes from "./routes/reviews.routes.js";
 import paymentsRoutes from "./routes/payments.routes.js";
 import auditRoutes from "./routes/audit.routes.js";
+import announcementsRoutes from "./routes/announcements.routes.js";
 import { getPool } from "./config/db.js";
 
 const app = express();
@@ -110,6 +111,7 @@ app.use("/api/returns", returnsRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/audit", auditRoutes);
+app.use("/api/announcements", announcementsRoutes);
 
 // Error handling
 app.use(errorHandler);
