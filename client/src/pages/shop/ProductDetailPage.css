@@ -20,18 +20,18 @@
   }
 }
 
-/* 1. Header Breadcrumbs (Floating, identical to shop-header) */
+/* 1. Header Breadcrumbs (Floating, identical to ShopPage) */
 .shop-full-container {
   width: 100%;
   max-width: 100%;
-  padding: 0;
+  padding: 0 16px;
   margin: 0;
   box-sizing: border-box;
 }
 
 .shop-header {
   background: transparent;
-  padding: 14px 0 6px;
+  padding: 8px 16px 2px;
   text-align: left;
   border-bottom: none;
   width: fit-content;

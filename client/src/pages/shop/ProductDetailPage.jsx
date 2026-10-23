@@ -201,26 +201,24 @@ export function ProductDetailPage() {
 
   return (
     <div className="pdp-page">
-      {/* 1. Breadcrumbs Path (Consistent with shop-header, framed in pdp-container) */}
-      <div className="pdp-container pdp-breadcrumb-container">
-        <div className="shop-header pdp-shop-header">
-          <div className="shop-header-content">
-            <nav className="shop-breadcrumb-text" aria-label="Breadcrumb">
-              <Link to="/" className="breadcrumb-link">Home</Link>
-              <span className="breadcrumb-sep">/</span>
-              <Link to="/shop" className="breadcrumb-link">Shop</Link>
-              {product.category_slug && (
-                <>
-                  <span className="breadcrumb-sep">/</span>
-                  <Link to={`/shop?category=${product.category_slug}`} className="breadcrumb-link">
-                    {product.category_name}
-                  </Link>
-                </>
-              )}
-              <span className="breadcrumb-sep">/</span>
-              <span className="breadcrumb-current">{product.name}</span>
-            </nav>
-          </div>
+      {/* 1. Breadcrumbs Path (Floating, exact shop-header structure) */}
+      <div className="shop-header">
+        <div className="shop-full-container shop-header-content">
+          <nav className="shop-breadcrumb-text" aria-label="Breadcrumb">
+            <Link to="/" className="breadcrumb-link">Home</Link>
+            <span className="breadcrumb-sep">/</span>
+            <Link to="/shop" className="breadcrumb-link">Catalogue</Link>
+            {product.category_slug && (
+              <>
+                <span className="breadcrumb-sep">/</span>
+                <Link to={`/shop?category=${product.category_slug}`} className="breadcrumb-link">
+                  {product.category_name}
+                </Link>
+              </>
+            )}
+            <span className="breadcrumb-sep">/</span>
+            <span className="breadcrumb-current">{product.name}</span>
+          </nav>
         </div>
       </div>
 
