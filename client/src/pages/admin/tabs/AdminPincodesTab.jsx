@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, MapPin, Truck, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { api } from '../../../lib/api';
 
@@ -8,14 +8,26 @@ export function AdminPincodesTab({ onNotify }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [notification, setNotification] = useState(null); // { message: '', type: 'success' | 'error' }
+  const [pincodeToDelete, setPincodeToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [form, setForm] = useState({
     pincode: '',
     city: '',
     state: '',
     is_serviceable: 1,
     cod_available: 1,
-    estimated_delivery_days: 3,
+    estimated_days: 3,
   });
+
+  const notify = (message, type = 'success') => {
+    setNotification({ message, type });
+    onNotify?.(message, type);
+    setTimeout(() => {
+      setNotification((curr) => (curr?.message === message ? null : curr));
+    }, 4500);
+  };
 
   const loadPincodes = async () => {
     setIsLoading(true);
@@ -25,7 +37,7 @@ export function AdminPincodesTab({ onNotify }) {
         setPincodes(res.data.pincodes);
       }
     } catch (err) {
-      onNotify?.(err.message || 'Failed to load pincodes', 'error');
+      notify(err.message || 'Failed to load pincodes', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -38,16 +50,16 @@ export function AdminPincodesTab({ onNotify }) {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.pincode || form.pincode.length !== 6) {
-      onNotify?.('Valid 6-digit pin code is required', 'error');
+      notify('Valid 6-digit pin code is required', 'error');
       return;
     }
 
     try {
       await api.post('/pincodes/admin', {
         ...form,
-        estimated_days: form.estimated_days || form.estimated_delivery_days || 3,
+        estimated_days: form.estimated_days || 3,
       });
-      onNotify?.(`Pincode ${form.pincode} configured successfully!`, 'success');
+      notify(`Pincode ${form.pincode} configured successfully!`, 'success');
       setShowModal(false);
       setForm({
         pincode: '',
@@ -56,23 +68,29 @@ export function AdminPincodesTab({ onNotify }) {
         is_serviceable: 1,
         cod_available: 1,
         estimated_days: 3,
-        estimated_delivery_days: 3,
       });
       loadPincodes();
     } catch (err) {
-      onNotify?.(err.message || 'Failed to save pincode', 'error');
+      notify(err.message || 'Failed to save pincode', 'error');
     }
   };
 
-  const handleDelete = async (code) => {
-    if (!code) return;
-    if (!window.confirm(`Delete pincode ${code} from serviceability database?`)) return;
+  const confirmDelete = async () => {
+    if (!pincodeToDelete) return;
+    setIsDeleting(true);
+    const code = pincodeToDelete;
+
     try {
       await api.delete(`/pincodes/admin/${code}`);
-      onNotify?.(`Pincode ${code} removed`, 'success');
+      // Optimistically remove from list immediately
+      setPincodes((prev) => prev.filter((p) => p.pincode !== code));
+      notify(`Pincode ${code} removed from serviceability database`, 'success');
+      setPincodeToDelete(null);
       loadPincodes();
     } catch (err) {
-      onNotify?.(err.message || 'Failed to delete pincode', 'error');
+      notify(err.message || 'Failed to delete pincode', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -86,7 +104,7 @@ export function AdminPincodesTab({ onNotify }) {
 
   return (
     <div className="admin-tab-pane">
-      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className="panel-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <h2 className="panel-heading" style={{ margin: 0 }}>Pincode Serviceability & COD Rules</h2>
           <p style={{ margin: '4px 0 0', color: '#666', fontSize: '0.88rem' }}>
@@ -97,6 +115,39 @@ export function AdminPincodesTab({ onNotify }) {
           Add Serviceable Pin Code
         </Button>
       </div>
+
+      {/* In-tab Notification Toast */}
+      {notification && (
+        <div
+          style={{
+            padding: '12px 16px',
+            marginBottom: '16px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: notification.type === 'error' ? '#FFEBEE' : '#E8F5E9',
+            border: `1px solid ${notification.type === 'error' ? '#EF9A9A' : '#A5D6A7'}`,
+            color: notification.type === 'error' ? '#C62828' : '#2E7D32',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {notification.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle size={18} />}
+            <span>{notification.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: '4px' }}
+            title="Dismiss notification"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       <div style={{ marginBottom: '16px' }}>
         <input
@@ -136,7 +187,7 @@ export function AdminPincodesTab({ onNotify }) {
                   <td style={{ padding: '12px 14px' }}>
                     <strong>{item.city}</strong>, <span style={{ color: '#666' }}>{item.state}</span>
                   </td>
-                  <td style={{ padding: '12px 14px' }}>{item.estimated_days || item.estimated_delivery_days || 3} Days</td>
+                  <td style={{ padding: '12px 14px' }}>{item.estimated_days || 3} Days</td>
                   <td style={{ padding: '12px 14px' }}>
                     <span style={{ padding: '3px 8px', borderRadius: '4px', background: item.cod_available ? '#E8F5E9' : '#FFEBEE', color: item.cod_available ? '#2E7D32' : '#C62828', fontSize: '0.78rem', fontWeight: 600 }}>
                       {item.cod_available ? 'COD ENABLED' : 'PREPAID ONLY'}
@@ -150,9 +201,9 @@ export function AdminPincodesTab({ onNotify }) {
                   <td style={{ padding: '12px 14px', textAlign: 'right' }}>
                     <button
                       type="button"
-                      onClick={() => handleDelete(item.pincode)}
+                      onClick={() => setPincodeToDelete(item.pincode)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', color: '#C62828' }}
-                      title="Delete pincode rule"
+                      title={`Delete pincode ${item.pincode}`}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -163,6 +214,94 @@ export function AdminPincodesTab({ onNotify }) {
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal (Replaces flaky window.confirm) */}
+      {pincodeToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '16px',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) setPincodeToDelete(null);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFF',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '430px',
+              padding: '24px',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.25)',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: '#FFEBEE',
+                color: '#C62828',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <Trash2 size={24} />
+            </div>
+
+            <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', color: '#1F2937' }}>
+              Delete PIN {pincodeToDelete}?
+            </h3>
+            <p style={{ margin: '0 0 24px', color: '#6B7280', fontSize: '0.9rem', lineHeight: '1.5' }}>
+              Are you sure you want to delete PIN code <strong style={{ color: '#111827' }}>{pincodeToDelete}</strong> from regional serviceability? Customers will no longer be able to check delivery for this pincode.
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setPincodeToDelete(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                style={{
+                  padding: '9px 20px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: '#C62828',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  opacity: isDeleting ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Pincode'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Pincode Modal */}
       {showModal && (
@@ -216,8 +355,8 @@ export function AdminPincodesTab({ onNotify }) {
                     type="number"
                     min={1}
                     max={15}
-                    value={form.estimated_delivery_days}
-                    onChange={(e) => setForm({ ...form, estimated_delivery_days: parseInt(e.target.value, 10) || 3 })}
+                    value={form.estimated_days}
+                    onChange={(e) => setForm({ ...form, estimated_days: parseInt(e.target.value, 10) || 3 })}
                     style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #CCC' }}
                   />
                 </div>

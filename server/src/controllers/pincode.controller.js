@@ -3,21 +3,7 @@ import { logAdminAction } from '../utils/auditLogger.js';
 
 const SEED_PINCODES = [
   { pincode: '400001', city: 'Mumbai', state: 'Maharashtra', is_serviceable: 1, cod_available: 1, estimated_days: 2 },
-  { pincode: '400006', city: 'Mumbai', state: 'Maharashtra', is_serviceable: 1, cod_available: 1, estimated_days: 2 },
-  { pincode: '400050', city: 'Mumbai', state: 'Maharashtra', is_serviceable: 1, cod_available: 1, estimated_days: 2 },
-  { pincode: '411001', city: 'Pune', state: 'Maharashtra', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '110001', city: 'New Delhi', state: 'Delhi', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '110020', city: 'South Delhi', state: 'Delhi', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '560001', city: 'Bengaluru', state: 'Karnataka', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '560034', city: 'Bengaluru', state: 'Karnataka', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '500001', city: 'Hyderabad', state: 'Telangana', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '600001', city: 'Chennai', state: 'Tamil Nadu', is_serviceable: 1, cod_available: 1, estimated_days: 4 },
-  { pincode: '700001', city: 'Kolkata', state: 'West Bengal', is_serviceable: 1, cod_available: 1, estimated_days: 4 },
-  { pincode: '380001', city: 'Ahmedabad', state: 'Gujarat', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '395001', city: 'Surat', state: 'Gujarat', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '302001', city: 'Jaipur', state: 'Rajasthan', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
-  { pincode: '226001', city: 'Lucknow', state: 'Uttar Pradesh', is_serviceable: 1, cod_available: 1, estimated_days: 4 },
-  { pincode: '160001', city: 'Chandigarh', state: 'Punjab', is_serviceable: 1, cod_available: 1, estimated_days: 3 },
+
 ];
 
 async function ensureDefaultPincodes(pool) {
