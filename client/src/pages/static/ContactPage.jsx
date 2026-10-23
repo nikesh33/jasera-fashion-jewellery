@@ -59,11 +59,7 @@ export function ContactPage() {
   return (
     <div className="contact-page container">
       <div className="contact-header text-center">
-        <span className="section-eyebrow">CUSTOMER CONCIERGE</span>
-        <h1 className="contact-title">Get In Touch With Jassera</h1>
-        <p className="contact-subtitle">
-          Have a question about our viral statement earrings, shipping timelines, or custom orders? Send us a message and our team will get back to you swiftly.
-        </p>
+
       </div>
 
       <div className="contact-grid">
@@ -155,11 +151,11 @@ export function ContactPage() {
               )}
 
               <Input
-                label="Your Name"
+                label="Name"
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Radhika Sharma"
+                placeholder="e.g. Jassica Sharma"
               />
               <div className="form-grid-2">
                 <Input
@@ -180,7 +176,7 @@ export function ContactPage() {
               </div>
 
               <div className="input-field">
-                <label className="input-label">Topic / Service</label>
+                <label className="input-label">Service</label>
                 <select
                   className="input-control"
                   value={form.service}
@@ -194,7 +190,7 @@ export function ContactPage() {
               </div>
 
               <div className="input-field">
-                <label className="input-label">Message (Optional)</label>
+                <label className="input-label">Message</label>
                 <textarea
                   className="input-control"
                   rows={3}
@@ -206,7 +202,7 @@ export function ContactPage() {
               </div>
 
               <Button variant="primary" size="lg" fullWidth type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending Message...' : 'Submit Inquiry'}
+                {isSubmitting ? 'Sending Message...' : 'Submit'}
               </Button>
             </form>
           )}

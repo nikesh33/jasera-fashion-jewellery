@@ -26,6 +26,7 @@
   max-width: 100%;
   padding: 0 16px;
   margin: 0;
+  margin-bottom: 10px;
   box-sizing: border-box;
 }
 
@@ -616,36 +617,43 @@
 }
 
 @media (max-width: 992px) {
+
   .pdp-hero-grid,
   .pdp-main-grid {
     grid-template-columns: 1fr;
     gap: var(--space-8);
   }
+
   .pdp-gallery-wrap,
   .pdp-gallery-column {
     position: static;
   }
+
   .pdp-tab-headers {
     overflow-x: auto;
     white-space: nowrap;
     gap: var(--space-4);
     scrollbar-width: none;
   }
+
   .pdp-tab-headers::-webkit-scrollbar {
     display: none;
   }
 }
 
 @media (max-width: 600px) {
+
   .pdp-hero-grid,
   .pdp-main-grid {
     gap: var(--space-5);
   }
+
   .pdp-gallery-wrap,
   .pdp-gallery-column {
     flex-direction: column-reverse;
     gap: 10px;
   }
+
   .pdp-thumbnail-strip,
   .pdp-thumbnails {
     flex-direction: row;
@@ -656,24 +664,30 @@
     padding-bottom: 4px;
     scrollbar-width: none;
   }
+
   .pdp-thumbnail-strip::-webkit-scrollbar,
   .pdp-thumbnails::-webkit-scrollbar {
     display: none;
   }
+
   .pdp-thumb-btn {
     width: 60px;
     height: 60px;
     flex-shrink: 0;
   }
+
   .pdp-title {
     font-size: 1.55rem;
   }
+
   .pdp-selling-price {
     font-size: 1.85rem;
   }
+
   .pdp-actions-row {
     gap: 8px;
   }
+
   .pdp-trust-grid {
     grid-template-columns: 1fr;
     gap: 10px;
