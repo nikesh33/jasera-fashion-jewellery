@@ -61,11 +61,20 @@ export async function getCmsPage(req, res) {
   const pool = getPool();
   const slug = req.params.slug;
 
+  const aliases = {
+    'shipping-and-returns': 'shipping-returns',
+    'shipping': 'shipping-policy',
+    'shipping-policy': 'shipping-returns',
+    'terms-and-conditions': 'terms-conditions',
+    'terms': 'terms-conditions',
+  };
+  const alternateSlug = aliases[slug] || slug;
+
   try {
     await ensureDefaultCmsPages(pool);
     const [rows] = await pool.query(
-      'SELECT id, title, slug, content, seo_title, seo_description, updated_at FROM cms_pages WHERE slug = ? AND status = "published" LIMIT 1',
-      [slug]
+      'SELECT id, title, slug, content, seo_title, seo_description, updated_at FROM cms_pages WHERE (slug = ? OR slug = ?) AND status = "published" ORDER BY id ASC LIMIT 1',
+      [slug, alternateSlug]
     );
 
     if (rows.length === 0) {
