@@ -538,11 +538,14 @@
 }
 
 .mobile-nav-panel {
-  width: 280px;
+  width: 320px;
+  max-width: 88vw;
   height: 100%;
   background-color: #FFFFFF;
-  padding: var(--space-6);
+  padding: var(--space-5) var(--space-4) var(--space-8);
   box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-nav-header {
@@ -691,6 +694,18 @@
   color: var(--color-maroon);
   font-weight: 600;
   border-color: #F8D7DA;
+}
+
+.mobile-admin-section {
+  margin-bottom: var(--space-3);
+}
+
+.mobile-tab-active-dot {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-maroon);
 }
 
 .mobile-admin-quick-actions {

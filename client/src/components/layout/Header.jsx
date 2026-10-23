@@ -14,6 +14,18 @@ import {
   Plus,
   ChevronDown,
   SlidersHorizontal,
+  CreditCard,
+  Image,
+  Sparkles,
+  Tag,
+  RotateCcw,
+  Star,
+  MapPin,
+  Mail,
+  Inbox,
+  FileText,
+  Settings,
+  Shield,
 } from "lucide-react";
 import { useCartStore } from "../../stores/cartStore";
 import { useWishlistStore } from "../../stores/wishlistStore";
@@ -37,6 +49,46 @@ const FALLBACK_ANNOUNCEMENTS = [
     text: "Special Welcome Offer: Flat 10% Off with code JASSERA10",
     linkText: "Claim Discount",
     linkUrl: "/shop",
+  },
+];
+
+// Grouped Admin Tabs for Responsive Mobile Sidebar Drawer (All 16 Tabs)
+const ADMIN_NAV_GROUPS = [
+  {
+    title: "Store Management",
+    tabs: [
+      { id: "overview", label: "Overview", icon: TrendingUp },
+      { id: "orders", label: "Orders", icon: ShoppingBag },
+      { id: "products", label: "Catalogue / Stock", icon: Package },
+      { id: "categories", label: "Categories", icon: Layers },
+      { id: "payments", label: "Payments", icon: CreditCard },
+    ],
+  },
+  {
+    title: "Merchandising & Growth",
+    tabs: [
+      { id: "banners", label: "Hero Banners", icon: Image },
+      { id: "collections", label: "Collections", icon: Sparkles },
+      { id: "coupons", label: "Coupons & Offers", icon: Tag },
+      { id: "newsletter", label: "Subscribers", icon: Inbox },
+    ],
+  },
+  {
+    title: "Customer Support",
+    tabs: [
+      { id: "returns", label: "Return Requests", icon: RotateCcw },
+      { id: "reviews", label: "Product Reviews", icon: Star },
+      { id: "inquiries", label: "Inquiries & Help", icon: Mail },
+    ],
+  },
+  {
+    title: "Settings & System",
+    tabs: [
+      { id: "pincodes", label: "Delivery Pincodes", icon: MapPin },
+      { id: "cms", label: "CMS Pages", icon: FileText },
+      { id: "settings", label: "Store Settings", icon: Settings },
+      { id: "audit", label: "Audit Trail", icon: Shield },
+    ],
   },
 ];
 
@@ -126,6 +178,13 @@ export function Header() {
     setIsMobileNavOpen(false);
     setIsUserMenuOpen(false);
   }, [location.pathname, location.search]);
+
+  // Listen for open-mobile-nav custom event
+  useEffect(() => {
+    const handleOpen = () => setIsMobileNavOpen(true);
+    window.addEventListener("open-mobile-nav", handleOpen);
+    return () => window.removeEventListener("open-mobile-nav", handleOpen);
+  }, []);
 
   const cartCount = getCartCount();
   const wishlistCount = getWishlistCount();
@@ -540,68 +599,8 @@ export function Header() {
             </div>
 
             {isAdminRoute ? (
-              /* Admin Mobile Drawer with Tabs & Quick Actions */
+              /* Admin Mobile Drawer with All 16 Tabs & Quick Actions */
               <div className="mobile-admin-drawer">
-                <div className="mobile-drawer-section-title">
-                  Navigation Tabs
-                </div>
-                <ul className="mobile-nav-list">
-                  <li className="mobile-nav-item">
-                    <button
-                      type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes("tab=overview") || (!location.search.includes("tab=") && location.pathname === "/admin") ? "is-active" : ""}`}
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        navigate("/admin?tab=overview");
-                      }}
-                    >
-                      <TrendingUp size={16} />
-                      <span>Overview</span>
-                    </button>
-                  </li>
-                  <li className="mobile-nav-item">
-                    <button
-                      type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes("tab=categories") ? "is-active" : ""}`}
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        navigate("/admin?tab=categories");
-                      }}
-                    >
-                      <Layers size={16} />
-                      <span>Categories</span>
-                    </button>
-                  </li>
-                  <li className="mobile-nav-item">
-                    <button
-                      type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes("tab=products") ? "is-active" : ""}`}
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        navigate("/admin?tab=products");
-                      }}
-                    >
-                      <Package size={16} />
-                      <span>Stock</span>
-                    </button>
-                  </li>
-                  <li className="mobile-nav-item">
-                    <button
-                      type="button"
-                      className={`mobile-admin-tab-btn ${location.search.includes("tab=orders") ? "is-active" : ""}`}
-                      onClick={() => {
-                        setIsMobileNavOpen(false);
-                        navigate("/admin?tab=orders");
-                      }}
-                    >
-                      <ShoppingBag size={16} />
-                      <span>Orders</span>
-                    </button>
-                  </li>
-                </ul>
-
-                <div className="mobile-nav-divider" />
-                <div className="mobile-drawer-section-title">Quick Actions</div>
                 <div className="mobile-admin-quick-actions">
                   <button
                     type="button"
@@ -640,6 +639,44 @@ export function Header() {
                     <span>Add Product</span>
                   </button>
                 </div>
+
+                <div className="mobile-nav-divider" />
+
+                {ADMIN_NAV_GROUPS.map((group) => {
+                  const currentAdminTab =
+                    new URLSearchParams(location.search).get("tab") || "overview";
+                  return (
+                    <div key={group.title} className="mobile-admin-section">
+                      <div className="mobile-drawer-section-title">
+                        {group.title}
+                      </div>
+                      <ul className="mobile-nav-list">
+                        {group.tabs.map((tab) => {
+                          const IconComponent = tab.icon;
+                          const isActive = currentAdminTab === tab.id;
+                          return (
+                            <li key={tab.id} className="mobile-nav-item">
+                              <button
+                                type="button"
+                                className={`mobile-admin-tab-btn ${isActive ? "is-active" : ""}`}
+                                onClick={() => {
+                                  setIsMobileNavOpen(false);
+                                  navigate(`/admin?tab=${tab.id}`);
+                                }}
+                              >
+                                <IconComponent size={16} />
+                                <span>{tab.label}</span>
+                                {isActive && (
+                                  <span className="mobile-tab-active-dot" />
+                                )}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
 
                 <div className="mobile-nav-divider" />
                 <ul className="mobile-nav-list">

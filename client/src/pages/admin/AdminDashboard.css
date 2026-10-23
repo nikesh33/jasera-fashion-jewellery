@@ -511,10 +511,40 @@
   }
 }
 
-/* Responsive Hide Tabs & Quick Actions on Mobile (Move to Sidebar) */
+/* Responsive Admin Tabs & Navigation on Mobile */
 @media (max-width: 768px) {
   .admin-tabs {
-    display: none !important;
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    padding: 2px 2px 10px;
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--grey-200);
+  }
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-tab-btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    background: #FFFFFF;
+    border: 1px solid var(--grey-200);
+    border-radius: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    white-space: nowrap;
+  }
+  .admin-tab-btn.is-active {
+    background: #FDEDED;
+    color: var(--color-maroon);
+    border-color: #F8D7DA;
+    font-weight: 600;
+  }
+  .admin-tab-btn.is-active::after {
+    display: none;
   }
   .admin-quick-actions {
     display: none !important;

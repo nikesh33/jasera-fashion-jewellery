@@ -622,6 +622,37 @@ export function AdminDashboard() {
 
 
 
+      {/* Mobile Active Section Bar with Sidebar Drawer Trigger */}
+      <div className="admin-mobile-active-bar">
+        <div className="mobile-active-label">
+          {activeTab === "overview" && "Overview"}
+          {activeTab === "orders" && `Orders (${orders.length})`}
+          {activeTab === "products" && `Catalogue (${products.length})`}
+          {activeTab === "categories" && `Categories (${categories.length})`}
+          {activeTab === "payments" && "Payments"}
+          {activeTab === "banners" && "Hero Banners"}
+          {activeTab === "collections" && "Collections"}
+          {activeTab === "coupons" && "Coupons & Discounts"}
+          {activeTab === "returns" && "Return Requests"}
+          {activeTab === "reviews" && "Customer Reviews"}
+          {activeTab === "pincodes" && "Delivery Pincodes"}
+          {activeTab === "inquiries" && "Customer Inquiries"}
+          {activeTab === "newsletter" && "Newsletter Subscribers"}
+          {activeTab === "cms" && "CMS Pages"}
+          {activeTab === "settings" && "Store Settings"}
+          {activeTab === "audit" && "Audit Trail"}
+        </div>
+        <button
+          type="button"
+          className="admin-mobile-menu-hint"
+          onClick={() => window.dispatchEvent(new CustomEvent("open-mobile-nav"))}
+          aria-label="Open all tabs menu"
+        >
+          <Menu size={14} />
+          <span>All Tabs (16)</span>
+        </button>
+      </div>
+
       {/* Admin Tabs */}
       <div className="admin-tabs">
         <button
