@@ -107,42 +107,61 @@ export function HomePage() {
         }}
       >
         {banners.length > 0 ? (
-          banners.map((b, idx) => (
-            <div
-              key={b.id || idx}
-              className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
-              style={{
-                backgroundImage: `url(${b.imageUrl || b.image_url})`,
-              }}
-            >
-              <div className="hero-overlay" />
-              <div className="container hero-content">
-                <span className="hero-eyebrow">
-                  <Sparkles size={16} /> AESTHETIC JEWELLERY
-                </span>
-                <h1 className="hero-title">{b.title}</h1>
-                <p className="hero-subtitle">{b.subtitle}</p>
-                <div className="hero-actions">
-                  <Button
-                    variant="gold"
-                    size="lg"
-                    icon={ArrowRight}
-                    onClick={() => navigate(b.linkUrl || b.link_url || '/shop')}
-                  >
-                    Shop Collection
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="hero-secondary-btn"
-                    onClick={() => navigate('/shop?category=jhumkas')}
-                  >
-                    Explore Best Sellers
-                  </Button>
+          banners.map((b, idx) => {
+            const bannerImg = b.imageUrl || b.image_url;
+            return (
+              <div
+                key={b.id || idx}
+                className={`hero-slide ${idx === currentSlide ? 'active' : ''}`}
+              >
+                {/* Ambient background for desktop & full cover on responsive */}
+                <div
+                  className="hero-slide-backdrop"
+                  style={{ backgroundImage: `url(${bannerImg})` }}
+                />
+                <div className="hero-overlay" />
+
+                <div className="container hero-slide-grid">
+                  <div className="hero-content">
+                    <span className="hero-eyebrow">
+                      <Sparkles size={16} /> AESTHETIC JEWELLERY
+                    </span>
+                    <h1 className="hero-title">{b.title}</h1>
+                    <p className="hero-subtitle">{b.subtitle}</p>
+                    <div className="hero-actions">
+                      <Button
+                        variant="gold"
+                        size="lg"
+                        icon={ArrowRight}
+                        onClick={() => navigate(b.linkUrl || b.link_url || '/shop')}
+                      >
+                        Shop Collection
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="hero-secondary-btn"
+                        onClick={() => navigate('/shop?category=jhumkas')}
+                      >
+                        Explore Best Sellers
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Desktop Visual Card Showcase: Ensures poster & photos fit 100% without being cropped */}
+                  <div className="hero-visual-col">
+                    <div className="hero-visual-card">
+                      <img
+                        src={bannerImg}
+                        alt={b.title}
+                        className="hero-model-img"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div
             className="hero-slide active"
@@ -386,7 +405,7 @@ export function HomePage() {
         <div className="container">
           <div className="section-header text-center">
             <span className="section-eyebrow">LOVED BY INSTAGRAM COMMUNITY</span>
-            <h2 className="section-title">Customer Love & Reviews</h2>
+            <h2 className="section-title">Reviews</h2>
           </div>
 
           <div className="testimonials-grid">
