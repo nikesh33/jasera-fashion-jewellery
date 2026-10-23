@@ -201,26 +201,32 @@ export function ProductDetailPage() {
 
   return (
     <div className="pdp-page">
-      {/* 1. Breadcrumb */}
-      <div className="container pdp-breadcrumb">
-        <Link to="/">Home</Link>
-        <ChevronRight size={14} />
-        <Link to="/shop">Shop</Link>
-        {product.category_slug && (
-          <>
-            <ChevronRight size={14} />
-            <Link to={`/shop?category=${product.category_slug}`}>{product.category_name}</Link>
-          </>
-        )}
-        <ChevronRight size={14} />
-        <span>{product.name}</span>
+      {/* 1. Breadcrumbs Path (Consistent with shop-header) */}
+      <div className="shop-header pdp-shop-header">
+        <div className="shop-full-container shop-header-content">
+          <nav className="shop-breadcrumb-text" aria-label="Breadcrumb">
+            <Link to="/" className="breadcrumb-link">Home</Link>
+            <span className="breadcrumb-sep">/</span>
+            <Link to="/shop" className="breadcrumb-link">Shop</Link>
+            {product.category_slug && (
+              <>
+                <span className="breadcrumb-sep">/</span>
+                <Link to={`/shop?category=${product.category_slug}`} className="breadcrumb-link">
+                  {product.category_name}
+                </Link>
+              </>
+            )}
+            <span className="breadcrumb-sep">/</span>
+            <span className="breadcrumb-current">{product.name}</span>
+          </nav>
+        </div>
       </div>
 
       {/* 2. Main Product Hero (Gallery + Purchase Info) */}
-      <div className="container pdp-main-grid">
+      <div className="shop-full-container pdp-hero-grid pdp-main-grid">
         {/* Left: Gallery (Item #18: product_images) */}
-        <div className="pdp-gallery-column">
-          <div className="pdp-thumbnails">
+        <div className="pdp-gallery-wrap pdp-gallery-column">
+          <div className="pdp-thumbnail-strip pdp-thumbnails">
             {images.map((img, idx) => (
               <button
                 key={img.id || idx}
@@ -409,7 +415,7 @@ export function ProductDetailPage() {
       </div>
 
       {/* 3. Product Tabs */}
-      <div className="container pdp-tabs-section">
+      <div className="shop-full-container pdp-tabs-section">
         <div className="pdp-tab-headers">
           <button
             className={`pdp-tab-btn ${activeTab === 'specs' ? 'is-active' : ''}`}
